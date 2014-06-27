@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repos>
+        <!--APT type, from apt/sources.list
+                deb url distribution section1 section2 section3
+                deb ftp://ftp.zcu.cz/pub/linux/debian lenny main contrib non-free
+        -->
+        <repo type="apt">
+                <name>Debian Lenny Security Updates</name>
+                <url>http://security.debian.org/</url>
+                <distribution>lenny/updates</distribution>
+                <sections>main contrib non-free</sections>
+                <security>1</security>
+        </repo>
+        
+        <!-- YUM type, from yum.repos.d
+                baseurl=url
+                baseurl=http://linuxsoft.cern.ch/cern/slc4X/$basearch/yum/os/
+        -->
+        <repo type="yum">
+                <name>SLC 4.x</name>
+                <url>http://linuxsoft.cern.ch/cern/slc4X/$basearch/yum/os/</url>
+                <security>0</security>
+        </repo>
+</repos>
