@@ -117,7 +117,7 @@ if ($reInitialize) {
 
 print "Creating the database '$dbName' ... ";
 # Create the database
-if (!$link->query("create database $dbName")) {
+if (!$link->query("create database if not exists $dbName")) {
   print "ERROR: cannot create the database '$dbName': " . $link->error . ", you can use --reInitialize which drops existing database\n";
   exit(1);
 }
@@ -177,29 +177,29 @@ if (!$newLink = new mysqli(Config::$DB_HOST, Config::$DB_USER, Config::$DB_PASSW
   print "ERROR: cannot connect to the database server using connection settings from the etc/Config.php: " . mysqli_connect_error() . "\n";
   exit(1);
 }
-if (!mysql_select_db(Config::$DB_NAME, $newLink)) {
-  print "ERROR: cannot select the database '$dbName': " . mysql_error($newLink) . "\n";
+if (!mysqli_select_db($newLink, Config::$DB_NAME)) {
+  print "ERROR: cannot select the database '$dbName': " . mysqli_error($newLink) . "\n";
   exit(1);
 }
 print "OK\n";
 
 print "Storing Pakiti version '" . Constants::$PAKITI_VERSION. "' into the database ... ";
-if (!mysql_query("insert into PakitiAttributes (attrName, attrValue) values ('".AttributeNames::$PAKITI_VERSION."','".Constants::$PAKITI_VERSION."')")) {
-  print "ERROR: Cannot store the Pakiti version into the PakitiAttributes table: " .  mysql_error($newLink) . "\n";
+if (!mysqli_query($newLink, "insert into PakitiAttributes (attrName, attrValue) values ('".AttributeNames::$PAKITI_VERSION."','".Constants::$PAKITI_VERSION."')")) {
+  print "ERROR: Cannot store the Pakiti version into the PakitiAttributes table: " .  mysqli_error($newLink) . "\n";
   exit(1);
 }
 print "OK\n";
 
 print "Testing connection to the newly created database '" . Config::$DB_NAME . "' ... ";
-if (!mysql_query("select attrValue from PakitiAttributes where attrName='".AttributeNames::$PAKITI_VERSION."'")) {
-  print "ERROR: Cannot get the Pakiti version from the PakitiAttributes table: " .  mysql_error($newLink) . "\n";
+if (!mysqli_query($newLink, "select attrValue from PakitiAttributes where attrName='".AttributeNames::$PAKITI_VERSION."'")) {
+  print "ERROR: Cannot get the Pakiti version from the PakitiAttributes table: " .  mysqli_error($newLink) . "\n";
   exit(1);
 }
 print "OK\n";
 
 print "Closing connection to the database ... ";
-if (!mysql_close($newLink)) {
-  print "ERROR: Cannot close the connection to the database: " .  mysql_error($newLink) . "\n";
+if (!mysqli_close($newLink)) {
+  print "ERROR: Cannot close the connection to the database: " .  mysqli_error($newLink) . "\n";
   exit(1);
 }
 print "OK\n";
