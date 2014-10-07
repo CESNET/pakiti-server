@@ -211,7 +211,7 @@ final class DbManager {
    * Single raw object fetch, just check if the fetch was successfull and return the result
    */
   protected function rawSingleObjectFetch($res, $class, $params) {
-    if ($params == null) {
+    if ($params != null) {
       if (($row = $res->fetch_object($class, $params)) == null) {
         return null;
       }

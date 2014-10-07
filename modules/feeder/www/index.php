@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 $time = microtime(true);
-require(realpath(dirname(__FILE__)) . '/../../../loader.php');
+require(realpath(dirname(__FILE__)) . '/../../../lib/common/Loader.php');
 
 try {
   # Initialize 
@@ -61,7 +61,7 @@ try {
   }
   
   # End
-  Utils::log(LOG_INFO, "Report done for [host=".Utils::getHttpVar(Constants::$REPORT_HOSTNAME).
+  Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost().
   	"] in ".Utils::getTimer($time)."s\n");
   print Constants::$RETURN_OK;
   exit;
