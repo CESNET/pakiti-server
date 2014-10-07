@@ -26,7 +26,6 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE. 
-
 # Load the constants
 require_once(realpath(dirname(__FILE__)) . '/Constants.php');
 
@@ -59,8 +58,8 @@ function __autoload($className) {
     } elseif (preg_match('/.*Module$/', $className) > 0) {
       # Get the module name
       $moduleName = strtolower(preg_replace('/^(.*)Module$/','\1',$className));
-      if (file_exists(realpath(dirname(__FILE__)) . '/../modules/' . $moduleName . '/' . $className . '.php')) {
-        include_once(realpath(dirname(__FILE__)) . '/../modules/' . $moduleName . '/' . $className . '.php');
+      if (file_exists(realpath(dirname(__FILE__)) . '/../../modules/' . $moduleName . '/' . $className . '.php')) {
+        include_once(realpath(dirname(__FILE__)) . '/../../modules/' . $moduleName . '/' . $className . '.php');
       }
     } else {
       #  Models

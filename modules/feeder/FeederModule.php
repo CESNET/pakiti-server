@@ -33,23 +33,35 @@ class FeederModule extends DefaultModule {
   private $_host;
   private $_pkgs;
   
+  private $_report_hostname;
+  private $_report_ip;
+  private $_report_proxy;
+  private $_report_os;
+  private $_report_arch;
+  private $_report_kernel;
+  private $_report_type;
+  private $_report_site;
+  private $_report_tag;
+  private $_report_report;
+  private $_report_pkgs;
+
   public function __construct(Pakiti &$pakiti) {
     parent::__construct($pakiti);
 
     $this->_host = new Host();
     $this->_report = new Report();
     
-    # Set the time, when we received the report
-    $this->_report->setReceivedOn(time());
-    
     # Get the version of the client
     if (($this->_version = Utils::getHttpVar(Constants::$REPORT_VERSION)) == null) {
       throw new Exception("Client did not send the version!");
     }
-    
+
+    # Map variables in the report to the internal variables
+    $this->doReportMapping($this->_version);    
+
     # Get the hostname and ip
-    $this->_host->setHostname(Utils::getHttpVar(Constants::$REPORT_HOSTNAME));
-    $this->_host->setIp(Utils::getHttpVar(Constants::$REPORT_IP));
+    $this->_host->setHostname($this->_report_hostname);
+    $this->_host->setIp($this->_report_ip);
     
     # Get the hostname and ip of the reporting machine (could be a NAT machine)
     $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
@@ -58,7 +70,7 @@ class FeederModule extends DefaultModule {
         __FILE__, __LINE__);
         
     # Is the host proxy?
-    if (Utils::getHttpVar(Constants::$REPORT_PROXY) == Constants::$HOST_IS_PROXY) {
+    if ($this->_report_proxy == Constants::$HOST_IS_PROXY) {
       $this->_report->setTroughtProxy(Constants::$HOST_IS_PROXY);
       
       # Check if the proxy is authorized to send the reports
@@ -74,7 +86,107 @@ class FeederModule extends DefaultModule {
       $this->_report->setTroughtProxy(Constants::$HOST_IS_NOT_PROXY);
     }
   }
-  
+ 
+  /*
+   * Returns hostname of the reporting machine
+   */
+  public function getReportHost() {
+	return $this->_host->getReporterHostname();
+  }
+
+  /*
+   * Maps variables from the reports (depends on the report version) onto the local variables
+   */
+  private function doReportMapping($version) {
+	switch ($version) {
+		# Legacy Pakiti client
+		case "4":
+			$this->_report_hostname = Utils::getHttpVar(Constants::$REPORT_HOSTNAME);
+			$this->_report_ip = Utils::getHttpVar(Constants::$REPORT_IP);
+			$this->_report_proxy = Utils::getHttpVar(Constants::$REPORT_PROXY);
+			$this->_report_os = Utils::getHttpVar(Constants::$REPORT_OS);
+			$this->_report_arch = Utils::getHttpVar(Constants::$REPORT_ARCH);
+			$this->_report_kernel = Utils::getHttpVar(Constants::$REPORT_KERNEL);
+			$this->_report_type  = Utils::getHttpVar(Constants::$REPORT_TYPE);
+			$this->_report_site  = Utils::getHttpVar(Constants::$REPORT_SITE);
+			$this->_report_tag = Utils::getHttpVar(Constants::$REPORT_TAG);
+			$this->_report_report = Utils::getHttpVar(Constants::$REPORT_REPORT);
+			$this->_report_pkgs = Utils::getHttpVar(Constants::$REPORT_PKGS);
+			# Report from RPM based OS: version and release are splitted by space. Debian and CERN reports separates version and release by a dash.
+			# FIXME, we need set is in a changelog
+			$this->_report_pkgs_format = $this->_report_type == "rpm" ? "space" : "dash";
+			break;
+		case "cern_1":
+			# Example of the report:
+			##
+			#ip: 128.142.145.197
+			#ts: 1412031358
+			#arch: x86_64
+			#host: dpm-puppet01.cern.ch dpm-puppet01.ipv6.cern.ch
+			#kernel: 2.6.32-431.3.1.el6.x86_64
+			#packager: rpm
+			#site: MYSITE
+			#system: Scientific Linux CERN SLC release 6.5 (Carbon)
+			##
+			#CERN-CA-certs 0:20140325-2.slc6 noarch
+
+			# Map onto the variables
+	
+			# Decrypt the report
+			$data = Utils::getHttpVar('data');
+  			$tmpFileIn = tempnam("/dev/shm/", "cern_IN_");
+  			$tmpFileOut = tempnam("/dev/shm/", "cern_OUT_");
+			# Store encrypted report into the file and the use openssl smime to decode it
+			if (file_put_contents($tmpFileIn, $data) === FALSE) {
+				throw new Exception("Cannot write to the file '$tmpFileIn' during decoding cern_1 report");
+			}
+			if (system("openssl smime -decrypt -binary -inform DER -inkey ". Config::$CERN_REPORT_DECRYPTION_KEY ." -in $tmpFileIn -out $tmpFileOut") === FALSE) {
+				throw new Exception("Cannot run openssl smime on the file '$tmpFileIn'");
+			}
+			# Clean up
+			unlink($tmpFileIn); 
+
+			$handle = fopen("$tmpFileOut", "r");
+			$lineNumber = 0;
+			if ($handle) {
+			    while (($line = fgets($handle)) !== false) {
+				$lineNumber++;
+				if ($lineNumber == 1 && trim($line) != "#") {
+					throw new Exception("Bad format of the report, it should start with # '$tmpFileOut'");
+				} 
+				if ($lineNumber > 1 && trim($line) == "#") {
+					# We have reached end of header
+					break;
+				}
+				# Get field name and value separatedly	
+				$fields = explode(':', $line, 2);
+				switch(trim($fields[0])) {
+					case "ip": $this->_report_ip = trim($fields[1]); break;
+					case "arch": $this->_report_arch = trim($fields[1]); break;
+					# Get only the first hostname in the list, CERN sends all possible hostnames of the host
+					case "host": $this->_report_hostname = trim($fields[1]); break;
+					case "kernel": $this->_report_kernel = trim($fields[1]); break;
+					case "packager": $this->_report_type = trim($fields[1]); break;
+					case "site": $this->_report_site = trim($fields[1]); break;
+					case "system": $this->_report_os = trim($fields[1]); break;
+				}
+			    }
+
+			    while (($line = fgets($handle)) !== false) {
+				if ($line == "#" || empty($line)) continue;
+			    	# Store packages into the internal variable
+			    	$this->_report_pkgs .= $line;
+			    }
+			} else {
+			    	// error opening the file.
+				throw new Exception("Cannot open file with the report '$tmpFileOut'");
+			} 
+			fclose($handle);
+			unlink($tmpFileOut);
+			break;
+		}
+  }
+
   /*
    * Process the report, stores the data about the host, installed packages and report itself.
    */
@@ -116,33 +228,42 @@ class FeederModule extends DefaultModule {
         Utils::log(LOG_DEBUG, "Client in version 4", __FILE__, __LINE__);
         # Get the rest of HTTP variables
         # host, os, arch, kernel, site, version, type, pkgs   
-        $this->_host->setOs(Utils::getHttpVar(Constants::$REPORT_OS));
-        $this->_host->setArch(Utils::getHttpVar(Constants::$REPORT_ARCH));
-        $this->_host->setKernel(Utils::getHttpVar(Constants::$REPORT_KERNEL));            
-        $this->_host->setType(Utils::getHttpVar(Constants::$REPORT_TYPE));
+        $this->_host->setOsName($this->_report_os);
+        $this->_host->setArchName($this->_report_arch);
+        $this->_host->setKernel($this->_report_kernel);            
+        $this->_host->setType($this->_report_type);
+        break;
+      case "cern_1":
+        Utils::log(LOG_DEBUG, "Client in version CERN 1", __FILE__, __LINE__);
+        # Get the rest of HTTP variables
+        # host, os, arch, kernel, site, version, type, pkgs   
+        $this->_host->setOsName($this->_report_os);
+        $this->_host->setArchName($this->_report_arch);
+        $this->_host->setKernel($this->_report_kernel);            
+        $this->_host->setType($this->_report_type);
         break;
     }
-    
+ 
+    # Parse the packages list
+    $this->_pkgs = $this->parsePkgs($this->_report_pkgs);
+   
     # Set the initial information about the report
     $this->_report->setReceivedOn(time());
 
     # Get the host object from the DB, if the host doesn't exist in the DB, this routine will create it
-    $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostFromReport($this->_host);
+    $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostFromReport($this->_host, $this->_pkgs);
 
     # Get the host group
     $hostGroup = new HostGroup();
-    $hostGroup->setName(Utils::getHttpVar(Constants::$REPORT_SITE));
+    $hostGroup->setName($this->_report_site);
     # If the host is already member of the host group, no operation is done
     $this->getPakiti()->getManager("HostGroupsManager")->assignHostToHostGroup($this->_host, $hostGroup);
 
     # Get the host tag and assign it to the host
     $tag = new Tag();
-    $tag->setName(Utils::getHttpVar(Constants::$REPORT_TAG));
+    $tag->setName($this->_report_tag);
     # If the tag is already assigned, no operation is done
     $this->getPakiti()->getManager("TagsManager")->assignTagToHost($this->_host, $tag);
-
-    # Parse the packages list
-    $this->_pkgs = $this->parsePkgs(Utils::getHttpVar(Constants::$REPORT_PKGS));
 
     $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
   }
@@ -210,16 +331,16 @@ class FeederModule extends DefaultModule {
     switch ($this->_version) {
       case "4": 
               # Prepare the header
-              $header = Constants::$REPORT_TYPE."='".Utils::getHttpVar(Constants::$REPORT_TYPE)."',".
-                        Constants::$REPORT_HOSTNAME."='".Utils::getHttpVar(Constants::$REPORT_HOSTNAME)."',".
-              					Constants::$REPORT_OS."='".Utils::getHttpVar(Constants::$REPORT_OS)."',".
-              					Constants::$REPORT_TAG."='".Utils::getHttpVar(Constants::$REPORT_TAG)."',".
-              					Constants::$REPORT_KERNEL."='".Utils::getHttpVar(Constants::$REPORT_KERNEL)."',".
-              					Constants::$REPORT_ARCH."='".Utils::getHttpVar(Constants::$REPORT_ARCH)."',".
-              					Constants::$REPORT_SITE."='".Utils::getHttpVar(Constants::$REPORT_SITE)."',".
-              					Constants::$REPORT_VERSION."='".Utils::getHttpVar(Constants::$REPORT_VERSION)."',".
-              					Constants::$REPORT_REPORT."='".Utils::getHttpVar(Constants::$REPORT_REPORT)."',".
-              					Constants::$REPORT_TIMESTAMP."='".$timestamp."'".
+              $header = Constants::$REPORT_TYPE."='".$this->_report_type."',".
+                        Constants::$REPORT_HOSTNAME."='".$this->_report_hostname."',".
+          		Constants::$REPORT_OS."='".$this->_report_os."',".
+              		Constants::$REPORT_TAG."='".$this->_report_tag."',".
+              		Constants::$REPORT_KERNEL."='".$this->_report_kernel."',".
+              		Constants::$REPORT_ARCH."='".$this->_report_arch."',".
+              		Constants::$REPORT_SITE."='".$this->_report_site."',".
+              		Constants::$REPORT_VERSION."='".$this->_version."',".
+              		Constants::$REPORT_REPORT."='".$this->_report_report."',".
+              		Constants::$REPORT_TIMESTAMP."='".$timestamp."'".
                         "\n";
               
               # Store the data          
@@ -244,7 +365,7 @@ class FeederModule extends DefaultModule {
   public function storePkgs() {
     Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
     # Load the actually stored packages from the DB, the array is already sorted by the pkgName
-    $pkgs =& $this->getPakiti()->getManager("PkgsManager")->getPkgs($this->_host);
+    $pkgs =& $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsAsArray($this->_host);
     
     $pkgsToAdd = array();
     $pkgsToUpdate = array();
@@ -282,26 +403,35 @@ class FeederModule extends DefaultModule {
   protected function parsePkgs(&$pkgs) {
     Utils::log(LOG_DEBUG, "Parsing packages", __FILE__, __LINE__);
     $parsedPkgs = array();
-    switch ($this->_version) {
-      case "4":
-        # Remove escape characters
-        $pkgs = str_replace ("\\", "", $pkgs);
+    # Remove escape characters
+    $pkgs = str_replace ("\\", "", $pkgs);
 
-        # Go throught the string, each entry is separated by the new line
-        $tok = strtok($pkgs, "\n");
-        while ($tok !== FALSE) {
-          preg_match("/'(.*)' '(.*)' '(.*)' '(.*)'/", $tok, $entries);
-          $pkgName = $entries[1];
-          $pkgVersion = $entries[2];
-          $pkgRelease = $entries[3];
-          $pkgArch = $entries[4];
-          
-          # If the host uses dpkg we need to split version manually to version and release by the dash
-          # Suppress warnings, if the version doesn't contain dash, only version will be filled, release will be empty
-          if ($this->_host->getType() == Constants::$PACKAGER_SYSTEM_DPKG) {
-            @list ($pkgVersion, $pkgRelease) = explode('-',$pkgVersion);   
-          }
-                
+    # Go throught the string, each entry is separated by the new line
+    $tok = strtok($pkgs, "\n");
+    while ($tok !== FALSE) {
+	switch ($this->_version) {
+	 	case "4":
+	          preg_match("/'(.*)' '(.*)' '(.*)' '(.*)'/", $tok, $entries);
+         	  $pkgName = $entries[1];
+          	  $pkgVersion = $entries[2];
+          	  $pkgRelease = $entries[3];
+          	  $pkgArch = $entries[4];
+
+		  # If the host uses dpkg we need to split version manually to version and release by the dash.
+		  # Suppress warnings, if the version doesn't contain dash, only version will be filled, release will be empty
+		  if ($this->_host->getType() == Constants::$PACKAGER_SYSTEM_DPKG) {
+		    @list ($pkgVersion, $pkgRelease) = explode('-',$pkgVersion);   
+		  }
+  		  break;
+		case "cern_1":
+	          preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries);
+		  $pkgName = $entries[1];
+		  $pkgVersion = $entries[2];
+		  $pkgRelease = $entries[3];
+		  $pkgArch = $entries[4];
+		  break;
+	  }
+               
           ## Remove blacklisted packages
           # Remove packages which fits the patterns provided in the configuration 
           if (in_array($pkgName, Config::$IGNORE_PACKAGES)) {
@@ -333,8 +463,6 @@ class FeederModule extends DefaultModule {
           # $parsedPkgs['pkgName'] = array ( pkgVersion, pkgRelease, pkgArch );
           $parsedPkgs[$pkgName] = array ( 'pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease, 'pkgArch' => $pkgArch );
           $tok = strtok("\n");
-        }
-        break;
     }
     
     return $parsedPkgs;

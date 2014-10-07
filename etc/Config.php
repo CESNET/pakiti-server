@@ -45,13 +45,15 @@ final class Config {
   # Enable authorization?
   public static $ENABLE_AUTHZ = 1;
   # Debug
-  #public static $DEBUG = TRUE;
-  public static $DEBUG = FALSE;
+  public static $DEBUG = TRUE;
   
   # Directory, where to put the reports (only applied for asynchronous mode)
   public static $REPORTS_DIR = "/var/tmp/pakiti-reports/";
   # Should be report compressed?
   public static $COMPRESS_REPORTS = 1;
+
+  # If CERN reports are used, path to the private key must be defined, in order to decrypt incomming report
+  public static $CERN_REPORT_DECRYPTION_KEY = "/etc/ssl/cert.pem";
   
   # Do we want backup the reports
   public static $BACKUP = TRUE;

@@ -91,17 +91,19 @@ class InstalledPkgDao {
     $installedPkgsDb =& $this->db->queryToMultiRow($sql);
     # Create objects
     $installedPkgs = array();
-    foreach ($installedPkgsDb as $installedPkgDb) {
-      $installedPkg = new InstalledPkg();
-      $installedPkg->setPkgId($installedPkgDb["pkgId"]);
-      $installedPkg->setHostId($installedPkgDb["hostId"]);
-      $installedPkg->setArchId($installedPkgDb["archId"]);
-      $installedPkg->setVersion($installedPkgDb["version"]);
-      $installedPkg->setRelease($installedPkgDb["release"]);
+    if ($installedPkgsDb != null) {
+      foreach ($installedPkgsDb as $installedPkgDb) {
+	$installedPkg = new InstalledPkg();
+	$installedPkg->setPkgId($installedPkgDb["pkgId"]);
+	$installedPkg->setHostId($installedPkgDb["hostId"]);
+	$installedPkg->setArchId($installedPkgDb["archId"]);
+	$installedPkg->setVersion($installedPkgDb["version"]);
+	$installedPkg->setRelease($installedPkgDb["release"]);
       
-      array_push($installedPkgs, $installedPkg);
+	array_push($installedPkgs, $installedPkg);
+      }
     }
-    
+	    
     return $installedPkgs;
   }
  

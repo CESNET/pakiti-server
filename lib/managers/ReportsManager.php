@@ -90,6 +90,12 @@ class ReportsManager extends DefaultManager {
     
     $this->getPakiti()->getManager("DbManager")->query($sql);
 
+    # Assign the lastReportId to the host
+    $sql = "update Host set lastReportId=".$report->getId()." where id=".$host->getId();
+    
+    $this->getPakiti()->getManager("DbManager")->query($sql);
+
+
     return $report;
   }
   
