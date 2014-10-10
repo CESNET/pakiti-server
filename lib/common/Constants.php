@@ -67,7 +67,7 @@ final class Constants {
 					    'CentOS release ([\w.-]+) .*' => 'CentOS Linux ${1}',
 					    'Fedora ([\w.-]+)' => 'Fedora Linux ${1}',
 					    'SUSE LINUX ([\w.-]+)' => 'SUSE Linux ${1}',
-					    'Debian ([\w.-/]+)' => 'Debian ${1}',
+					    'Debian ([\w.-\/]+)' => 'Debian ${1}',
 					    );
 
   # Where to put OS names which do not have any mapping
