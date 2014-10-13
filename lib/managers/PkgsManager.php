@@ -96,6 +96,7 @@ class PkgsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Adding packages [hostId=".$host->getId().", pkgsCount=".sizeof($pkgs)."]", __FILE__, __LINE__);
    
    	foreach ($pkgs as $pkgName => &$value) {
+	# Usage of BINARY when comparing package names is due to case-sensitivness
       $sql = "insert into InstalledPkg 
       		(`pkgId`, `hostId`, `version`, `release`, `archId`) 
       	select 
@@ -108,7 +109,7 @@ class PkgsManager extends DefaultManager {
          	Pkg p, Arch a
          where
          	a.name='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgArch'])."'
-         	and p.name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."'";
+         	and binary p.name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."'";
     
       $this->getPakiti()->getManager("DbManager")->query($sql);
       
@@ -162,7 +163,7 @@ class PkgsManager extends DefaultManager {
       			archId=(select id from Arch where name='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgArch'])."')
       		where 
       			hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and 
-      			pkgId=(select id from Pkg where name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."')";
+      			pkgId=(select id from Pkg where binary name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."')";
        
       $this->getPakiti()->getManager("DbManager")->query($sql);
     }
@@ -183,7 +184,7 @@ class PkgsManager extends DefaultManager {
     foreach ($pkgs as &$pkgName) {
       $sql = "delete from InstalledPkg where
       	hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and 
-      	pkgId=(select id from Pkg where name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."')";
+      	pkgId=(select id from Pkg where binary name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."')";
       
       $this->getPakiti()->getManager("DbManager")->query($sql);
     }
@@ -209,7 +210,7 @@ class PkgsManager extends DefaultManager {
    */
   public function getPkgId($pkgName) {
     $id = $this->getPakiti()->getManager("DbManager")->queryToSingleValue(
-      "select id from Pkg where name='" . $this->getPakiti()->getManager("DbManager")->escape($pkgName) ."'");
+      "select id from Pkg where binary name='" . $this->getPakiti()->getManager("DbManager")->escape($pkgName) ."'");
     if ($id == null) {
       return -1;
     }
