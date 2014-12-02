@@ -1,0 +1,632 @@
+#!/usr/bin/perl
+#+##############################################################################
+#                                                                              #
+# File: pakiti-client                                                          #
+#                                                                              #
+# Description: report the list of installed packages to a collecting server    #
+#                                                                              #
+#-##############################################################################
+
+#
+# used modules
+#
+
+use strict;
+use warnings qw(FATAL all);
+use File::Temp qw(tempdir);
+use FindBin qw($Bin $Script);
+use Getopt::Long qw(GetOptions);
+use Pod::Usage qw(pod2usage);
+
+#
+# constants
+#
+
+use constant COMMANDS => qw(
+    curl dpkg-query hostname lsb_release openssl rpm uname wget
+);
+
+#
+# global variables
+#
+
+our(%Option, $TempDir);
+
+#
+# check where a command is, using an hard-coded PATH
+#
+
+sub which ($) {
+    my($name) = @_;
+
+    foreach my $directory (qw(/bin /usr/bin)) {
+        return("$directory/$name") if -f "$directory/$name" and -x _;
+    }
+    return();
+}
+
+#
+# strip extra space characters as well as weird characters from a string
+#
+
+sub strip ($) {
+    my($string) = @_;
+
+    return("") unless defined($string);
+    $string =~ s/^\s+//s;
+    $string =~ s/\s+$//s;
+    $string =~ s/\s+/ /g;
+    $string =~ s/[^\x20-\x7e]+//g;
+    return($string);
+}
+
+#
+# execute a command, check its exit code and return its output
+#
+
+sub output (@) {
+    my(@command) = @_;
+    my($output);
+
+    ## no critic 'InputOutput::ProhibitBacktickOperators'
+    $output = qx(@command);
+    if ($?) {
+        warn($output) if $output;
+        die("$Script: $command[0] failed: $?\n");
+    }
+    return($output);
+}
+
+#
+# execute a command, check its exit code and return its stripped output
+#
+
+sub output1 (@) {
+    my(@command) = @_;
+    my($output);
+
+    $output = strip(output(@command));
+    die("$Script: $command[0] returned nothing\n") unless length($output);
+    return($output);
+}
+
+#
+# read from a file and return its contents
+#
+
+sub read_file ($) {
+    my($path) = @_;
+    my($fh, $contents);
+
+    open($fh, "<", $path) or die("$Script: cannot open $path: $!\n");
+    local $/ = undef;
+    $contents = readline($fh);
+    close($fh) or die("$Script: cannot close $path: $!\n");
+    return($contents);
+}
+
+#
+# read from a file and return its stripped contents
+#
+
+sub read_file1 ($) {
+    my($path) = @_;
+    my($contents);
+
+    $contents = strip(read_file($path));
+    die("$Script: $path is empty\n") unless length($contents);
+    return($contents);
+}
+
+#
+# write to a file
+#
+
+sub write_file ($$) {
+    my($path, $contents) = @_;
+    my($fh);
+
+    open($fh, ">", $path) or die("$Script: cannot create $path: $!\n");
+    print($fh $contents) or die("$Script: cannot print $path: $!\n");
+    close($fh) or die("$Script: cannot close $path: $!\n");
+}
+
+#
+# find information about the host name
+#
+
+sub find_host ($) {
+    my($data) = @_;
+    my($output);
+
+    if ($Option{host}) {
+        $data->{host} = strip($Option{host});
+        return;
+    }
+    if ($Option{hostname}) {
+        foreach my $option (qw(fqdn long)) {
+            ## no critic 'InputOutput::ProhibitBacktickOperators'
+            $output = strip(qx($Option{hostname} --$option 2>/dev/null));
+            if ($output and $? == 0) {
+                $data->{host} = $output;
+                return;
+            }
+        }
+    }
+    if ($Option{uname}) {
+        $data->{host} = output1($Option{uname}, "-n");
+        return;
+    }
+    # unknown!
+    die("$Script: unknown host name\n");
+}
+
+#
+# find information about the running kernel and the operating system used
+#
+
+sub find_system ($) {
+    my($data) = @_;
+    my($path, $output, @list);
+
+    # running kernel
+    if ($Option{uname}) {
+        $data->{kernel} = output1($Option{uname}, "-r");
+        $data->{arch} = output1($Option{uname}, "-m");
+    }
+    # known distributions
+    foreach my $release (qw(/etc/redhat-release /etc/fedora-release)) {
+        if (-f $release) {
+            $data->{system} = read_file1($release);
+            return;
+        }
+    }
+    $path = "/etc/debian_version";
+    if (-f $path) {
+        $data->{system} = "Debian " . read_file1($path);
+        return;
+    }
+    $path = "/etc/SuSE-release";
+    if (-f $path) {
+        foreach my $line (split(/\n/, read_file($path))) {
+            next unless $line =~ /suse/i;
+            $data->{system} = strip($line);
+            return;
+        }
+    }
+    # Linux Standard Base
+    if ($Option{lsb_release}) {
+        $output = output1($Option{lsb_release}, "-i");
+        if ($output =~ /^Distributor\s+ID\s*:\s+(\S+?)\s*$/) {
+            push(@list, strip($1));
+        }
+        $output = output1($Option{lsb_release}, "-r");
+        if ($output =~ /^Release\s*:\s+(\S+?)\s*$/) {
+            push(@list, strip($1));
+        }
+        if (@list == 2) {
+            $data->{system} = "@list";
+            return;
+        }
+    }
+    # unknown!
+    die("$Script: unknown operating system\n");
+}
+
+#
+# find the list of installed packages
+#
+
+sub find_packages ($) {
+    my($data) = @_;
+    my($path, $format, @list);
+
+    # Red Hat packages
+    if ($Option{"rpm"}) {
+        $data->{packager} = "rpm";
+        $format = "%{NAME}\t%{EPOCH}:%{VERSION}-%{RELEASE}\t%{ARCH}";
+        ## no critic 'InputOutput::ProhibitBacktickOperators'
+        foreach my $line (qx($Option{rpm} -qa --queryformat "$format\n" 2>&1)) {
+            $line =~ s{\t\(none\):}{\t0:}g;
+            push(@list, $line) unless $line =~ /^gpg-pubkey\t/;
+        }
+        $data->{packages} = join("", sort(@list));
+        return;
+    }
+    # Debian packages
+    if ($Option{"dpkg-query"}) {
+        $data->{packager} = "dpkg";
+        $data->{packages} = "";
+        die("NYI");
+    }
+    # unknown!
+    die("$Script: unknown package manager\n");
+}
+
+#
+# format a report about what we have found
+#
+
+sub format_report ($) {
+    my($data) = @_;
+    my($report);
+
+    $report = "#\n";
+    foreach my $key (sort(keys(%{ $data }))) {
+        next if $key eq "packages";
+        $report .= "$key: $data->{$key}\n";
+    }
+    if ($data->{packages}) {
+        $report .= "#\n";
+        $report .= $data->{packages};
+        $report .= "#\n";
+    }
+    return($report);
+}
+
+#
+# encrypt a formatted report
+#
+
+sub encrypt_report ($) {
+    my($report) = @_;
+    my($in, $out, $path);
+
+    $TempDir ||= tempdir(CLEANUP => 1);
+    $in = "$TempDir/in";
+    write_file($in, $report);
+    $out = "$TempDir/out";
+    if ($Option{encrypt} =~ /\n/) {
+        $path = "$TempDir/cert";
+        write_file($path, $Option{encrypt});
+    } elsif (-f $Option{encrypt}) {
+        $path = $Option{encrypt};
+    } else {
+        die("$Script: invalid certificate: $Option{encrypt}\n");
+    }
+    local $ENV{RANDFILE} = "$TempDir/rnd";
+    output($Option{openssl},
+           qw(smime -encrypt -binary -aes-256-cbc -outform DER),
+           "-in", $in, "-out", $out, $path);
+    return(read_file($out));
+}
+
+#
+# send a formatted report
+#
+
+sub send_report ($) {
+    my($report) = @_;
+    my($data, @command, $output);
+
+    $TempDir ||= tempdir(CLEANUP => 1);
+    $data = "$TempDir/data";
+    write_file($data, $report);
+    if ($Option{curl}) {
+        @command = ($Option{curl});
+        push(@command, qw(-q --include --silent --show-error -X POST));
+        push(@command, "--data-binary", "\@" . $data);
+    } elsif ($Option{wget}) {
+        @command = ($Option{wget});
+        push(@command, qw(--tries=1 --server-response --output-document=-));
+        push(@command, "--post-file", $data);
+    } else {
+        die("$Script: cannot send to $Option{url}: curl/wget not installed\n");
+    }
+    ## no critic 'InputOutput::ProhibitBacktickOperators'
+    $output = qx(@command $Option{url} 2>&1);
+    if ($output =~ /$Option{expect}/ and $? == 0) {
+        print(STDERR "report successfully sent\n") if -t STDERR;
+        return;
+    }
+    warn($output) if $output;
+    die("$Script: failed to send data using $command[0]\n");
+}
+
+#
+# parse a configuration file
+#
+
+sub parse ($$) {
+    my($path, $spec) = @_;
+    my($name, $value, $tag);
+
+    foreach my $line (split(/\n/, read_file($path))) {
+        if (defined($tag)) {
+            if ($line =~ /^$tag\s*$/) {
+                $tag = undef;
+            } else {
+                $Option{$name} .= $line . "\n";
+            }
+        } else {
+            next if $line =~ /^\s*$/;
+            next if $line =~ /^\s*\#/;
+            if ($line =~ /^\s*(\w+)\s*=\s*(.*?)\s*$/) {
+                ($name, $value) = ($1, $2);
+                die("$Script: unexpected configuration option: $name\n")
+                    unless $spec->{$name};
+                if ($value =~ /^<<(\w+)$/) {
+                    $tag = $1;
+                    $Option{$name} = "";
+                } else {
+                    $Option{$name} = $value;
+                }
+            } else {
+                die("$Script: unexpected configuration line: $line\n");
+            }
+        }
+    }
+    die("$Script: missing heredoc tag: $tag\n") if defined($tag);
+}
+
+#
+# initialize everything
+#
+
+sub init () {
+    my(%spec, %tmp, @tmp);
+
+    $| = 1;
+    %spec = (
+        "config"   => "|conf=s",
+        "encrypt"  => "=s",
+        "expect"   => "=s",
+        "help"     => "|h|?",
+        "host"     => "=s",
+        "input"    => "|i=s",
+        "manual"   => "|m",
+        "output"   => "|o=s",
+        "rndsleep" => "|r=i",
+        "site"     => "=s",
+        "url"      => "=s",
+    );
+    foreach my $name (COMMANDS()) {
+        $spec{$name} = "=s";
+    }
+    Getopt::Long::Configure(qw(posix_default no_ignore_case));
+    @tmp = @ARGV;
+    GetOptions(\%tmp, map($_ . $spec{$_}, keys(%spec))) or pod2usage(2);
+    pod2usage(2) if @ARGV;
+    pod2usage(1) if $tmp{help};
+    pod2usage(exitstatus => 0, verbose => 2) if $tmp{manual};
+    if ($tmp{config}) {
+        parse($tmp{config}, \%spec);
+        @ARGV = @tmp;
+        GetOptions(\%Option, map($_ . $spec{$_}, keys(%spec))) or pod2usage(2);
+    } else {
+        %Option = %tmp;
+    }
+    foreach my $name (COMMANDS()) {
+        $Option{$name} = which($name) unless defined($Option{$name});
+    }
+    $Option{expect} = "OK" unless defined($Option{expect});
+    die("$Script: option --encrypt requires openssl\n")
+        if $Option{encrypt} and not $Option{openssl};
+    die("$Script: option --url requires curl or wget\n")
+        if $Option{url} and not $Option{curl} and not $Option{wget};
+}
+
+#
+# main code
+#
+
+sub main () {
+    my(%data, $report);
+
+    sleep(int(rand($Option{"rndsleep"}))) if $Option{"rndsleep"};
+    if ($Option{"input"}) {
+        if ($Option{"input"} eq "-") {
+            local $/ = undef;
+            $report = readline(*STDIN);
+        } else {
+            $report = read_file($Option{"input"});
+        }
+    } else {
+        $data{version} = 1;
+        $data{site} = strip($Option{"site"}) if $Option{"site"};
+        find_host(\%data);
+        find_system(\%data);
+        find_packages(\%data);
+        $report = format_report(\%data);
+    }
+    $report = encrypt_report($report)
+        if $Option{"encrypt"};
+    $Option{"output"} ||= "-" unless $Option{"url"};
+    if ($Option{"output"}) {
+        if ($Option{"output"} eq "-") {
+            print($report);
+            print(STDERR "report successfully printed\n")
+                if -t STDERR and not -t STDOUT;
+        } else {
+            write_file($Option{"output"}, $report);
+            print(STDERR "report successfully written\n")
+                if -t STDERR;
+        }
+    }
+    send_report($report)
+        if $Option{"url"};
+}
+
+#
+# just do it
+#
+
+init();
+main();
+
+__END__
+
+=head1 NAME
+
+pakiti-client - report the list of installed packages to a collecting server
+
+=head1 SYNOPSIS
+
+B<pakiti-client> [I<OPTIONS>]
+
+=head1 DESCRIPTION
+
+B<pakiti-client> finds the list of installed packages (i.e. C<rpm -qa> on an
+RPM-based system) and formats it in a report that it sends (using a POST
+request) to a collecting server (see the B<--url> option) and/or writes to a
+file (see the B<--output> option).
+
+In addition to the list of installed packages, the report also contains
+information about the submitting machine:
+
+=over
+
+=item * C<arch>: the current architecture
+
+=item * C<host>: the host name (see the B<--host> option)
+
+=item * C<kernel>: the current kernel
+
+=item * C<packager>: the packager (C<rpm> or C<dpkg>)
+
+=item * C<site>: the site name (see the B<--site> option)
+
+=item * C<system>: the operating system full name
+
+=item * C<version>: the report format version (C<1>)
+
+=back
+
+If a certificate (see the B<--encrypt> option) is given then the report will be
+S/MIME encrypted before transmission.
+
+The recommended way to use this program is daily via C<cron>, for instance
+with (using bash):
+
+  # echo "MAILTO=somebody@some.where" > /etc/cron.d/pakiti-client
+  # echo "$((RANDOM % 60)) $((RANDOM % 24)) * * * nobody pakiti-client \
+    --config /etc/pakiti-client.cfg" >> /etc/cron.d/pakiti-client
+
+=head1 OPTIONS
+
+=over
+
+=item B<--config>, B<--conf> I<PATH>
+
+use this configuration file before processing the command line parameters
+
+=item B<--curl> I<PATH>
+
+set the path of the C<curl> command to use
+
+=item B<--dpkg-query> I<PATH>
+
+set the path of the C<dpkg-query> command to use
+
+=item B<--encrypt> I<PATH>|I<STRING>
+
+use this certificate to encrypt the report; the value can either be the path
+of the file containing the certificate or the certificate itself as multi-line
+ASCII armored contents
+
+=item B<--expect> I<STRING>
+
+set the response string to expect from the server in case of success
+(default: C<OK>)
+
+=item B<--help>, B<-h>, B<-?>
+
+show some help
+
+=item B<--host> I<STRING>
+
+set the host name to use in the report
+
+=item B<--hostname> I<PATH>
+
+set the path of the C<hostname> command to use
+
+=item B<--input>, B<-i> I<PATH>
+
+do not prepare a new report but, instead, read the report from the given file
+
+=item B<--lsb_release> I<PATH>
+
+set the path of the C<lsb_release> command to use
+
+=item B<--manual>, B<-m>
+
+show this manual
+
+=item B<--openssl> I<PATH>
+
+set the path of the C<openssl> command to use
+
+=item B<--output>, B<-o> I<PATH>
+
+write the prepared report to the given file
+
+=item B<--rndsleep>, B<-r> I<NUMBER>
+
+sleep for a random amount of seconds, up to the given number (useful when
+B<pakiti-client> is invoked by C<cron>)
+
+=item B<--rpm> I<PATH>
+
+set the path of the C<rpm> command to use
+
+=item B<--site> I<NAME>
+
+set the site name to use in the report
+
+=item B<--uname> I<PATH>
+
+set the path of the C<uname> command to use
+
+=item B<--url> I<URL>
+
+send the prepared report to the collecting server at the given URL
+
+=item B<--wget> I<PATH>
+
+set the path of the C<wget> command to use
+
+=back
+
+=head1 CONFIGURATION FILE
+
+B<pakiti-client> can read its options from a configuration file (see the
+B<--config> option).
+
+The file can contain empty lines, comments (lines starting with C<#>) or
+option settings either on one line or using the "heredoc" syntax. For
+instance:
+
+  #
+  # this is my pakiti-client configuration
+  #
+  url = http://some.where.org:8080/some/path
+  encrypt = <<EOT
+  -----BEGIN CERTIFICATE-----
+  VR0gBF0wWzBZBgorBgEEAWAKBAsBMEswSQYIKwYBBQUHAgEWPWh0dHA6Ly9jYWZp
+  U2VydmljZXMsQ049U22ydmljZXMsQ049Q29uZmlndXJhdGlvbixEQz1jZXJuLERD
+  ...
+  CREUmgapD+aWdxEfeb6qA0OqAFCeHYOWMeeqqtMUE1JPGPoWNkyzqaObr05jm0zd
+  YwYIKwYBBQUHMAKGV2h0dHA6Ly6jYWZpbGVzLmNlcm4uY2gvY2FmaWxlcy9jZXJ=
+  -----END CERTIFICATE-----
+  EOT
+
+The options specified on the command line have precedence over the ones found
+in the configuration file.
+
+=head1 AUTHOR
+
+Lionel Cons L<http://cern.ch/lionel.cons>
+
+=head1 COPYRIGHT
+
+Copyright (C) CERN 2014
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at: L<http://www.apache.org/licenses/LICENSE-2.0>.
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations under the License.
