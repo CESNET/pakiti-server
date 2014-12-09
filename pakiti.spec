@@ -50,3 +50,8 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_mandir}/man?/*
+
+
+%changelog
+* Tue Dec 09 2014 Adrien Devresse <adevress at cern.ch> - 3.0.0-1
+ - Initial release for pakiti 3.0.0
