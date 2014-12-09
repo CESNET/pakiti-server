@@ -6,7 +6,7 @@ URL:		https://github.com/CESNET/pakiti3
 License:	ASL 2.0
 Group:		Utilities/System
 Source0:	pakiti-%{version}.tgz
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 BuildArch:	noarch
 BuildRequires:	perl
 
