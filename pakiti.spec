@@ -10,7 +10,7 @@ Version:	3.0.0
 Release:	1%{?dist}
 URL:		https://github.com/CESNET/pakiti3
 License:	ASL 2.0 and BSD
-Group:		Utilities/System
+Group:		Applications/Internet
 Source0:	%{url}/archive/%{commit}/%{name}-%{shortcommit}.tar.gz
 BuildRoot:	%(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 BuildArch:	noarch
