@@ -102,6 +102,13 @@ final class DbManager {
     return $this->rawSingleObjectFetch($res, $class, $params);
   }
   
+  /* 
+   * Returns multiple objects
+   */
+  public function queryObjects($sql, $class, $params = null) {
+    $res = $this->rawQuery($sql);
+    return $this->rawMultiObjectFetch($res, $class, $params);
+  }
   public function queryToMultiRow($sql) {
     $res = $this->rawQuery($sql);
     return $this->rawMultiRowFetch($res);
@@ -222,6 +229,23 @@ final class DbManager {
     }
     return $row;
   }
-  
+
+  /*
+   * Multiple raw object fetch, just check if the fetch was successfull and return the result
+   */
+  protected function rawMultiObjectFetch($res, $class, $params) {
+    $ret = array();
+    if ($params != null) {
+      while ($row = $res->fetch_object($class, $params)) {
+	array_push($ret, $row);
+      }
+    } else {
+    while ($row = $res->fetch_object($class)) {
+	array_push($ret, $row);
+      }
+    }
+    return $ret;
+  }
+ 
 }
 ?>
