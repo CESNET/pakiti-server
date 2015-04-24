@@ -378,6 +378,7 @@ sub init () {
         "output"   => "|o=s",
         "rndsleep" => "|r=i",
         "site"     => "=s",
+        "tag"      => "=s",
         "url"      => "=s",
     );
     foreach my $name (COMMANDS()) {
@@ -424,6 +425,7 @@ sub main () {
     } else {
         $data{version} = 1;
         $data{site} = strip($Option{"site"}) if $Option{"site"};
+        $data{tag} = strip($Option{"tag"}) if $Option{"tag"};
         find_host(\%data);
         find_system(\%data);
         find_packages(\%data);
@@ -487,6 +489,8 @@ information about the submitting machine:
 =item * C<site>: the site name (see the B<--site> option)
 
 =item * C<system>: the operating system full name
+
+=item * C<tag>: a tag used by the collecting server (see the B<--tag> option)
 
 =item * C<version>: the report format version (C<1>)
 
@@ -573,6 +577,10 @@ set the path of the C<rpm> command to use
 =item B<--site> I<NAME>
 
 set the site name to use in the report
+
+=item B<--tag> I<STRING>
+
+set the tag used by the collecting server to group reports
 
 =item B<--uname> I<PATH>
 
