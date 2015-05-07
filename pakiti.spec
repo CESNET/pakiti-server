@@ -1,12 +1,11 @@
-## github commit ference 
-%global commit 1f59f72da85834a3e686e4a26c9e6bb3410a4389
+## github commit reference
+%global commit ff9a35f2e82bf80b143553c06e7aabe3aff0ebf8
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 %global github_name pakiti3
 
-
 Summary:	Patching status monitoring tool
 Name:		pakiti
-Version:	3.0.0
+Version:	3.0.1
 Release:	1%{?dist}
 URL:		https://github.com/CESNET/pakiti3
 License:	ASL 2.0 and BSD
@@ -25,7 +24,7 @@ all results can be seen.
 
 %package client
 Summary:	Client for the Pakiti tool
-Group:		Utilities/System
+Group:		Applications/System
 
 %description client
 Runs rpm -qa or dpkg -l, depends on the linux distro. Results are sent to the
@@ -51,7 +50,8 @@ rm -rf %{buildroot}
 %{_bindir}/*
 %{_mandir}/man?/*
 
-
 %changelog
+* Thu May 07 2015 Lionel Cons <lionel.cons@cern.ch> - 3.0.1-1
+ - Added --tag option to pakiti-client
 * Tue Dec 09 2014 Adrien Devresse <adevress at cern.ch> - 3.0.0-1
  - Initial release for pakiti 3.0.0
