@@ -219,14 +219,15 @@ sub find_system ($) {
 
 sub find_packages ($) {
     my($data) = @_;
-    my($path, $format, @list);
+    my($cmd, $format, @list);
 
     # Red Hat packages
-    if ($Option{"rpm"}) {
+    $cmd = $Option{"rpm"};
+    if ($cmd) {
         $data->{packager} = "rpm";
         $format = "%{NAME}\t%{EPOCH}:%{VERSION}-%{RELEASE}\t%{ARCH}";
         ## no critic 'InputOutput::ProhibitBacktickOperators'
-        foreach my $line (qx($Option{rpm} -qa --queryformat "$format\n" 2>&1)) {
+        foreach my $line (qx($cmd -qa --queryformat "$format\n" 2>&1)) {
             $line =~ s{\t\(none\):}{\t0:}g;
             push(@list, $line) unless $line =~ /^gpg-pubkey\t/;
         }
@@ -234,14 +235,18 @@ sub find_packages ($) {
         return;
     }
     # Debian packages
-    if ($Option{"dpkg-query"}) {
+    $cmd = $Option{"dpkg-query"};
+    if ($cmd) {
         $data->{packager} = "dpkg";
-        $format = '\${Status}|\'\${Package}\'\t\'\${Version}\' \'\'\t\'\${Architecture}\'\n';
-        foreach my $line (qx($Option{"dpkg-query"} -W --showformat="$format" 2>&1)) {
+        $format = sprintf("\\\${%s}=\\\${%s}\t\\\${%s}\t\\\${%s}",
+                          qw(Status Package Version Architecture));
+        ## no critic 'InputOutput::ProhibitBacktickOperators'
+        foreach my $line (qx($cmd -W --showformat="$format\n" 2>&1)) {
             if ($line =~ /^install ok installed/) {
-                $line =~ s{^[^|]*.}{}g;
+                $line =~ s{^.+?=}{}g;
                 push(@list, $line);
             }
+        }
         $data->{packages} = join("", sort(@list));
         return;
     }
