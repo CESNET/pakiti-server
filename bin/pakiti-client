@@ -23,7 +23,7 @@ use Pod::Usage qw(pod2usage);
 #
 
 use constant COMMANDS => qw(
-    curl dpkg-query hostname lsb_release openssl rpm uname wget
+    curl dpkg-query hostname lsb_release openssl pkg rpm uname wget
 );
 
 #
@@ -39,7 +39,7 @@ our(%Option, $TempDir);
 sub which ($) {
     my($name) = @_;
 
-    foreach my $directory (qw(/bin /usr/bin)) {
+    foreach my $directory (qw(/bin /usr/bin /sbin /usr/sbin)) {
         return("$directory/$name") if -f "$directory/$name" and -x _;
     }
     return();
@@ -196,11 +196,13 @@ sub find_system ($) {
     }
     $path = "/etc/freebsd-update.conf";
     if (-f $path) {
-        $data->{system} = `uname -rs`;
+        $data->{system} = output1($Option{uname}, "-rs");
+        return;
     }
     $path = "/etc/mygate";
     if (-f $path) {
-        $data->{system} = `uname -rsv`;
+        $data->{system} = output1($Option{uname}, "-rsv");
+        return;
     }
     # Linux Standard Base
     if ($Option{lsb_release}) {
@@ -258,16 +260,15 @@ sub find_packages ($) {
         $data->{packages} = join("", sort(@list));
         return;
     }
-    # FreeBSD (pkgng) or OpenBSD package
-    if ($Option{"pkg"}) {
+    # OpenBSD (pkg) or FreeBSD (pkgng) packages
+    $cmd = $Option{"pkg"};
+    if ($cmd) {
         $data->{packager} = "pkg";
-        my $arch = `uname -m`;
-        foreach my $line (qx($Option{pkg} info | awk "{print \\\$1}")) {
-            my ($prog, $dump) = split /-[0-9]/, $line;
-            $line =~ s/$prog-//;
-            chomp($line);
-            my $record = sprintf("%s\t%s\t''\t%s", $prog, $line, $arch);
-            push(@list, $record);
+        ## no critic 'InputOutput::ProhibitBacktickOperators'
+        foreach my $line (qx($cmd info 2>&1)) {
+            $line =~ s{\s+.*$}{};
+            $line =~ s{-([0-9])}{\t$1};
+            push(@list, "$line\t$data->{arch}\n");
         }
         $data->{packages} = join("", sort(@list));
         return;
@@ -597,6 +598,10 @@ set the path of the C<openssl> command to use
 =item B<--output>, B<-o> I<PATH>
 
 write the prepared report to the given file
+
+=item B<--pkg> I<PATH>
+
+set the path of the C<pkg> command to use
 
 =item B<--rndsleep>, B<-r> I<NUMBER>
 
