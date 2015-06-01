@@ -236,8 +236,14 @@ sub find_packages ($) {
     # Debian packages
     if ($Option{"dpkg-query"}) {
         $data->{packager} = "dpkg";
-        $data->{packages} = "";
-        die("NYI");
+        $format = '\${Status}|\'\${Package}\'\t\'\${Version}\' \'\'\t\'\${Architecture}\'\n';
+        foreach my $line (qx($Option{"dpkg-query"} -W --showformat="$format" 2>&1)) {
+            if ($line =~ /^install ok installed/) {
+                $line =~ s{^[^|]*.}{}g;
+                push(@list, $line);
+            }
+        $data->{packages} = join("", sort(@list));
+        return;
     }
     # unknown!
     die("$Script: unknown package manager\n");
