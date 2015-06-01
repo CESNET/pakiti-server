@@ -183,7 +183,7 @@ sub find_system ($) {
     }
     $path = "/etc/debian_version";
     if (-f $path) {
-        $data->{system} = "Debian " . read_file1($path);
+        $data->{system} = read_file1("/etc/issue.net");
         return;
     }
     $path = "/etc/SuSE-release";
