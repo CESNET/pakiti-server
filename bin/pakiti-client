@@ -194,6 +194,14 @@ sub find_system ($) {
             return;
         }
     }
+    $path = "/etc/freebsd-update.conf";
+    if (-f $path) {
+        $data->{system} = `uname -rs`;
+    }
+    $path = "/etc/mygate";
+    if (-f $path) {
+        $data->{system} = `uname -rsv`;
+    }
     # Linux Standard Base
     if ($Option{lsb_release}) {
         $output = output1($Option{lsb_release}, "-i");
@@ -246,6 +254,20 @@ sub find_packages ($) {
                 $line =~ s{^.+?=}{}g;
                 push(@list, $line);
             }
+        }
+        $data->{packages} = join("", sort(@list));
+        return;
+    }
+    # FreeBSD (pkgng) or OpenBSD package
+    if ($Option{"pkg"}) {
+        $data->{packager} = "pkg";
+        my $arch = `uname -m`;
+        foreach my $line (qx($Option{pkg} info | awk "{print \\\$1}")) {
+            my ($prog, $dump) = split /-[0-9]/, $line;
+            $line =~ s/$prog-//;
+            chomp($line);
+            my $record = sprintf("%s\t%s\t''\t%s", $prog, $line, $arch);
+            push(@list, $record);
         }
         $data->{packages} = join("", sort(@list));
         return;
