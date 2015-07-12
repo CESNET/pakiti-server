@@ -53,7 +53,9 @@ class FeederModule extends DefaultModule {
     
     # Get the version of the client
     if (($this->_version = Utils::getHttpVar(Constants::$REPORT_VERSION)) == null) {
-      throw new Exception("Client did not send the version!");
+       //TODO Change version
+       //Throw exception if null
+       $this->_version = "cern_1";
     }
 
     # Map variables in the report to the internal variables

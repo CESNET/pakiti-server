@@ -111,9 +111,9 @@ $html->printHeader();
     $i++;
 ?>
 	<tr class="a<?php print ($i & 1) ?>">
-		<td><?php print$pkg->getPkg()->getName()?></td>
+		<td><?php print$pkg->getName()?></td>
 		<td><?php print$pkg->getVersionRelease()?></td>
-		<td><?php print$pkg->getArch()->getName()?></td>
+		<td><?php print$pkg->getArch()?></td>
 	</tr>
 <?php } ?>
 </table>
