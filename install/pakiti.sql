@@ -119,20 +119,20 @@ create table `ReportHost` (
 create table `Pkg` (
   `id` integer(10) not null auto_increment,
   `name` varchar(254) not null,
+  `version` varchar(63) not null,
+  `release` varchar(63) not null,
+  `arch` varchar(10) not null,
   primary key (`id`),
+  foreign key (`arch`) references Arch(`name`) on delete cascade,
   unique key (`name`)
 ) ENGINE=INNODB;
 
 create table `InstalledPkg` (
-  `pkgId` integer(10) not null,
+  `packageId` integer(10) not null,
   `hostId` integer(10) not null,
-  `version` varchar(63) not null,
-  `release` varchar(63),
-  `archId` integer(10) not null,
-  primary key (`pkgId`, `hostId`, `version`, `release`, `archId`),
-  foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
-  foreign key (`hostId`) references Host(`id`) on delete cascade,
-  foreign key (`archId`) references Arch(`id`) on delete cascade
+  primary key (`packageId`, `hostId`),
+  foreign key (`packageId`) references Pkg(`id`) on delete cascade,
+  foreign key (`hostId`) references Host(`id`) on delete cascade
 ) ENGINE=INNODB;
 
 create table `VdsSource` (

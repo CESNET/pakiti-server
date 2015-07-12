@@ -62,11 +62,11 @@ class PkgsManager extends DefaultManager {
     
     // Fill arch, host and pkg object
     
-    foreach ($pkgs as &$pkg) {
-      $pkg->setHost($host);
-      $pkg->setArch($this->getPakiti()->getDao("Arch")->getById($pkg->getArchId()));
-      $pkg->setPkg($this->getPakiti()->getDao("Pkg")->getById($pkg->getPkgId()));
-    }
+//    foreach ($pkgs as &$pkg) {
+//      $pkg->setHost($host);
+//      $pkg->setArch($this->getPakiti()->getDao("Arch")->getById($pkg->getArchId()));
+//      $pkg->setPkg($this->getPakiti()->getDao("Pkg")->getById($pkg->getPkgId()));
+//    }
 
     return $pkgs;
   }
@@ -98,54 +98,44 @@ class PkgsManager extends DefaultManager {
    	foreach ($pkgs as $pkgName => &$value) {
 	# Usage of BINARY when comparing package names is due to case-sensitivness
       $sql = "insert into InstalledPkg 
-      		(`pkgId`, `hostId`, `version`, `release`, `archId`) 
+      		(`packageId`, `hostId`)
       	select 
-      		p.id,". 
-          $this->getPakiti()->getManager("DbManager")->escape($host->getId()).",'".
-          $this->getPakiti()->getManager("DbManager")->escape($value['pkgVersion'])."','".
-          $this->getPakiti()->getManager("DbManager")->escape($value['pkgRelease'])."',".
-          "a.id
+      		p.id,". $this->getPakiti()->getManager("DbManager")->escape($host->getId())."
          from
-         	Pkg p, Arch a
+         	Pkg p
          where
-         	a.name='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgArch'])."'
-         	and binary p.name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."'";
+         	binary p.name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."'";
     
       $this->getPakiti()->getManager("DbManager")->query($sql);
       
       if ($this->getPakiti()->getManager("DbManager")->getNumberOfAffectedRows() == 0) {
         # When affected rows is 0, it probably means, that the package name 
-        # doesn't exist in the table Pkg or the package architecture doesn't exist. 
-      
-        # We must check if the package is already stored in the table Pkg, if not => store it
-        if (($pkgId = $this->getPkgId($pkgName)) == -1) {
-          $pkgId = $this->addPkg($pkgName);
-        }
+        # doesn't exist in the table Pkg or the package architecture doesn't exist.
+
         # Check if the package architecture is
         if (($archId = $this->getPakiti()->getDao("Arch")->getIdByName($value['pkgArch'])) == -1) {
           $arch = new Arch();
           $arch->setName($value['pkgArch']);
           $this->getPakiti()->getDao("Arch")->create($arch);
-          $archId = $arch->getId();
         }
+        # We must check if the package is already stored in the table Pkg, if not => store it
+        if (($pkgId = $this->getPkgId($pkgName)) == -1) {
+          $pkgId = $this->addPkg($pkgName, $value['pkgVersion'],$value["pkgArch"], $value['pkgRelease']);
+
+        }
+
         # Try the insert the entry once again
-        $sql = "insert into InstalledPkg 
-        			(`pkgId`, `hostId`, `version`, `release`, `archId`) 
+        $sql = "insert into InstalledPkg
+        			(`packageId`, `hostId` )
  						values (
-        			$pkgId,". 
-              $this->getPakiti()->getManager("DbManager")->escape($host->getId()).",'".
-              $this->getPakiti()->getManager("DbManager")->escape($value['pkgVersion'])."','".
-              $this->getPakiti()->getManager("DbManager")->escape($value['pkgRelease'])."',
-              $archId)";
+        			$pkgId,". $this->getPakiti()->getManager("DbManager")->escape($host->getId()).")";
         $this->getPakiti()->getManager("DbManager")->query($sql);
       }
-      		
-      
     }
     unset($value);
   }
   
-	/*
+  /*
    * Updates the packages associated with the host.
    */
   public function updatePkgs(Host &$host, &$pkgs) {
@@ -157,13 +147,15 @@ class PkgsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Updating packages [hostId=".$host->getId().", pkgsCount=".sizeof($pkgs)."]", __FILE__, __LINE__);
     
     foreach ($pkgs as $pkgName => &$value) {
-      $sql = "update InstalledPkg set
+      $sql = "update InstalledPkg inst inner join Pkg pkg
+              on inst.packageId = pkg.Id
+              set
       			`version`='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgVersion'])."',
       			`release`='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgRelease'])."',
-      			archId=(select id from Arch where name='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgArch'])."')
-      		where 
+      			arch = '".$this->getPakiti()->getManager("DbManager")->escape($value['pkgArch'])."'
+      		  where
       			hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and 
-      			pkgId=(select id from Pkg where binary name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."')";
+      			pkg.Id=".$this->getPkgId($pkgName)."";
        
       $this->getPakiti()->getManager("DbManager")->query($sql);
     }
@@ -181,10 +173,10 @@ class PkgsManager extends DefaultManager {
     
     Utils::log(LOG_DEBUG, "Removing packages [hostId=".$host->getId().", pkgsCount=".sizeof($pkgs)."]", __FILE__, __LINE__);
     
-    foreach ($pkgs as &$pkgName) {
+    foreach ($pkgs as $pkgName => &$value) {
       $sql = "delete from InstalledPkg where
-      	hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and 
-      	pkgId=(select id from Pkg where binary name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."')";
+      	hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and
+      	packageId=".$this->getPkgId($pkgName)."";
       
       $this->getPakiti()->getManager("DbManager")->query($sql);
     }
@@ -227,20 +219,22 @@ class PkgsManager extends DefaultManager {
   /*
    * Adds the package name into the DB and returns the ID of the newly created record.
    */
-  public function addPkg($pkgName) {
+  public function addPkg($pkgName, $pkgVersion, $pkgArch, $pkgRelease) {
     $this->getPakiti()->getManager("DbManager")->query(
-    	"insert into Pkg set name='" . $this->getPakiti()->getManager("DbManager")->escape($pkgName) ."'");
-    
+        "insert into Pkg set
+          name='" . $this->getPakiti()->getManager("DbManager")->escape($pkgName) . "',
+          version='" . $this->getPakiti()->getManager("DbManager")->escape($pkgVersion) . "',
+          arch='" . $this->getPakiti()->getManager("DbManager")->escape($pkgArch) . "',
+          `release`='" . $this->getPakiti()->getManager("DbManager")->escape($pkgRelease)."'");
+
     return $this->getPakiti()->getManager("DbManager")->getLastInsertedId();
   }
+
    /*
    * Adds the package name into the DB and returns the ID of the newly created record.
    */
   public function createPkg(&$pkg) {
-    $this->getPakiti()->getManager("DbManager")->query(
-    	"insert into Pkg set name='" . $this->getPakiti()->getManager("DbManager")->escape($pkg->getName()) ."'");
-    
-    $pkg->setId($this->getPakiti()->getManager("DbManager")->getLastInsertedId());
-    return $pkg;
+      $this->getPakiti()->getDao("Pkg")->create($pkg);
+    return $pkg->getId();
   }
 }
