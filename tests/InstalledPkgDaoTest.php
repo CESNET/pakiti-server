@@ -82,6 +82,6 @@ class InstalledPkgDaoTest extends PHPUnit_Framework_TestCase
 
     public static function tearDownAfterClass()
     {
-        self::$_testData->deleteGeneratedTestData();
+        //self::$_testData->deleteGeneratedTestData();
     }
 }
