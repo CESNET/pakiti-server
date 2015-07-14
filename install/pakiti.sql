@@ -128,10 +128,10 @@ create table `Pkg` (
 ) ENGINE=INNODB;
 
 create table `InstalledPkg` (
-  `packageId` integer(10) not null,
+  `pkgId` integer(10) not null,
   `hostId` integer(10) not null,
-  primary key (`packageId`, `hostId`),
-  foreign key (`packageId`) references Pkg(`id`) on delete cascade,
+  primary key (`pkgId`, `hostId`),
+  foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
   foreign key (`hostId`) references Host(`id`) on delete cascade
 ) ENGINE=INNODB;
 

@@ -98,7 +98,7 @@ class PkgsManager extends DefaultManager {
    	foreach ($pkgs as $pkgName => &$value) {
 	# Usage of BINARY when comparing package names is due to case-sensitivness
       $sql = "insert into InstalledPkg 
-      		(`packageId`, `hostId`)
+      		(`pkgId`, `hostId`)
       	select 
       		p.id,". $this->getPakiti()->getManager("DbManager")->escape($host->getId())."
          from
@@ -126,7 +126,7 @@ class PkgsManager extends DefaultManager {
 
         # Try the insert the entry once again
         $sql = "insert into InstalledPkg
-        			(`packageId`, `hostId` )
+        			(`pkgId`, `hostId` )
  						values (
         			$pkgId,". $this->getPakiti()->getManager("DbManager")->escape($host->getId()).")";
         $this->getPakiti()->getManager("DbManager")->query($sql);
@@ -148,7 +148,7 @@ class PkgsManager extends DefaultManager {
     
     foreach ($pkgs as $pkgName => &$value) {
       $sql = "update InstalledPkg inst inner join Pkg pkg
-              on inst.packageId = pkg.Id
+              on inst.pkgId = pkg.Id
               set
       			`version`='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgVersion'])."',
       			`release`='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgRelease'])."',
@@ -176,7 +176,7 @@ class PkgsManager extends DefaultManager {
     foreach ($pkgs as $pkgName => &$value) {
       $sql = "delete from InstalledPkg where
       	hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and
-      	packageId=".$this->getPkgId($pkgName)."";
+      	pkgId=".$this->getPkgId($pkgName)."";
       
       $this->getPakiti()->getManager("DbManager")->query($sql);
     }

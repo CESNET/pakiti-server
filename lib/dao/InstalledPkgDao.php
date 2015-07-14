@@ -47,21 +47,21 @@ class InstalledPkgDao
     {
         $this->db->query(
             "insert into InstalledPkg set
-            packageId='" . $this->db->escape($installedPkg->getPkgId()) . "',
+            pkgId='" . $this->db->escape($installedPkg->getPkgId()) . "',
             hostId='" . $this->db->escape($installedPkg->getHostId()) . "'");
     }
 
     /*
      * Get the installedPkg by its pkgId, hostId
      */
-    public function get($hostId, $packageId)
+    public function get($hostId, $pkgId)
     {
         return $this->db->queryObject("select
-        p.packageId as _packageId,
+        p.pkgId as _pkgId,
         p.hostId as _hostId
           from
         InstalledPkg p
-          where p.packageId=" . $this->db->escape($packageId) . " and
+          where p.pkgId=" . $this->db->escape($pkgId) . " and
             p.hostId=" . $this->db->escape($hostId), "InstalledPkg");
     }
 
@@ -71,7 +71,7 @@ class InstalledPkgDao
     public function getIdsByHostId($hostId)
     {
         return $this->db->queryToMultiRow("select
-	packageId
+	pkgId
       from
 	InstalledPkg
       where hostId=".$this->db->escape($hostId));
@@ -83,7 +83,7 @@ class InstalledPkgDao
     public function getInstalledPkgs(Host &$host, $orderBy, $pageSize, $pageNum)
     {
         $sql = "select pkg.id, pkg.name, pkg.version, pkg.release, pkg.arch
-        from InstalledPkg inst inner join Pkg pkg on inst.packageId=pkg.id";
+        from InstalledPkg inst inner join Pkg pkg on inst.pkgId=pkg.id";
 
         $where = " where inst.hostId={$host->getId()}";
         switch ($orderBy) {
@@ -131,7 +131,7 @@ class InstalledPkgDao
     {
         $sql = "select Pkg.name as pkgName, Pkg.`version` as pkgVersion, Pkg.`release` as pkgRelease,
         Pkg.arch as pkgArch from InstalledPkg, Pkg
-        where InstalledPkg.packageId=Pkg.id and InstalledPkg.hostId={$host->getId()} order by Pkg.name";
+        where InstalledPkg.pkgId=Pkg.id and InstalledPkg.hostId={$host->getId()} order by Pkg.name";
 
         $installedPkgsDb =& $this->db->queryToMultiRow($sql);
         $installedPkgs = array();
@@ -179,7 +179,7 @@ class InstalledPkgDao
     {
         $this->db->query(
             "delete from InstalledPkg where
-              packageId=" . $this->db->escape($installedPkg->getPkgId()) . " and
+              pkgId=" . $this->db->escape($installedPkg->getPkgId()) . " and
               hostId=". $this->db->escape($installedPkg->getHostId()));
     }
 }
