@@ -25,5 +25,9 @@ class Arch {
   public function setName($val) {
     $this->_name = $val;
   }
+
+  public function getNameById($val){
+
+  }
 }
 ?>

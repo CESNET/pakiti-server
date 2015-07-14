@@ -55,8 +55,9 @@ $pkgs = $pakiti->getManager("PkgsManager")->getInstalledPkgs($host);
 
 print "name\tversion\trelease\tarch\n";
 print "-------------------------------------------------------------------\n";
-
 foreach ($pkgs as $pkg) {
-  print "{$pkg->getPkg()->getName()}\t{$pkg->getVersion()}\t{{$pkg->getRelease()}\t{$pkg->getArch()->getName()}\n";
+    if ($pkg != null) {
+        print "{$pkg->getName()}\t{$pkg->getVersion()}\t{$pkg->getRelease()}\t{$pkg->getArch()}\n";
+    }
 }
 ?>
