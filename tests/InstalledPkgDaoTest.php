@@ -74,14 +74,9 @@ class InstalledPkgDaoTest extends \PHPUnit_Framework_TestCase {
         $this->assertEquals(2, $packages_num);
     }
 
-    public function testAddPkg()
-    {
-
-    }
-
 
     public static function tearDownAfterClass()
     {
-        //self::$_testData->deleteGeneratedTestData();
+        self::$_testData->deleteGeneratedTestData();
     }
 }

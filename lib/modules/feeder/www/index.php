@@ -31,43 +31,43 @@ $time = microtime(true);
 require(realpath(dirname(__FILE__)) . '/../../../lib/common/Loader.php');
 
 try {
-  # Initialize 
-  $feeder = new FeederModule($pakiti);
+    # Initialize
+    $feeder = new FeederModule($pakiti);
 
-  # Asynchronous mode - only store the results and exit
-  #----------------------------------------------------
-  if (Config::$FEEDER_MODE == Constants::$FEEDER_ASYNCHRONOUS_MODE) {
-    $feeder->storeReportToFile();
-  }
-
-  # Synchronous mode - process data immediatelly
-  #---------------------------------------------
-  elseif (Config::$FEEDER_MODE ==Constants::$FEEDER_SYNCHRONOUS_MODE) {
-    # Process incomming data
-    $feeder->processReport();
-        
-    # Should we send the results back to the client?
-    if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
-   //TODO   $feeder->sendResultsBack();
+    # Asynchronous mode - only store the results and exit
+    #----------------------------------------------------
+    if (Config::$FEEDER_MODE == Constants::$FEEDER_ASYNCHRONOUS_MODE) {
+        $feeder->storeReportToFile();
     }
-  }
 
-  # Something is wrong here
-  #------------------------
-  else {
-    Utils::log(LOG_ERROR, "Undefined feeder mode");
+    # Synchronous mode - process data immediatelly
+    #---------------------------------------------
+    elseif (Config::$FEEDER_MODE ==Constants::$FEEDER_SYNCHRONOUS_MODE) {
+        # Process incomming data
+        $feeder->processReport();
+
+        # Should we send the results back to the client?
+        if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
+            //TODO   $feeder->sendResultsBack();
+        }
+    }
+
+    # Something is wrong here
+    #------------------------
+    else {
+        Utils::log(LOG_ERROR, "Undefined feeder mode");
+        print Constants::$RETURN_ERROR;
+        exit;
+    }
+
+    # End
+    Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost().
+        "] in ".Utils::getTimer($time)."s\n");
+    print Constants::$RETURN_OK;
+    exit;
+} catch (Exception $e) {
+    Utils::log(LOG_ERR, $e->getMessage());
     print Constants::$RETURN_ERROR;
     exit;
-  }
-  
-  # End
-  Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost().
-  	"] in ".Utils::getTimer($time)."s\n");
-  print Constants::$RETURN_OK;
-  exit;
-} catch (Exception $e) {
-  Utils::log(LOG_ERR, $e->getMessage());
-  print Constants::$RETURN_ERROR;
-  exit;
 }
 ?>

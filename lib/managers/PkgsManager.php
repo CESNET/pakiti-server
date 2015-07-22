@@ -59,14 +59,6 @@ class PkgsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Getting the packages stored in the DB [hostId=".$host->getId()."]", __FILE__, __LINE__);
     
     $pkgs =& $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgs($host, $orderBy, $pageSize, $pageNum);
-    
-    // Fill arch, host and pkg object
-    
-//    foreach ($pkgs as &$pkg) {
-//      $pkg->setHost($host);
-//      $pkg->setArch($this->getPakiti()->getDao("Arch")->getById($pkg->getArchId()));
-//      $pkg->setPkg($this->getPakiti()->getDao("Pkg")->getById($pkg->getPkgId()));
-//    }
 
     return $pkgs;
   }

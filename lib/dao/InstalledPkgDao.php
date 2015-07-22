@@ -160,7 +160,6 @@ class InstalledPkgDao
     /*
      * Update the installedPkg in the DB
      */
-    // TODO: test and decide if needed
     public function update(InstalledPkg &$installedPkg)
     {
         $this->db->query(

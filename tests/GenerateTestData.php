@@ -33,9 +33,9 @@ class GenerateTestData
 
         //create package
         self::$_pkg1 = new Pkg();
-        self::$_pkg1->setName("test_pkg1");
-        self::$_pkg1->setVersion("11.11");
-        self::$_pkg1->setRelease("release1_BB");
+        self::$_pkg1->setName("xulrunner-devel");
+        self::$_pkg1->setVersion("0:31.6.0");
+        self::$_pkg1->setRelease("2.el7_1");
         self::$_pkg1->setArch(self::$_arch->getName());
 
         self::$_pkg2 = new Pkg();
@@ -52,7 +52,7 @@ class GenerateTestData
 
         //create OS
         self::$_os = new Os();
-        self::$_os->setName("Debian Linux 4.1");
+        self::$_os->setName("RedHat 7");
 
         self::$_pakiti->getManager("DbManager")->begin();
         self::$_pakiti->getDao("Os")->create(self::$_os);
@@ -96,7 +96,7 @@ class GenerateTestData
         self::$_host->setDomain(self::$_domain);
         self::$_host->setDomainId(self::$_domain->getId());
         self::$_host->setLastReportId(self::$_report->getId());
-        self::$_host->setType("notset");
+        self::$_host->setType("rpm");
         self::$_host->setOwnRepositoriesDef(0);
 
         self::$_pakiti->getManager("DbManager")->begin();
@@ -111,11 +111,6 @@ class GenerateTestData
         self::$_installedPkg2 = new InstalledPkg();
         self::$_installedPkg2->setHostId(self::$_host->getId());
         self::$_installedPkg2->setPkgId(self::$_pkg2->getId());
-
-        self::$_pakiti->getManager("DbManager")->begin();
-        self::$_pakiti->getDao("InstalledPkg")->create(self::$_installedPkg1);
-        self::$_pakiti->getDao("InstalledPkg")->create(self::$_installedPkg2);
-        self::$_pakiti->getManager("DbManager")->commit();
     }
 
 

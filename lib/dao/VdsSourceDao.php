@@ -132,7 +132,6 @@ class VdsSourceDao {
     
     $className = $this->db->queryToSingleValue(
       "select className from VdsSource where $where");
-    
     $params = array();
     array_push($params, $pakiti);
     
@@ -145,5 +144,7 @@ class VdsSourceDao {
       	$where"
       , $className, $params);  
   }
+
+
 }
 ?>

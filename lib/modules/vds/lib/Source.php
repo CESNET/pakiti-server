@@ -78,9 +78,8 @@ class Source extends VdsSource {
    */
   protected function loadSubSources() {
     Utils::log(LOG_DEBUG, "Loading OVAL sources", __FILE__, __LINE__);
-
     # List all files in the sources directory, each file represents submodule
-    if (!file_exists(realpath(dirname(__FILE__)) . '/../sources/' . $this->getName() . 'SubSources/')) {
+    if (!file_exists(realpath(dirname(__FILE__)) . '/../sources/' . $this->getName() . 'SubSources/')) {;
       mkdir(realpath(dirname(__FILE__)) . '/../sources/' . $this->getName() . 'SubSources/');
     }
 
@@ -93,7 +92,6 @@ class Source extends VdsSource {
 
 	  # Get the filename and extension, filename represent the class name
 	  $className = preg_replace('/.php$/i', '', $file);
-
 	  eval("\$subSource = new $className(\$this->_pakiti);");
 
 	  # Check if the module is already registered
