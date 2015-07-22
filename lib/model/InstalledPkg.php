@@ -10,7 +10,7 @@ require_once(realpath(dirname(__FILE__)) . '/RepositoryPkg.php');
  */
 class InstalledPkg {
   private $_hostId = -1;
-  private $_packageId = -1;
+  private $_pkgId = -1;
 
   public function InstalledPkg() {
   }
@@ -20,7 +20,7 @@ class InstalledPkg {
   }
 
   public function getPkgId() {
-    return $this->_packageId;
+    return $this->_pkgId;
   }
 
   public function setHostId($val) {
@@ -28,7 +28,7 @@ class InstalledPkg {
   }
 
   public function setPkgId($val) {
-    $this->_packageId = $val;
+    $this->_pkgId = $val;
   }
 }
 ?>

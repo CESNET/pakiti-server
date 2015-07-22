@@ -20,16 +20,74 @@ class Cve {
 	 * @AssociationType Tag
 	 * @AssociationMultiplicity 0..*
 	 */
-	public $_tag = array();
+
+	private $_cveDefId = -1;
+
+	private $_tag = array();
+
 	/**
-	 * @AssociationType CvePkg
-	 * @AssociationMultiplicity 0..*
+	 * @return mixed
 	 */
-	public $_cvesPkgs = array();
+	public function getId()
+	{
+		return $this->_id;
+	}
+
 	/**
-	 * @AssociationType CveException
-	 * @AssociationMultiplicity 0..*
+	 * @param mixed $id
 	 */
-	public $_cvesExceptions = array();
+	public function setId($id)
+	{
+		$this->_id = $id;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getName()
+	{
+		return $this->_name;
+	}
+
+	/**
+	 * @param mixed $name
+	 */
+	public function setName($name)
+	{
+		$this->_name = $name;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getCveDefId()
+	{
+		return $this->_cveDefId;
+	}
+
+	/**
+	 * @param mixed $cveDefId
+	 */
+	public function setCveDefId($cveDefId)
+	{
+		$this->_cveDefId = $cveDefId;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getTag()
+	{
+		return $this->_tag;
+	}
+
+	/**
+	 * @param array $tag
+	 */
+	public function setTag($tag)
+	{
+		$this->_tag = $tag;
+	}
+
 }
 ?>

@@ -31,153 +31,154 @@ require_once(realpath(dirname(__FILE__)) . '/../../include/ISubSource.php');
 require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
 
 class OvalRedHat extends SubSource implements ISubSource {
-  private static $NAME = "RedHat OVAL";
-  private static $TYPE = "RedHat";
-  private $_xpath;
+    private static $NAME = "RedHat OVAL";
+    private static $TYPE = "RedHat";
+    private $_xpath;
 
-  public function retrieveDefinitions() {
-    Utils::log(LOG_DEBUG, "Retreiving definitions from the ".OvalRedHat::getName()." OVAL", __FILE__, __LINE__);
+    public function retrieveDefinitions() {
+        Utils::log(LOG_DEBUG, "Retreiving definitions from the ".OvalRedHat::getName()." OVAL", __FILE__, __LINE__);
 
-    $defs = array();
-    foreach ($this->getSubSourceDefs() as $subSourceDef) {
-      # Loading the defined file
-      $oval = new DOMDocument();
-      libxml_set_streams_context(Utils::getStreamContext());
-      $oval->load($subSourceDef->getUri());
+        $defs = array();
+        foreach ($this->getSubSourceDefs() as $subSourceDef) {
+            # Loading the defined file
+            $oval = new DOMDocument();
+            libxml_set_streams_context(Utils::getStreamContext());
+            $oval->load($subSourceDef->getUri());
 
-      if ($oval === FALSE) {
-	Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
-	throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
-      }
+            if ($oval === FALSE) {
+                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
+            }
 
-      # Get the XPath
-      $this->_xpath = new DOMXPath($oval);
+            # Get the XPath
+            $this->_xpath = new DOMXPath($oval);
 
-      $this->_xpath->registerNamespace("def", "http://oval.mitre.org/XMLSchema/oval-definitions-5");
+            $this->_xpath->registerNamespace("def", "http://oval.mitre.org/XMLSchema/oval-definitions-5");
 
-      $xDefinitions = $this->_xpath->query("/def:oval_definitions/def:definitions/def:definition");
+            $xDefinitions = $this->_xpath->query("/def:oval_definitions/def:definitions/def:definition");
 
-      # Go through all definitions
-      foreach ($xDefinitions as $xDefinition) {
-	$def = array();
+            # Go through all definitions
+            foreach ($xDefinitions as $xDefinition) {
+                $def = array();
 
-	$def['subSourceDefId'] = $subSourceDef->getId();
+                $def['subSourceDefId'] = $subSourceDef->getId();
 
-	$def['definition_id'] = $xDefinition->attributes->item(0)->value;
+                $def['definition_id'] = $xDefinition->attributes->item(0)->value;
 
-	$el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
-	if (!empty($el_severity)) {
-	  $def['severity'] = $el_severity->nodeValue;
-	} else $def['severity'] = "n/a";
+                $el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
+                if (!empty($el_severity)) {
+                    $def['severity'] = $el_severity->nodeValue;
+                } else $def['severity'] = "n/a";
 
-	$def['title'] = rtrim($xDefinition->getElementsByTagName('title')->item(0)->nodeValue);
-	$def['ref_url'] = $xDefinition->getElementsByTagName('reference')->item(0)->getAttribute('ref_url');
+                $def['title'] = rtrim($xDefinition->getElementsByTagName('title')->item(0)->nodeValue);
+                $def['ref_url'] = $xDefinition->getElementsByTagName('reference')->item(0)->getAttribute('ref_url');
 
-	// Get associated CVEs
-	$cve_query = 'def:metadata/def:advisory/def:cve';
-	$cves = $this->_xpath->query($cve_query, $xDefinition);
+                // Get associated CVEs
+                $cve_query = 'def:metadata/def:advisory/def:cve';
+                $cves = $this->_xpath->query($cve_query, $xDefinition);
 
-	$def['cves'] = array();
-	$def['os'] = array();
+                $def['cves'] = array();
+                $def['os'] = array();
 
-	foreach ($cves as $cve) {
-	  array_push($def['cves'], $cve->nodeValue);
-	}
+                foreach ($cves as $cve) {
+                    array_push($def['cves'], $cve->nodeValue);
+                }
 
-	// Processing criteria
-	$root_criterias_query = 'def:criteria';
-	$root_criterias = $this->_xpath->query($root_criterias_query, $xDefinition);
+                // Processing criteria
+                $root_criterias_query = 'def:criteria';
+                $root_criterias = $this->_xpath->query($root_criterias_query, $xDefinition);
 
-	foreach ($root_criterias as $root_criteria) {
-	  $os = null;
-	  $package = array();
-	  $this->processCriterias($this->_xpath, $root_criteria, $def, $os, $package);
-	}
-	array_push($defs, $def);
-      }
-    }
-    return $defs;
-  }
-
-  public function getName() {
-    return OvalRedhat::$NAME;
-  }
-
-  public function getType() {
-    return OvalRedhat::$TYPE;
-  }
-
- /*
-   * Get the operator from the XML element: AND/OR
-   */
-  protected function getOperator(&$xElem) {
-    if ($xElem->item(0)->getAttribute('operator') == "AND") {
-      return "and";
-    } elseif ($xElem->item(0)->getAttribute('operator') == "OR") {
-      return "or";
-    } else {
-      return NULL;
-    }
-  }
-
-  /*
-   * Extracts the RedHat release version (3, 4, 5, 6, ...)
-   */
-  protected function getOsVersion(&$xElem) {
-    $rawOsVersion = $xElem->getAttribute('comment');
-
-    # Parse the OS version from the string 'Red Hat Enterprise Linux 5 is installed'
-    if (preg_match("/\.*Linux ([0-9]*) is installed$/", $rawOsVersion, $matches) == 1) {
-      return $matches[1];
-    } else {
-      return NULL;
-    }
-  }
-
-  /*
-   * Process list of the packages for each OS version.
-   * Returns an array [osVersion] -> [pkgName => pkgVersion]*
-   */
-  protected function processPkgsForOs(&$xElem) {
-    # Get the OS version from the childElement
-    $childElement = $this->_xpath->query("./def:criterion", $xElem);
-    $osVersion = getOsVersion($childElement->item(0));
-
-    # Os cannot be detected
-    if ($osVersion == NULL) {
-      return null;
+                foreach ($root_criterias as $root_criteria) {
+                    $os = null;
+                    $package = array();
+                    $this->processCriterias($this->_xpath, $root_criteria, $def, $os, $package);
+                }
+                array_push($defs, $def);
+            }
+        }
+        return $defs;
     }
 
-    $pkgsForOs = array();
-    $pkgsForOs[$osVersion] = array();
-
-    $xPkgs = $this->_xpath->query(".//def:criterion[@comment]", $xElem);
-    foreach ($xPkgs as $pkg) {
-      $pkgTest = $pkg->getAttribute('comment');
-      if (preg_match("/^(.*) is earlier than (.*)$/", $pkgTest, $matches) == 1) {
-        array_push($pkgsForOs[$osVersion], array($matches[1] =>  $matches[2]));
-      }
+    public function getName() {
+        return OvalRedhat::$NAME;
     }
 
-    return $pkgsForOs;
-  }
+    public function getType() {
+        return OvalRedhat::$TYPE;
+    }
 
-  protected function processCriterias(&$xpath, $criteriaElement, &$res, $os, $package) {
+    /*
+      * Get the operator from the XML element: AND/OR
+      */
+    protected function getOperator(&$xElem) {
+        if ($xElem->item(0)->getAttribute('operator') == "AND") {
+            return "and";
+        } elseif ($xElem->item(0)->getAttribute('operator') == "OR") {
+            return "or";
+        } else {
+            return NULL;
+        }
+    }
+
+    /*
+     * Extracts the RedHat release version (3, 4, 5, 6, ...)
+     */
+    protected function getOsVersion(&$xElem) {
+        $rawOsVersion = $xElem->getAttribute('comment');
+
+        # Parse the OS version from the string 'Red Hat Enterprise Linux 5 is installed'
+        if (preg_match("/\.*Linux ([0-9]*) is installed$/", $rawOsVersion, $matches) == 1) {
+            return $matches[1];
+        } else {
+            return NULL;
+        }
+    }
+
+    /*
+     * Process list of the packages for each OS version.
+     * Returns an array [osVersion] -> [pkgName => pkgVersion]*
+     */
+    protected function processPkgsForOs(&$xElem) {
+        # Get the OS version from the childElement
+        $childElement = $this->_xpath->query("./def:criterion", $xElem);
+        $osVersion = getOsVersion($childElement->item(0));
+
+        # Os cannot be detected
+        if ($osVersion == NULL) {
+            return null;
+        }
+
+        $pkgsForOs = array();
+        $pkgsForOs[$osVersion] = array();
+
+        $xPkgs = $this->_xpath->query(".//def:criterion[@comment]", $xElem);
+        foreach ($xPkgs as $pkg) {
+            $pkgTest = $pkg->getAttribute('comment');
+            if (preg_match("/^(.*) is earlier than (.*)$/", $pkgTest, $matches) == 1) {
+                array_push($pkgsForOs[$osVersion], array($matches[1] =>  $matches[2]));
+            }
+        }
+
+        return $pkgsForOs;
+    }
+
+    # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference
+    protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$os, &$package){
         $operator = $criteriaElement->attributes->item(0)->value;
 
-	if (!array_key_exists('osGroup', $res)) {
-	  $res['osGroup'] = array();
-	}
+        if (!array_key_exists('osGroup', $res)) {
+            $res['osGroup'] = array();
+        }
 
         // If we have $os and $package filled, store id
         if ($os != null && !empty($package)) {
 #print "Storing $os, $package\n";
-                if (!array_key_exists($os, $res['osGroup'])) {
-                        $res['osGroup'][$os] = array();
-                }
-                array_push($res['osGroup'][$os], $package);
-                // Empty package variable
-                $package = null;
+            if (!array_key_exists($os, $res['osGroup'])) {
+                $res['osGroup'][$os] = array();
+            }
+            array_push($res['osGroup'][$os], $package);
+            // Empty package variable
+            $package = null;
         }
 
         // Check if the child nodes are criterion or criteria
@@ -188,46 +189,114 @@ class OvalRedHat extends SubSource implements ISubSource {
         $criterions = $xpath->query($criterions_query, $criteriaElement);
 
         if ($criterions->length > 0) {
-                // We have found criterions, so parse them. Try to find redhat version and packages names/versions
-                foreach ($criterions as $criterion) {
-                        $comment = $criterion->attributes->item(1)->value;
-                        if (strpos($comment, "is installed")) {
-                                preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
-                                $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
+            // We have found criterions, so parse them. Try to find redhat version and packages names/versions
+            foreach ($criterions as $criterion) {
+                $comment = $criterion->attributes->item(1)->value;
+                if (strpos($comment, "is installed")) {
+                    preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
+                    $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
 #print "Got OS: $os\n";
-                        } elseif (strpos($comment, "is earlier than")) {
-                                preg_match("/^([^ ]+) is earlier than ([^-]*)-(.*)$/", $comment, $results);
-                                $package = array();
-                                $package['name'] = $results[1];
-                                $package['version'] = $results[2];
-                                $package['release'] = $results[3];
-				$package['operator'] = '<';
+                } elseif (strpos($comment, "is earlier than")) {
+                    preg_match("/^([^ ]+) is earlier than ([^-]*)-(.*)$/", $comment, $results);
+                    $package = array();
+                    $package['name'] = $results[1];
+                    $package['version'] = $results[2];
+                    $package['release'] = $results[3];
+                    $package['operator'] = '<';
 #print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
-                        }
                 }
+            }
 
-                // Criterions can contain both os and package under one criteria
-                if ($os != null && !empty($package)) {
+            // Criterions can contain both os and package under one criteria
+            if ($os != null && !empty($package)) {
 #print "Storing $os, $package\n";
-                        if (!array_key_exists($os, $res['osGroup'])) {
-                                $res['osGroup'][$os] = array();
-                        }
-                        array_push($res['osGroup'][$os], $package);
-                        // Empty package varialble
-                        $package = null;
+                if (!array_key_exists($os, $res['osGroup'])) {
+                    $res['osGroup'][$os] = array();
                 }
+                array_push($res['osGroup'][$os], $package);
+                // Empty package varialble
+                $package = null;
+            }
         }
 
         if ($criterias->length > 0) {
-                // We have foung criterias, so pass them for further processing
-                foreach ($criterias as $criteria) {
-                        if ($operator == "AND") {
-                                $this->processCriterias($xpath, $criteria, $res, &$os, &$package);
-                        } else {
-                                $this->processCriterias($xpath, $criteria, $res, $os, $package);
-                        }
+            // We have foung criterias, so pass them for further processing
+            foreach ($criterias as $criteria) {
+                if ($operator == "AND") {
+                    $this->processCriteriasWithReference($xpath, $criteria, $res, $os, $package);
+                } else {
+                    $this->processCriterias($xpath, $criteria, $res, $os, $package);
                 }
+            }
         }
-   }
+    }
+
+    protected function processCriterias(&$xpath, $criteriaElement, &$res, $os, $package) {
+        $operator = $criteriaElement->attributes->item(0)->value;
+
+        if (!array_key_exists('osGroup', $res)) {
+            $res['osGroup'] = array();
+        }
+
+        // If we have $os and $package filled, store id
+        if ($os != null && !empty($package)) {
+#print "Storing $os, $package\n";
+            if (!array_key_exists($os, $res['osGroup'])) {
+                $res['osGroup'][$os] = array();
+            }
+            array_push($res['osGroup'][$os], $package);
+            // Empty package variable
+            $package = null;
+        }
+
+        // Check if the child nodes are criterion or criteria
+        $criterias_query = 'def:criteria';
+        $criterions_query = 'def:criterion';
+
+        $criterias = $xpath->query($criterias_query, $criteriaElement);
+        $criterions = $xpath->query($criterions_query, $criteriaElement);
+
+        if ($criterions->length > 0) {
+            // We have found criterions, so parse them. Try to find redhat version and packages names/versions
+            foreach ($criterions as $criterion) {
+                $comment = $criterion->attributes->item(1)->value;
+                if (strpos($comment, "is installed")) {
+                    preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
+                    $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
+#print "Got OS: $os\n";
+                } elseif (strpos($comment, "is earlier than")) {
+                    preg_match("/^([^ ]+) is earlier than ([^-]*)-(.*)$/", $comment, $results);
+                    $package = array();
+                    $package['name'] = $results[1];
+                    $package['version'] = $results[2];
+                    $package['release'] = $results[3];
+                    $package['operator'] = '<';
+#print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
+                }
+            }
+
+            // Criterions can contain both os and package under one criteria
+            if ($os != null && !empty($package)) {
+#print "Storing $os, $package\n";
+                if (!array_key_exists($os, $res['osGroup'])) {
+                    $res['osGroup'][$os] = array();
+                }
+                array_push($res['osGroup'][$os], $package);
+                // Empty package varialble
+                $package = null;
+            }
+        }
+
+        if ($criterias->length > 0) {
+            // We have foung criterias, so pass them for further processing
+            foreach ($criterias as $criteria) {
+                if ($operator == "AND") {
+                    $this->processCriteriasWithReference($xpath, $criteria, $res, $os, $package);
+                } else {
+                    $this->processCriterias($xpath, $criteria, $res, $os, $package);
+                }
+            }
+        }
+    }
 
 }

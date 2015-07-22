@@ -229,6 +229,8 @@ class HostsManager extends DefaultManager {
     return $oses;
   }
 
+
+
   /* 
    * Get list of all archs
    */
@@ -275,6 +277,16 @@ class HostsManager extends DefaultManager {
     $this->getPakiti()->getDao("Arch")->create($arch);
 
     return $arch;
+  }
+
+  /*
+   * Get Host's OsGroup
+   */
+  public function getHostOsGroup(Host $host){
+    return $this->getPakiti()->getManager("DbManager")->queryObject(
+        "select OsGroup.id as _id, OsGroup.name as _name from OsOsGroup
+          JOIN OsGroup ON OsOsGroup.osGroupId = OsGroup.id
+          where OsOsGroup.osId=". $this->getPakiti()->getManager("DbManager")->escape($host->getOsId()), "OsGroup");
   }
 
   /* 

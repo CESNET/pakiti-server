@@ -124,7 +124,7 @@ create table `Pkg` (
   `arch` varchar(10) not null,
   primary key (`id`),
   foreign key (`arch`) references Arch(`name`) on delete cascade,
-  unique key (`name`)
+  unique key (`name`, `version`, `release`, `arch`)
 ) ENGINE=INNODB;
 
 create table `InstalledPkg` (
@@ -164,7 +164,7 @@ create table `VdsSubSourceDefOs` (
 
 create table `VdsSubSourceDef` (
   `id` integer(10) not null auto_increment,
-  `name` varchar(63),
+  `name` varchar(63) not null,
   `uri` varchar(255) not null,
   `enabled` integer(1) not null,
   `lastChecked` datetime not null,
@@ -177,30 +177,37 @@ create table `VdsSubSourceDef` (
 create table `Cve` (
   `id` integer(10) not null auto_increment,
   `name` varchar(63) not null,
+  `cveDefId` integer(10) not null,
   primary key (`id`),
-  unique key `name` (`name`)
+  unique key `unique` (`name`, `cveDefId`)
 ) ENGINE=INNODB;
 
 create table `CveDef` (
-  `id` integer(10) not null,
-  `cveId` integer(10) not null,
+  `id` integer(10) not null auto_increment,
+  `definitionId` varchar(63) not null,
+  `title` varchar(128) not null,
+  `refUrl` varchar(255) not null,
   `vdsSubSourceDefId` integer(10) not null,
   primary key (`id`),
-  foreign key (`vdsSubSourceDefId`) references VdsSubSourceDef(`id`) on delete cascade,
-  foreign key (`cveId`) references Cve(`id`) on delete cascade
+  foreign key (`vdsSubSourceDefId`) references VdsSubSourceDef(`id`) on delete cascade
 ) ENGINE=INNODB;
 
 create table `Vulnerability` (
+  `id` integer(10) not null auto_increment,
   `pkgId` integer(10) not null,
-  `version` varchar(63) not null,
-  `release` varchar(63),
-  `archId` integer(10) not null,
   `osGroupId` integer(10) not null,
   `operator` char(1) not null,
-  `vdsSubSourceDefId` integer(10) not null,
-  primary key (`pkgId`, `archId`, `osGroupId`, `version`, `release`, `vdsSubSourceDefId`),
+  `cveDefId` integer(10) not null,
+  primary key (`id`),
   foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
-  foreign key (`vdsSubSourceDefId`) references VdsSubSourceDef(`id`) on delete cascade,
-  foreign key (`archId`) references Arch(`id`) on delete cascade,
+  foreign key (`cveDefId`) references CveDef(`id`) on delete cascade,
   foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 ) ENGINE=INNODB;
+
+-- create table `VulnerabilityCve` (
+--   `vulnerabilityId` integer(10) not null,
+--   `cveId` integer(10) not null,
+--   unique key `unique` (`vulnerabilityId`, `cveId`),
+--   foreign key (`vulnerabilityId`) references Vulnerability(`id`) on delete cascade,
+--   foreign key (`cveId`) references Cve(`id`) on delete cascade
+-- ) ENGINE=INNODB;
