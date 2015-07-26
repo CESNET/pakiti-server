@@ -61,8 +61,8 @@ $hostsCount = $pakiti->getManager("HostsManager")->getHostsCount();
 if($firstLetter == "all"){
     $hosts = $pakiti->getManager("HostsManager")->getHosts($sort);
 }else{
-    #$hosts = $pakiti->getManager("HostsManager")->getHosts($sort, $pageSize, $pageNum);
-    $hosts = $pakiti->getManager("HostsManager")->getHostsByFirstLetter($firstLetter);
+    $hosts = $pakiti->getManager("HostsManager")->getHosts($sort, $pageSize, $pageNum);
+    //$hosts = $pakiti->getManager("HostsManager")->getHostsByFirstLetter($firstLetter);
 }
 
 

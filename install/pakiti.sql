@@ -194,20 +194,16 @@ create table `CveDef` (
 
 create table `Vulnerability` (
   `id` integer(10) not null auto_increment,
-  `pkgId` integer(10) not null,
+  `name` varchar(254) not null,
+  `version` varchar(63) not null,
+  `release` varchar(63) not null,
+  `arch` varchar(10) not null,
   `osGroupId` integer(10) not null,
   `operator` char(1) not null,
   `cveDefId` integer(10) not null,
   primary key (`id`),
-  foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
+  unique key `unique` (`name`, `version`, `release`, `arch`, `osGroupId`, `operator`, `cveDefId`),
+  foreign key (`arch`) references Arch(`name`) on delete cascade,
   foreign key (`cveDefId`) references CveDef(`id`) on delete cascade,
   foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 ) ENGINE=INNODB;
-
--- create table `VulnerabilityCve` (
---   `vulnerabilityId` integer(10) not null,
---   `cveId` integer(10) not null,
---   unique key `unique` (`vulnerabilityId`, `cveId`),
---   foreign key (`vulnerabilityId`) references Vulnerability(`id`) on delete cascade,
---   foreign key (`cveId`) references Cve(`id`) on delete cascade
--- ) ENGINE=INNODB;

@@ -25,7 +25,25 @@ class CvesDefManager extends DefaultManager
                 $this->getPakiti()->getDao("Cve")->create($cve);
             }
         }
+    }
 
+    public function FillCves(CveDef &$cveDef)
+    {
+        $sql = "select * from Cve where Cve.cveDefId={$cveDef->getId()}";
+        $cvesDb =& $this->_pakiti->getManager("DbManager")->queryToMultiRow($sql);
 
+        # Create objects
+        $cves = array();
+        if ($cvesDb != null) {
+            foreach ($cvesDb as $cveDb) {
+                $cve = new Cve();
+                $cve->setId($cveDb["id"]);
+                $cve->setName($cveDb["name"]);
+                $cve->setCveDefId($cveDb["cveDefId"]);
+                array_push($cves, $cve);
+            }
+            $cveDef->setCves($cves);
+
+        }
     }
 }

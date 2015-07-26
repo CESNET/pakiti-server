@@ -33,9 +33,9 @@ class GenerateTestData
 
         //create package
         self::$_pkg1 = new Pkg();
-        self::$_pkg1->setName("test_pkg1");
-        self::$_pkg1->setVersion("0:11.2.202.428");
-        self::$_pkg1->setRelease("1.el5");
+        self::$_pkg1->setName("xulrunner-devel");
+        self::$_pkg1->setVersion("0:31.6.0");
+        self::$_pkg1->setRelease("2.el7_1");
         self::$_pkg1->setArch(self::$_arch->getName());
 
         self::$_pkg2 = new Pkg();

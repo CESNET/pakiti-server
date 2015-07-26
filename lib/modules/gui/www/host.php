@@ -30,6 +30,7 @@
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 require(realpath(dirname(__FILE__)) . '/../Html.php');
 
+$view = (isset($_GET["view"])) ? $_GET["view"] : "cve";
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
@@ -40,11 +41,11 @@ $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
 $sort = $html->getHttpGetVar("sortBy", "name");
 
 if ($hostId != null) {
-  $host =& $pakiti->getManager("HostsManager")->getHostById($hostId);
+    $host =& $pakiti->getManager("HostsManager")->getHostById($hostId);
 } else if ($hostname != null) {
-  $host =& $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
+    $host =& $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
 } else {
-  $html->setError("HostId nor Hostname was supplied");
+    $html->setError("HostId nor Hostname was supplied");
 }
 
 $html->addHtmlAttribute("title", "Host: " . $host->getHostname());
@@ -52,7 +53,7 @@ $html->addHtmlAttribute("title", "Host: " . $host->getHostname());
 $pkgs =& $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $sort, $pageSize, $pageNum);
 $pkgsCount = $pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host);
 $reportsCount = $pakiti->getManager("ReportsManager")->getHostReportsCount($host);
-
+$cves = $pakiti->getManager("VulnerabilitiesManager")->getCvesForPkgs($host);
 $report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
 
 //---- Output HTML
@@ -61,65 +62,104 @@ $html->printHeader();
 
 ?>
 <table class="tableDetail">
-  <tr>
-    <td class="header">Operating system</td>
-    <td><?php print $host->getOs()->getName()?></td> 
-  </tr>
-  <tr>
-    <td class="header">Architecture</td>
-    <td><?php print $host->getArch()->getName()?></td> 
-  </tr>
-  <tr>
-    <td class="header">Kernel</td>
-    <td><?php print $host->getKernel()?></td> 
-  </tr>
-   <tr>
-    <td class="header">Domain</td>
-    <td><?php print $host->getDomain()->getName()?></td> 
-  </tr>  
- <tr>
-    <td class="header">Reporter Hostname/IP</td>
-    <td><?php print $host->getReporterHostname()?>/<?php print $host->getReporterIp()?></td> 
-  </tr>
-  <tr>
-    <td class="header">Installed packages</td>
-    <td><?php print $pkgsCount?></td> 
-  </tr>
-  <tr>
-    <td class="header">Last report received on</td>
-    <td><?php print $report->getReceivedOn() ?></td>
-  </tr>
-  <tr>
-    <td class="header">Reports</td>
-    <td><a href="reports.php?hostId=<?php print $host->getId() ?>"><?php print $reportsCount ?></a></td>
-  </tr>
+    <tr>
+        <td class="header">Operating system</td>
+        <td><?php print $host->getOs()->getName() ?></td>
+    </tr>
+    <tr>
+        <td class="header">Architecture</td>
+        <td><?php print $host->getArch()->getName() ?></td>
+    </tr>
+    <tr>
+        <td class="header">Kernel</td>
+        <td><?php print $host->getKernel() ?></td>
+    </tr>
+    <tr>
+        <td class="header">Domain</td>
+        <td><?php print $host->getDomain()->getName() ?></td>
+    </tr>
+    <tr>
+        <td class="header">Reporter Hostname/IP</td>
+        <td><?php print $host->getReporterHostname() ?>/<?php print $host->getReporterIp() ?></td>
+    </tr>
+    <tr>
+        <td class="header">Installed packages</td>
+        <td><?php print $pkgsCount ?></td>
+    </tr>
+    <tr>
+        <td class="header">Last report received on</td>
+        <td><?php print $report->getReceivedOn() ?></td>
+    </tr>
+    <tr>
+        <td class="header">Reports</td>
+        <td><a href="reports.php?hostId=<?php print $host->getId() ?>"><?php print $reportsCount ?></a></td>
+    </tr>
 </table>
 
+<form action="" method="get" name="gform"">
+<tr>
+    <td>View:
+        <select name="view" onchange="gform.submit();">
+            <option value="installed"<?php if ($view == "installed") print " selected"; ?>>Installed packages
+            <option value="cve"<?php if ($view == "cve") print " selected"; ?>>CVEs
+        </select>
+    </td>
+</tr>
+<input type="hidden" name="hostId" value=<?php print $host->getId()?>>
+</form>
+
 <div class="paging">
-<?php print $html->paging($pkgsCount, $pageSize, $pageNum) ?>
+    <?php print $html->paging($pkgsCount, $pageSize, $pageNum) ?>
 </div>
 
+
 <table class="tableList">
-	<tr>
-		<th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "name")); ?>">Name</a></th>
-		<th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "version")); ?>">Installed version</a></th>
-		<th><a href="<?php print $html->getQueryString(array("sortBy" => "arch")); ?>">Architecture</a></th>
-	</tr>
-<?php 
-  $i = 0;
-  foreach ($pkgs as $pkg) { 
-    $i++;
-?>
-	<tr class="a<?php print ($i & 1) ?>">
-		<td><?php print$pkg->getName()?></td>
-		<td><?php print$pkg->getVersionRelease()?></td>
-		<td><?php print$pkg->getArch()?></td>
-	</tr>
-<?php } ?>
+    <tr>
+        <th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "name")); ?>">Name</a></th>
+        <th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "version")); ?>">Installed
+                version</a></th>
+        <th><a href="<?php print $html->getQueryString(array("sortBy" => "arch")); ?>">Architecture</a></th>
+        <th><a>CVEs</a></th>
+    </tr>
+    <?php
+    $i = 0;
+    foreach ($pkgs as $pkg) {
+        $i++;
+        ?>
+        <?php switch ($view) {
+            case "cve": ?>
+                <?php
+                if (array_key_exists($pkg->getId(), $cves)) { ?>
+                    <tr class="a<?php print ($i & 1) ?>">
+                        <td><?php print$pkg->getName() ?></td>
+                        <td><?php print$pkg->getVersionRelease() ?></td>
+                        <td><?php print$pkg->getArch() ?></td>
+                        <td><a href=""><?php print implode(", ", $cves[$pkg->getId()]); ?></a></td>
+                    </tr>
+                <?php } ?>
+                <?php break; ?>
+            <?php case "installed": ?>
+                <tr class="a<?php print ($i & 1) ?>">
+                    <td><?php print$pkg->getName() ?></td>
+                    <td><?php print$pkg->getVersionRelease() ?></td>
+                    <td><?php print$pkg->getArch() ?></td>
+                    <td>
+                        <?php
+                        if (array_key_exists($pkg->getId(), $cves)) {
+                            ?>
+                            <a href=""><?php print implode(", ", $cves[$pkg->getId()]); ?></a>
+                            <?php
+                        }
+                        ?>
+                    </td>
+                </tr>
+                <?php break; ?>
+            <?php } ?>
+    <?php } ?>
 </table>
 
 <div class="paging">
-<?php print $html->paging($pkgsCount, $pageSize, $pageNum) ?>
+    <?php print $html->paging($pkgsCount, $pageSize, $pageNum) ?>
 </div>
 
 <?php $html->printFooter(); ?>

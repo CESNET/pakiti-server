@@ -148,18 +148,10 @@ class OvalsSource extends Source implements ISource
                                 $arch = $this->_pakiti->getManager('HostsManager')->createArch($archName);
                             }
 
-                            # Get Pkg id
-                            $pkg = $this->_pakiti->getManager("PkgsManager")->getPkg($defPkg['name']);
-                            if ($pkg == null) {
-                                # Pkg is not defined in the DB, so created it
-                                $pkg = new Pkg();
-                                $pkg->setName($defPkg['name']);
-                                $pkg->setArch($arch->getName());
-                                $pkg->setVersion($defPkg['version']);
-                                $pkg->setRelease($defPkg['release']);
-                                $this->_pakiti->getManager('PkgsManager')->createPkg($pkg);
-                            }
-                            $vuln->setPkgId($pkg->getId());
+                            $vuln->setName($defPkg['name']);
+                            $vuln->setRelease($defPkg['release']);
+                            $vuln->setVersion($defPkg['version']);
+                            $vuln->setArch($arch->getName());
 
                             # Get osGroup Id
                             $osGroup = $this->_pakiti->getManager("HostsManager")->getOsGroup($osGroupName);

@@ -46,9 +46,41 @@ class VulnerabilitiesManager extends DefaultManager
         return $this->getPakiti()->getDao("Vulnerability")->getById($id);
     }
 
-    public function getVulnerabilityPkgs(Host $host)
+    /**
+     * Return array of vulnerable packages for specific host
+     * @param Host $host
+     * @return array
+     * Return array example:
+     * Array
+     * (
+     *   [vulnerable package id] => Array
+     *   (
+     *       [0] => CveDef Object
+     *       (
+     *           [_id:CveDef:private] => 968
+     *           [_definitionId:CveDef:private] => oval:com.redhat.rhsa:def:20151002
+     *           [_title:CveDef:private] => RHSA-2015:1002: xen security update (Important)
+     *           [_refUrl:CveDef:private] => https://rhn.redhat.com/errata/RHSA-2015-1002.html
+     *           [_vdsSubSourceDefId:CveDef:private] => 1
+     *           [_cves:CveDef:private] => Array
+     *           (
+     *           [0] => Cve Object
+     *               (
+     *               [_id:Cve:private] => 5693
+     *               [_name:Cve:private] => CVE-2015-3456
+     *               [_cveDefId:Cve:private] => 968
+     *               [_tag:Cve:private] => Array
+     *               (
+     *               )
+     *           )
+     *       )
+     *  )
+     *
+     */
+
+    public function getVulnerablePkgs(Host $host)
     {
-        $vulnerabilityPkgs = array();
+        $vulnerablePkgs = array();
         $osGroup = $this->_pakiti->getManager("HostsManager")->getHostOsGroup($host);
 
         //Get installed Pkgs on Host
@@ -56,31 +88,91 @@ class VulnerabilitiesManager extends DefaultManager
 
         //For each package check vulnerabilities
         foreach ($installedPkgs as $installedPkg) {
-            $vulnerabilities = $this->getVulnerabilitiesByPkgNameAndOsGroupID($installedPkg->getName(), $osGroup->getId());
-            if(!empty($vulnerabilityPkgs)){
-                    foreach ($vulnerabilities as $vulnerability){
-                        switch ($vulnerability->getOperator()){
-                            case "<":
-                                if ($this->vercmp($host->getType(), $installedPkg->getVersion(), $installedPkg->getRelease(), "0:11.2.202.429", "1.el5")) {
-                                    array_push($vulnerabilityPkgs, $this->vercmp("rpm", $installedPkg["pkgVersion"], $installedPkg["pkgRelease"], "0:11.2.202.429", "1.el5"));
-                                }
-                        }
+            $confirmedVulnerabilities = array();
+            $potentialVulnerabilities = $this->getVulnerabilitiesByPkgNameOsGroupIDArch($installedPkg->getName(), $osGroup->getId(), $installedPkg->getArch());
+            if (!empty($potentialVulnerabilities)) {
+                foreach ($potentialVulnerabilities as $potentialVulnerability) {
+                    switch ($potentialVulnerability->getOperator()) {
+                        //TODO: Add more operator cases
+                        case "<":
+                            if ($this->vercmp($host->getType(), $installedPkg->getVersion(), $installedPkg->getRelease(), $potentialVulnerability->getVersion(), $potentialVulnerability->getRelease()) < 0) {
+                                array_push($confirmedVulnerabilities, $potentialVulnerability);
+                            }
+                    }
                 }
+                if (!empty($confirmedVulnerabilities)){
+                    $cveDefs = array();
+                    foreach ($confirmedVulnerabilities as $confirmedVulnerability) {
+                        array_push($cveDefs, $this->getCveDefForVulnerability($confirmedVulnerability));;
+                    }
+                    $vulnerablePkgs[$installedPkg->getId()] = $cveDefs;
+                }
+
             }
         }
 
-        return $vulnerabilityPkgs;
+        return $vulnerablePkgs;
     }
 
-    /*
-     * Return array of Vulnerabilities
-     */
-    public function getVulnerabilitiesByPkgNameAndOsGroupID($name, $osGroupId){
-        $pkgId = $this->_pakiti->getManager("PkgsManager")->getPkgId($name);
+    public function getCvesForPkgs(Host $host){
+        $pkgsCves = array();
+        $vulnerablePkgs = $this->getVulnerablePkgs($host);
+        //if(array_key_exists($pkg->getId(), $vulnerablePkgs)){
+            foreach($vulnerablePkgs as $packageId => $vulnerablePkg){
+                $cves = array();
+                foreach($vulnerablePkg as $cveDef) {
+                    foreach($cveDef->getCves() as $cve) {
+                        array_push($cves, $cve->getName());
+                    }
+                }
+                $pkgsCves[$packageId] = $cves;
+            }
+        return $pkgsCves;
+    }
 
-        $sql = "select Vulnerability.id, Vulnerability.pkgId, Vulnerability.osGroupId,
-                Vulnerability.operator, Vulnerability.cveDefId from Vulnerability
-                where Vulnerability.pkgId={$pkgId} and Vulnerability.osGroupId={$osGroupId}";
+
+    public function getHostCvesCount(Host $host){
+        $count = 0;
+        foreach($this->getVulnerablePkgs($host) as $vulnerablePkg){
+            foreach($vulnerablePkg as $cveDef){
+                $count += count($cveDef->getCves());
+            }
+        }
+        return $count;
+    }
+
+    public function getCvesForPkg(Host $host, Pkg $pkg){
+        $cves = array();
+        $vulnerablePkgs  = $this->getVulnerablePkgs($host);
+        if(array_key_exists($pkg->getId(), $vulnerablePkgs)){
+            foreach($vulnerablePkgs[$pkg->getId()] as $cveDef){
+                array_push($cves, $cveDef->getCves());
+            }
+        }
+        return $cves;
+    }
+
+
+    public function getCveDefForVulnerability(Vulnerability $vul)
+    {
+        $sql = "select id as _id, definitionId as _definitionId, title as _title, refUrl as _refUrl, vdsSubSourceDefId as _vdsSubSourceDefId from CveDef where CveDef.id=(select Vulnerability.cveDefId from Vulnerability where Vulnerability.id='" . $this->_pakiti->getManager("DbManager")->escape($vul->getId()) . "')";
+        $cveDef = $this->_pakiti->getManager("DbManager")->queryObject($sql, "CveDef");
+        $this->_pakiti->getManager("CvesDefManager")->FillCves($cveDef);
+        return $cveDef;
+    }
+
+    /**
+     * Return array of Vulnerabilities for a specific Package name, Os Group and Arch name
+     * @param $name
+     * @param $osGroupId
+     * @param $arch
+     * @return array
+     */
+    private function getVulnerabilitiesByPkgNameOsGroupIDArch($name, $osGroupId, $arch)
+    {
+
+        $sql = "select * from Vulnerability where Vulnerability.name='" . $this->_pakiti->getManager("DbManager")->escape($name) . "'
+                and Vulnerability.osGroupId={$osGroupId} and (Vulnerability.arch='all' or Vulnerability.arch='" . $this->_pakiti->getManager("DbManager")->escape($arch) . "')";
 
         $vulnerabilitiesDb =& $this->_pakiti->getManager("DbManager")->queryToMultiRow($sql);
 
@@ -90,7 +182,10 @@ class VulnerabilitiesManager extends DefaultManager
             foreach ($vulnerabilitiesDb as $vulnerabilityDb) {
                 $vulnerability = new Vulnerability();
                 $vulnerability->setId($vulnerabilityDb["id"]);
-                $vulnerability->setPkgId($vulnerabilityDb["pkgId"]);
+                $vulnerability->setName($vulnerabilityDb["name"]);
+                $vulnerability->setVersion($vulnerabilityDb["version"]);
+                $vulnerability->setRelease($vulnerabilityDb["release"]);
+                $vulnerability->setArch($vulnerabilityDb["arch"]);
                 $vulnerability->setOsGroupId($vulnerabilityDb["osGroupId"]);
                 $vulnerability->setOperator($vulnerabilityDb["operator"]);
                 $vulnerability->setCveDefId($vulnerabilityDb["cveDefId"]);
@@ -99,8 +194,6 @@ class VulnerabilitiesManager extends DefaultManager
         }
         return $vulnerabilities;
     }
-
-
 
     /*
      * Compare packages version based on type of packages
@@ -144,7 +237,8 @@ class VulnerabilitiesManager extends DefaultManager
         }
     }
 
-    private function rpm_split($a) {
+    private function rpm_split($a)
+    {
         $arr = array();
         $i = 0;
         $j = 0;
@@ -164,7 +258,7 @@ class VulnerabilitiesManager extends DefaultManager
                     $i++;
             }
 
-            $arr[$j] = substr( $a, $start, $i - $start );
+            $arr[$j] = substr($a, $start, $i - $start);
             $j++;
         }
         return $arr;
@@ -173,23 +267,25 @@ class VulnerabilitiesManager extends DefaultManager
     /*
      * Used by dpkgvercmp
      */
-    private function order($val) {
+    private function order($val)
+    {
         if ($val == '') return 0;
         if ($val == '~') return -1;
         if (ctype_digit($val)) return 0;
         if (!ord($val)) return 0;
         if (ctype_alpha($val)) return ord($val);
-        return  ord($val) + 256;
+        return ord($val) + 256;
     }
 
     /*
      * Used by dpkgvercmp
      */
-    private function dpkgvercmp_in($a, $b) {
+    private function dpkgvercmp_in($a, $b)
+    {
         $i = 0;
         $j = 0;
-        $l = strlen($a)-1;
-        $k = strlen($b)-1;
+        $l = strlen($a) - 1;
+        $k = strlen($b) - 1;
         while ($i < $l || $j < $k) {
             $first_diff = 0;
             while (($i < $l && !ctype_digit($a[$i])) || ($j < $k && !ctype_digit($b[$j]))) {
@@ -199,8 +295,8 @@ class VulnerabilitiesManager extends DefaultManager
                 $i++;
                 $j++;
             }
-            while ( $i < $l && $a[$i] == '0' ) $i++;
-            while ( $j < $k && $b[$j] == '0' ) $j++;
+            while ($i < $l && $a[$i] == '0') $i++;
+            while ($j < $k && $b[$j] == '0') $j++;
             while (($i < $l && ctype_digit($a[$i])) && ($j < $k && ctype_digit($b[$j]))) {
                 if (!$first_diff) $first_diff = ord($a[$i]) - ord($b[$j]);
                 $i++;
@@ -221,7 +317,8 @@ class VulnerabilitiesManager extends DefaultManager
     * Returns -1 if $a is lower than $b
     */
 
-    private function rpmvercmp($a, $b) {
+    private function rpmvercmp($a, $b)
+    {
         if (strcmp($a, $b) == 0) return 0;
         $a_arr = $this->rpm_split($a);
         $b_arr = $this->rpm_split($b);
@@ -250,7 +347,8 @@ class VulnerabilitiesManager extends DefaultManager
      * Returns 1 if $a is greater than $b
      * Returns -1 if $a is lower than $b
      */
-    private function dpkgvercmp($vera, $rela, $verb, $relb) {
+    private function dpkgvercmp($vera, $rela, $verb, $relb)
+    {
         # Get epoch
         $epoch_a = substr($vera, 0, strpos($vera, ':'));
         $epoch_b = substr($verb, 0, strpos($verb, ':'));
