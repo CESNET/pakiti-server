@@ -43,7 +43,6 @@ class CvesDefManager extends DefaultManager
                 array_push($cves, $cve);
             }
             $cveDef->setCves($cves);
-
         }
     }
 }

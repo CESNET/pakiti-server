@@ -111,11 +111,6 @@ class GenerateTestData
         self::$_installedPkg2 = new InstalledPkg();
         self::$_installedPkg2->setHostId(self::$_host->getId());
         self::$_installedPkg2->setPkgId(self::$_pkg2->getId());
-
-        self::$_pakiti->getManager("DbManager")->begin();
-        self::$_pakiti->getDao("InstalledPkg")->create(self::$_installedPkg1);
-        self::$_pakiti->getDao("InstalledPkg")->create(self::$_installedPkg2);
-        self::$_pakiti->getManager("DbManager")->commit();
     }
 
 

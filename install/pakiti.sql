@@ -192,6 +192,16 @@ create table `CveDef` (
   foreign key (`vdsSubSourceDefId`) references VdsSubSourceDef(`id`) on delete cascade
 ) ENGINE=INNODB;
 
+create table `PkgCveDef` (
+  `pkgId` integer(10) not null,
+  `cveDefId` integer(10) not null,
+  `osGroupId` integer(10) not null,
+  unique key `unique` (`pkgId`, `cveDefId`, `osGroupId`),
+  foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
+  foreign key (`cveDefId`) references CveDef(`id`) on delete cascade,
+  foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
+) ENGINE=INNODB;
+
 create table `Vulnerability` (
   `id` integer(10) not null auto_increment,
   `name` varchar(254) not null,
