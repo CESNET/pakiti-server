@@ -74,13 +74,13 @@ class VulnerabilitiesManager extends DefaultManager
                     }
                 }
                 //For each confirmed Vulnerability get CveDefs
-                if (!empty($confirmedVulnerabilities)){
+                if (!empty($confirmedVulnerabilities)) {
                     $cveDefs = array();
                     foreach ($confirmedVulnerabilities as $confirmedVulnerability) {
                         # Assign the Cvedef to the Package
                         //TODO: Delete previos results or not?
-                        $sql = "insert ignore into PkgCveDef set pkgId=".$installedPkg->getId().", cveDefId=".$this->getCveDefForVulnerability($confirmedVulnerability)->getId().",
-                        osGroupId=".$osGroup->getId();
+                        $sql = "insert ignore into PkgCveDef set pkgId=" . $installedPkg->getId() . ", cveDefId=" . $this->getCveDefForVulnerability($confirmedVulnerability)->getId() . ",
+                        osGroupId=" . $osGroup->getId();
                         $this->_pakiti->getManager("DbManager")->query($sql);
                     }
                 }
@@ -88,9 +88,10 @@ class VulnerabilitiesManager extends DefaultManager
         }
     }
 
-    public function getCvesForVulnerablePkgs(Host $host){
+    public function getCveDefsForVulnerableHostPkgs(Host $host)
+    {
 
-        $pkgsCves = array();
+        $pkgsCveDefs = array();
 
         //Get OS group
         $osGroup = $this->_pakiti->getManager("HostsManager")->getHostOsGroup($host);
@@ -99,7 +100,7 @@ class VulnerabilitiesManager extends DefaultManager
         $installedPkgs = $this->_pakiti->getManager("PkgsManager")->getInstalledPkgs($host);
 
         //Get CveDef for Vulnerable packages
-        foreach($installedPkgs as $installedPkg) {
+        foreach ($installedPkgs as $installedPkg) {
             $sql = "select * from CveDef inner join PkgCveDef on CveDef.id = PkgCveDef.cveDefId
                     where PkgCveDef.pkgId={$installedPkg->getId()} and PkgCveDef.osGroupId={$osGroup->getId()}";
             $cveDefsDb =& $this->_pakiti->getManager("DbManager")->queryToMultiRow($sql);
@@ -119,17 +120,40 @@ class VulnerabilitiesManager extends DefaultManager
                 }
             }
 
+            $pkgsCveDefs[$installedPkg->getId()] = $cveDefs;
+        }
+        return $pkgsCveDefs;
+    }
+
+    public function getCvesForVulnerableHostPkgs(Host $host)
+    {
+        $pkgsCveDefs = $this->getCveDefsForVulnerableHostPkgs($host);
+
+        //get Cves from CveDefs
+        $pkgsCves = array();
+        foreach ($pkgsCveDefs as $pkgId => $pkgCveDefs) {
             $cves = array();
-            foreach ($cveDefs as $cveDef) {
-                foreach($cveDef->getCves() as $cve) {
+            foreach ($pkgCveDefs as $pkgCveDef) {
+                foreach($pkgCveDef->getCves() as $cve){
                     array_push($cves, $cve->getName());
                 }
             }
-
-            $pkgsCves[$installedPkg->getId()] = $cves;
+            $pkgsCves[$pkgId] = $cves;
         }
         return $pkgsCves;
+
     }
+
+    public function getCvesCount(Host $host)
+    {
+        $cvesCount = 0;
+        $pkgsCves = $this->getCvesForVulnerableHostPkgs($host);
+        foreach ($pkgsCves as $pkgCves){
+            $cvesCount += count($pkgCves);
+        }
+       return $cvesCount;
+    }
+
 
     private function getCveDefForVulnerability(Vulnerability $vul)
     {
