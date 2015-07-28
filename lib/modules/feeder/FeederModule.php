@@ -205,6 +205,8 @@ class FeederModule extends DefaultModule {
             $this->storePkgs();
 
             # Find vulnerabilities
+            $this->getPakiti()->getManager("VulnerabilitiesManager")->findVulnerablePkgsForSpecificHost($this->_host);
+            $this->_report->setNumOfCves($this-> $this->getPakiti()->getManager("VulnerabilitiesManager")->getHostCvesCount());
 
             # Store the report
             $this->storeReport();

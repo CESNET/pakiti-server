@@ -53,7 +53,7 @@ $html->addHtmlAttribute("title", "Host: " . $host->getHostname());
 $pkgs =& $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $sort, $pageSize, $pageNum);
 $pkgsCount = $pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host);
 $reportsCount = $pakiti->getManager("ReportsManager")->getHostReportsCount($host);
-$cves = $pakiti->getManager("VulnerabilitiesManager")->getCvesForPkgs($host);
+$cves = $pakiti->getManager("VulnerabilitiesManager")->getCvesForVulnerableHostPkgs($host);
 $report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
 
 //---- Output HTML
@@ -105,7 +105,7 @@ $html->printHeader();
         </select>
     </td>
 </tr>
-<input type="hidden" name="hostId" value=<?php print $host->getId()?>>
+<input type="hidden" name="hostId" value=<?php print $host->getId() ?>>
 </form>
 
 <div class="paging">
@@ -134,7 +134,14 @@ $html->printHeader();
                         <td><?php print$pkg->getName() ?></td>
                         <td><?php print$pkg->getVersionRelease() ?></td>
                         <td><?php print$pkg->getArch() ?></td>
-                        <td><a href=""><?php print implode(", ", $cves[$pkg->getId()]); ?></a></td>
+                        <td><?php
+                            if (array_key_exists($pkg->getId(), $cves)) {
+                                ?>
+                                <?php print implode(" ", $cves[$pkg->getId()]); ?>
+                                <?php
+                            }
+                            ?>
+                        </td>
                     </tr>
                 <?php } ?>
                 <?php break; ?>
@@ -147,7 +154,7 @@ $html->printHeader();
                         <?php
                         if (array_key_exists($pkg->getId(), $cves)) {
                             ?>
-                            <a href=""><?php print implode(", ", $cves[$pkg->getId()]); ?></a>
+                            <?php print implode(" ", $cves[$pkg->getId()]); ?>
                             <?php
                         }
                         ?>
