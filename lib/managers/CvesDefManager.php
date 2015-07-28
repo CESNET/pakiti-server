@@ -27,7 +27,7 @@ class CvesDefManager extends DefaultManager
         }
     }
 
-    public function FillCves(CveDef &$cveDef)
+    public function getCvesForCveDef(CveDef &$cveDef)
     {
         $sql = "select * from Cve where Cve.cveDefId={$cveDef->getId()}";
         $cvesDb =& $this->_pakiti->getManager("DbManager")->queryToMultiRow($sql);
@@ -44,5 +44,6 @@ class CvesDefManager extends DefaultManager
             }
             $cveDef->setCves($cves);
         }
+        return $cves;
     }
 }
