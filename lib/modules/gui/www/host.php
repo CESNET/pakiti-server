@@ -30,11 +30,14 @@
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 require(realpath(dirname(__FILE__)) . '/../Html.php');
 
-$view = (isset($_GET["view"])) ? $_GET["view"] : "cve";
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
 $hostId = $html->getHttpGetVar("hostId");
+$view = $html->getHttpGetVar("view");
+if ($view == ""){
+    $view = "installed";
+}
 $hostname = $html->getHttpGetVar("hostname");
 $pageNum = $html->getHttpGetVar("pageNum", 0);
 $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
@@ -50,12 +53,21 @@ if ($hostId != null) {
 
 $html->addHtmlAttribute("title", "Host: " . $host->getHostname());
 
-$pkgs =& $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $sort, $pageSize, $pageNum);
-$pkgsCount = $pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host);
-$reportsCount = $pakiti->getManager("ReportsManager")->getHostReportsCount($host);
-$cves = $pakiti->getManager("VulnerabilitiesManager")->getCvesForPkgs($host);
-$report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
 
+switch ($view) {
+    case "installed":
+        $pkgs =& $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $sort, $pageSize, $pageNum);
+        break;
+    case "cve":
+        $pkgs =& $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($host, $sort, $pageSize, $pageNum);
+        break;
+
+
+}
+$installedPkgsCount = $pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host);
+$reportsCount = $pakiti->getManager("ReportsManager")->getHostReportsCount($host);
+$vulnerablePkgsCount = $pakiti->getManager("CveDefsManager")->getCvesCount($host);
+$report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
 //---- Output HTML
 
 $html->printHeader();
@@ -84,7 +96,7 @@ $html->printHeader();
     </tr>
     <tr>
         <td class="header">Installed packages</td>
-        <td><?php print $pkgsCount ?></td>
+        <td><?php print $installedPkgsCount ?></td>
     </tr>
     <tr>
         <td class="header">Last report received on</td>
@@ -105,11 +117,20 @@ $html->printHeader();
         </select>
     </td>
 </tr>
-<input type="hidden" name="hostId" value=<?php print $host->getId()?>>
+<input type="hidden" name="hostId" value=<?php print $host->getId() ?>>
 </form>
 
 <div class="paging">
-    <?php print $html->paging($pkgsCount, $pageSize, $pageNum) ?>
+    <?php
+    switch($view){
+        case "cve":
+            print $html->paging($vulnerablePkgsCount, $pageSize, $pageNum);
+            break;
+        case "installed":
+            print $html->paging($installedPkgsCount, $pageSize, $pageNum);
+            break;
+    }
+    ?>
 </div>
 
 
@@ -128,15 +149,12 @@ $html->printHeader();
         ?>
         <?php switch ($view) {
             case "cve": ?>
-                <?php
-                if (array_key_exists($pkg->getId(), $cves)) { ?>
                     <tr class="a<?php print ($i & 1) ?>">
-                        <td><?php print$pkg->getName() ?></td>
-                        <td><?php print$pkg->getVersionRelease() ?></td>
-                        <td><?php print$pkg->getArch() ?></td>
-                        <td><a href=""><?php print implode(", ", $cves[$pkg->getId()]); ?></a></td>
+                        <td><?php print$pkg["Pkg"]->getName() ?></td>
+                        <td><?php print$pkg["Pkg"]->getVersionRelease() ?></td>
+                        <td><?php print$pkg["Pkg"]->getArch() ?></td>
+                        <td><?php print implode(" ", $pkg["CVE"]); ?></td>
                     </tr>
-                <?php } ?>
                 <?php break; ?>
             <?php case "installed": ?>
                 <tr class="a<?php print ($i & 1) ?>">
@@ -147,7 +165,7 @@ $html->printHeader();
                         <?php
                         if (array_key_exists($pkg->getId(), $cves)) {
                             ?>
-                            <a href=""><?php print implode(", ", $cves[$pkg->getId()]); ?></a>
+                            <?php print implode(" ", $cves[$pkg->getId()]); ?>
                             <?php
                         }
                         ?>
@@ -159,7 +177,16 @@ $html->printHeader();
 </table>
 
 <div class="paging">
-    <?php print $html->paging($pkgsCount, $pageSize, $pageNum) ?>
+    <?php
+    switch($view){
+        case "cve":
+            print $html->paging($vulnerablePkgsCount, $pageSize, $pageNum);
+            break;
+        case "installed":
+            print $html->paging($installedPkgsCount, $pageSize, $pageNum);
+            break;
+    }
+    ?>
 </div>
 
 <?php $html->printFooter(); ?>

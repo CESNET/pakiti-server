@@ -121,6 +121,11 @@ class SubSource {
       "update VdsSubSourceDef set enabled=".Constants::$DISABLED." where id=".$this->_db->escape($subSourceDef->getId()));
   }
 
+  public function updateSubSourceLastChecked(ISubSourceDef &$subSourceDef){
+    $this->_db->query(
+        "update VdsSubSourceDef set lastChecked=now() where id=".$this->_db->escape($subSourceDef->getId()));
+  }
+
   /*
    * Assign OS for the subSourceDef
    */

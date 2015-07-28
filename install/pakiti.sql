@@ -189,6 +189,7 @@ create table `CveDef` (
   `refUrl` varchar(255) not null,
   `vdsSubSourceDefId` integer(10) not null,
   primary key (`id`),
+  unique key `unique` (`definitionId`, `title`, `refUrl`, `vdsSubSourceDefId`),
   foreign key (`vdsSubSourceDefId`) references VdsSubSourceDef(`id`) on delete cascade
 ) ENGINE=INNODB;
 
@@ -200,6 +201,17 @@ create table `PkgCveDef` (
   foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
   foreign key (`cveDefId`) references CveDef(`id`) on delete cascade,
   foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
+) ENGINE=INNODB;
+
+create table `Exceptions` (
+  `cveId` integer(10) not null,
+  `pkgId` integer(10) not null,
+  `osGroupId` integer(10) not null,
+  `reason` varchar(255) not null,
+  `modifier` varchar(255) not null,
+  unique key `unique` (`cveId`, `pkgId`, `osGroupId`),
+  foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
+  foreign key (`cveId`) references Cve(`id`) on delete cascade
 ) ENGINE=INNODB;
 
 create table `Vulnerability` (

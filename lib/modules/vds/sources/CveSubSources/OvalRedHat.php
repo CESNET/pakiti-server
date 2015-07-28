@@ -95,6 +95,7 @@ class OvalRedHat extends SubSource implements ISubSource {
                 }
                 array_push($defs, $def);
             }
+            $this->updateSubSourceLastChecked($subSourceDef);
         }
         return $defs;
     }
@@ -172,7 +173,7 @@ class OvalRedHat extends SubSource implements ISubSource {
 
         // If we have $os and $package filled, store id
         if ($os != null && !empty($package)) {
-#print "Storing $os, $package\n";
+            #print "Storing $os, $package\n";
             if (!array_key_exists($os, $res['osGroup'])) {
                 $res['osGroup'][$os] = array();
             }
@@ -195,7 +196,7 @@ class OvalRedHat extends SubSource implements ISubSource {
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
-#print "Got OS: $os\n";
+                    #print "Got OS: $os\n";
                 } elseif (strpos($comment, "is earlier than")) {
                     preg_match("/^([^ ]+) is earlier than ([^-]*)-(.*)$/", $comment, $results);
                     $package = array();
@@ -203,13 +204,13 @@ class OvalRedHat extends SubSource implements ISubSource {
                     $package['version'] = $results[2];
                     $package['release'] = $results[3];
                     $package['operator'] = '<';
-#print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
+                    #print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
                 }
             }
 
             // Criterions can contain both os and package under one criteria
             if ($os != null && !empty($package)) {
-#print "Storing $os, $package\n";
+                #print "Storing $os, $package\n";
                 if (!array_key_exists($os, $res['osGroup'])) {
                     $res['osGroup'][$os] = array();
                 }
@@ -240,7 +241,7 @@ class OvalRedHat extends SubSource implements ISubSource {
 
         // If we have $os and $package filled, store id
         if ($os != null && !empty($package)) {
-#print "Storing $os, $package\n";
+            #print "Storing $os, $package\n";
             if (!array_key_exists($os, $res['osGroup'])) {
                 $res['osGroup'][$os] = array();
             }
@@ -263,7 +264,7 @@ class OvalRedHat extends SubSource implements ISubSource {
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
-#print "Got OS: $os\n";
+                    #print "Got OS: $os\n";
                 } elseif (strpos($comment, "is earlier than")) {
                     preg_match("/^([^ ]+) is earlier than ([^-]*)-(.*)$/", $comment, $results);
                     $package = array();
@@ -271,13 +272,13 @@ class OvalRedHat extends SubSource implements ISubSource {
                     $package['version'] = $results[2];
                     $package['release'] = $results[3];
                     $package['operator'] = '<';
-#print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
+                    #print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
                 }
             }
 
             // Criterions can contain both os and package under one criteria
             if ($os != null && !empty($package)) {
-#print "Storing $os, $package\n";
+                #print "Storing $os, $package\n";
                 if (!array_key_exists($os, $res['osGroup'])) {
                     $res['osGroup'][$os] = array();
                 }

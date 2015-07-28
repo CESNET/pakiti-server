@@ -40,7 +40,7 @@ class Source extends VdsSource {
   }
 
   public function init() {
-    # Load all OVAL sources
+    # Load all CVE sources
     $this->loadSubSources();
   }
 
@@ -61,7 +61,7 @@ class Source extends VdsSource {
   }
 
   /*
-   * Get OVAL source by Id
+   * Get CVE source by Id
    */
   public function getSubSourceById($id) {
     Utils::log(LOG_DEBUG, "Getting subsource by ID [id=$id]", __FILE__, __LINE__);
@@ -74,10 +74,10 @@ class Source extends VdsSource {
   }
 
   /*
-   * Checks if the particular OVAL source is registered in the DB (VdsSubSource table) and load it.
+   * Checks if the particular Cve source is registered in the DB (VdsSubSource table) and load it.
    */
   protected function loadSubSources() {
-    Utils::log(LOG_DEBUG, "Loading OVAL sources", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Loading CVE sources", __FILE__, __LINE__);
     # List all files in the sources directory, each file represents submodule
     if (!file_exists(realpath(dirname(__FILE__)) . '/../sources/' . $this->getName() . 'SubSources/')) {;
       mkdir(realpath(dirname(__FILE__)) . '/../sources/' . $this->getName() . 'SubSources/');
@@ -113,7 +113,7 @@ class Source extends VdsSource {
 	  # Set the submodule ID
 	  $subSource->setId($id);
 
-	  # Finally add the OVAL submodule
+	  # Finally add the CVE submodule
 	  array_push($this->_subSources, $subSource);
 	}
       }
