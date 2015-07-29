@@ -29,7 +29,6 @@
 
 class VdsSourceDao {
   private $db;
-  
   public function __construct(DbManager &$dbManager) {
     $this->db = $dbManager;  
   }

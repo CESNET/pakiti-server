@@ -60,6 +60,15 @@ class CveSource extends Source implements ISource
         # Get module ID from the DB
     }
 
+
+    /*
+     * Get the name of this class.
+     */
+    public function getClassName() {
+        return get_class();
+    }
+
+
     /*
      * Ask all CVE sources to provide the complete list of CVE definitions
      */
