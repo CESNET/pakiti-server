@@ -34,20 +34,20 @@ require_once(realpath(dirname(__FILE__)) . '/../lib/Source.php');
  * They are little bit different.
  */
 
-class OvalsSource extends Source implements ISource
+class CveSource extends Source implements ISource
 {
-    private static $NAME = "Ovals";
+    private static $NAME = "Cve";
     private $_pakiti;
 
     /*
-     * Load all types of OVAL sources
+     * Load all types of CVE sources
      */
     public function __construct(Pakiti &$pakiti)
     {
         parent::__construct($pakiti);
 
         $this->_pakiti =& $pakiti;
-        $this->setName(OvalsSource::$NAME);
+        $this->setName(CveSource::$NAME);
     }
 
     /*
@@ -61,11 +61,11 @@ class OvalsSource extends Source implements ISource
     }
 
     /*
-     * Ask all OVAL sources to provide the complete list of CVE definitions
+     * Ask all CVE sources to provide the complete list of CVE definitions
      */
     public function retrieveVulnerabilities()
     {
-        Utils::log(LOG_DEBUG, "Synchronizing Ovals", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Synchronizing CVE", __FILE__, __LINE__);
         $vulnerabilities = array();
 
         foreach ($this->getSubSources() as $subSource) {
@@ -139,7 +139,7 @@ class OvalsSource extends Source implements ISource
 
                             $vuln->setCveDefId($cveDef->getId());
 
-                            # OVAL from RH doesn't contain arch, so use all
+                            # OVAL from RH and DSA doesn't contain arch, so use all
                             $archName = 'all';
                             $arch = $this->_pakiti->getManager("HostsManager")->getArch($archName);
 
