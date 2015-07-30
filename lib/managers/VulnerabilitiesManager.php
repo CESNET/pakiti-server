@@ -62,7 +62,11 @@ class VulnerabilitiesManager extends DefaultManager
 
         Utils::log(LOG_DEBUG, "Searching for vulnerable packages for specific host ", __FILE__, __LINE__);
 
+        // If not in Os Group
         $osGroup = $this->_pakiti->getManager("HostsManager")->getHostOsGroup($host);
+        if($osGroup == null){
+            throw new Exception("Host's OS is not a member of any OsGroup");
+        }
 
         //Get installed Pkgs on Host
         $installedPkgs = $this->_pakiti->getManager("PkgsManager")->getInstalledPkgs($host);
