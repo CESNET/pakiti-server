@@ -204,10 +204,6 @@ class FeederModule extends DefaultModule {
             # Process the list of package, synchronize received list of installed packages with one in the DB
             $this->storePkgs();
 
-            # Find vulnerabilities
-            $this->getPakiti()->getManager("VulnerabilitiesManager")->findVulnerablePkgsForSpecificHost($this->_host);
-            $this->_report->setNumOfCves($this-> $this->getPakiti()->getManager("VulnerabilitiesManager")->getHostCvesCount());
-
             # Store the report
             $this->storeReport();
         } catch (Exception $e) {
@@ -217,6 +213,12 @@ class FeederModule extends DefaultModule {
         }
         # Commit the transaction
         $this->getPakiti()->getManager("DbManager")->commit();
+
+        # Find vulnerabilities
+        $this->getPakiti()->getManager("VulnerabilitiesManager")->findVulnerablePkgsForSpecificHost($this->_host);
+        $this->_report->setNumOfCves($this-> $this->getPakiti()->getManager("VulnerabilitiesManager")->getHostCvesCount());
+
+
     }
 
     /*
