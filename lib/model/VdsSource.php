@@ -3,6 +3,7 @@
  * @access public
  * @author Michal Prochazka
  */
+
 class VdsSource {
   private $_id = -1;
 	private $_name;

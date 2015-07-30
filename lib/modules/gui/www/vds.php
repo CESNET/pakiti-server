@@ -29,6 +29,7 @@
 
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 require(realpath(dirname(__FILE__)) . '/../Html.php');
+require(realpath(dirname(__FILE__)) . '/../../vds/VdsModule.php');
 
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
@@ -38,6 +39,7 @@ $html->addHtmlAttribute("title", "Vulnerability Definition System");
 $vds = new VdsModule($pakiti);
 
 $sources = $vds->getSources();
+print count($sources);
 //---- Output HTML
 
 $html->printHeader();
