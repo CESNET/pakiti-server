@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 $time = microtime(true);
-require(realpath(dirname(__FILE__)) . '/../../../lib/common/Loader.php');
+require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 
 try {
     # Initialize
