@@ -51,7 +51,7 @@ class Debian extends SubSource implements ISubSource
         chdir('/tmp/pakiti-debian/');
         $path = realpath('/tmp/pakiti-debian/DSA');
         if ($path === false OR !is_dir($path)) {
-            exec('svn checkout '.$this->getSubSourceDefs()[0]->getUri().'2>&1', $output, $return_code);
+            exec('svn checkout '.$this->getSubSourceDefs()[0]->getUri().' 2>&1', $output, $return_code);
             if ($return_code) {
                 die("An error occurred while trying to checkout svn: " . join("\n", $output));
             }
