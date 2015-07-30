@@ -153,7 +153,7 @@ class Debian extends SubSource implements ISubSource
         }
 
         fclose($dsaFile);
-        //print_r($defs);
+        $this->updateSubSourceLastChecked($this->getSubSourceDefs()[0]);
         return $defs;
     }
 
