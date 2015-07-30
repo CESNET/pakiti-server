@@ -29,6 +29,7 @@
 
 $time = microtime(true);
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
+require(realpath(dirname(__FILE__)) . '/../FeederModule.php');
 
 try {
     # Initialize
