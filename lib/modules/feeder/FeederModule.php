@@ -192,7 +192,8 @@ class FeederModule extends DefaultModule {
     /*
      * Process the report, stores the data about the host, installed packages and report itself.
      */
-    public function processReport() {
+    public function processReport()
+    {
 
         # Start the transaction
         $this->getPakiti()->getManager("DbManager")->begin();
@@ -216,9 +217,10 @@ class FeederModule extends DefaultModule {
 
         # Find vulnerabilities
         $this->getPakiti()->getManager("VulnerabilitiesManager")->findVulnerablePkgsForSpecificHost($this->_host);
-        $this->_report->setNumOfCves($this-> $this->getPakiti()->getManager("VulnerabilitiesManager")->getHostCvesCount());
 
-
+        $cveCount = $this->getPakiti()->getManager("VulnerabilitiesManager")->getHostCvesCount($this->_host);
+        $this->_report->setNumOfCves($cveCount);
+        $this->getPakiti()->getManager("ReportsManager")->updateReport($this->_report);
     }
 
     /*
@@ -361,7 +363,7 @@ class FeederModule extends DefaultModule {
 
         # Store the hashes into the DB, but only for hosts already stored in the DB
         if ($id != -1) {
-            $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($host, currentReportHeaderHash, $currentReportPkgsHash);
+            $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $currentReportHeaderHash, $currentReportPkgsHash);
         }
     }
 

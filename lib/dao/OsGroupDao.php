@@ -51,6 +51,19 @@ class OsGroupDao {
   public function getByName($name) {
     return $this->getBy($name, "name");
   }
+
+  public function getByOsId($osId)
+  {
+    $id = $this->db->queryToSingleValue(
+        "select
+            osGroupId
+         from
+      OsOsGroup
+         where
+          osId=$osId");
+
+    return $this->getById($id);
+  }
   
   public function getIdByName($name) {
     $id = $this->db->queryToSingleValue(

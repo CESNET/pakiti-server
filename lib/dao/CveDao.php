@@ -39,6 +39,17 @@ class CveDao
       	cveDefId ='" . $this->db->escape($cveDefId) . "'", "Cve");
     }
 
+    public function getCvesByName($name){
+        return $this->db->queryObjects(
+            "select
+    		id as _id, name as _name, cveDefId as _cveDefId
+            from
+      	      Cve
+            where
+              name='" . $this->db->escape($name) . "'", "Cve");
+    }
+
+
 
 }
 

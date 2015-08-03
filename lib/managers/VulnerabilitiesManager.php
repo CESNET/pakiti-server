@@ -46,6 +46,54 @@ class VulnerabilitiesManager extends DefaultManager
         return $this->getPakiti()->getDao("Vulnerability")->getById($id);
     }
 
+    public function getVulnerablePkgs(Host &$host, $orderBy, $pageSize, $pageNum)
+    {
+        $osGroup = $this->_pakiti->getManager("HostsManager")->getHostOsGroup($host);
+        $sql = "select distinct Pkg.id, Pkg.name, Pkg.version, Pkg.release, Pkg.arch
+                from InstalledPkg join PkgCveDef on InstalledPkg.pkgId = PkgCveDef.pkgId join Pkg
+                on Pkg.id = InstalledPkg.pkgId  where InstalledPkg.hostId={$host->getId()}
+                and PkgCveDef.osGroupId={$osGroup->getId()}";
+
+        switch ($orderBy) {
+            case "arch":
+                $sql .= " order by Pkg.arch";
+                break;
+            case "version":
+                $sql .= " order by Pkg.version, Pkg.release";
+                break;
+            default:
+                // oderByName by default
+                $sql .= " order by Pkg.name";
+        }
+
+        if ($pageSize != -1 && $pageNum != -1) {
+            $offset = $pageSize * $pageNum;
+            $sql .= " limit $offset,$pageSize";
+        }
+
+        $vulnerablePkgsDb =& $this->_pakiti->getManager("DbManager")->queryToMultiRow($sql);
+
+        # Create objects
+        $vulnerablePkgs = array();
+        if ($vulnerablePkgsDb != null) {
+            foreach ($vulnerablePkgsDb as $vulnerablePkgDb) {
+                $pkg = new Pkg();
+                $pkg->setId($vulnerablePkgDb["id"]);
+                $pkg->setName($vulnerablePkgDb["name"]);
+                $pkg->setVersion($vulnerablePkgDb["version"]);
+                $pkg->setRelease($vulnerablePkgDb["release"]);
+                $pkg->setArch($vulnerablePkgDb["arch"]);
+
+                array_push($vulnerablePkgs, $pkg);
+            }
+        }
+
+        return $vulnerablePkgs;
+
+
+    }
+
+
     /**
      * Find vulnerable packages for a specific host
      * Save vulnerable pkgId and corresponding cveDefId and osGroupId to PkgCveDef table
@@ -64,7 +112,7 @@ class VulnerabilitiesManager extends DefaultManager
 
         // If not in Os Group
         $osGroup = $this->_pakiti->getManager("HostsManager")->getHostOsGroup($host);
-        if($osGroup == null){
+        if ($osGroup == null) {
             throw new Exception("Host's OS is not a member of any OsGroup");
         }
 
@@ -105,11 +153,12 @@ class VulnerabilitiesManager extends DefaultManager
      * @throws Exception
      */
 
-    public function findVulnerablePkgsForEachHost(){
+    public function findVulnerablePkgsForEachHost()
+    {
         Utils::log(LOG_DEBUG, "Searching for vulnerable packages for all hosts", __FILE__, __LINE__);
 
         $hosts = $this->_pakiti->getManager("HostsManager")->getHosts("os");
-        foreach($hosts as $host) {
+        foreach ($hosts as $host) {
             $this->findVulnerablePkgsForSpecificHost($host);
         }
     }
@@ -172,7 +221,7 @@ class VulnerabilitiesManager extends DefaultManager
         foreach ($pkgsCveDefs as $pkgId => $pkgCveDefs) {
             $cves = array();
             foreach ($pkgCveDefs as $pkgCveDef) {
-                foreach($pkgCveDef->getCves() as $cve){
+                foreach ($pkgCveDef->getCves() as $cve) {
                     array_push($cves, $cve->getName());
                 }
             }
@@ -191,10 +240,11 @@ class VulnerabilitiesManager extends DefaultManager
     {
         $cvesCount = 0;
         $pkgsCves = $this->getCvesForVulnerableHostPkgs($host);
-        foreach ($pkgsCves as $pkgCves){
+        foreach ($pkgsCves as $pkgCves) {
             $cvesCount += count($pkgCves);
+
         }
-       return $cvesCount;
+        return $cvesCount;
     }
 
     /**
@@ -208,6 +258,55 @@ class VulnerabilitiesManager extends DefaultManager
         $sql = "select id as _id, definitionId as _definitionId, title as _title, refUrl as _refUrl, vdsSubSourceDefId as _vdsSubSourceDefId from CveDef where CveDef.id=(select Vulnerability.cveDefId from Vulnerability where Vulnerability.id={$vul->getId()})";
         $cveDef = $this->_pakiti->getManager("DbManager")->queryObject($sql, "CveDef");
         return $cveDef;
+    }
+
+    /*
+     * Get Vulnerabilities by CveDefs Ids and Os Id
+     * @param Vulnerability $vulnerability
+     */
+    public function getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osId)
+    {
+        return $this->_pakiti->getManager("DbManager")->queryObjects(
+            "select
+    		id as _id, name as _name, version as _version, arch as _arch, `release` as _release,
+    		osGroupID as _osGroupID, operator as _operator, cveDefId as _cveDefId
+      from
+      	Vulnerability
+      where
+       cveDefId IN (" . implode(",", array_map("intval", $cveDefsIds)) . ") and osGroupId={$osId}", "Vulnerability");
+    }
+
+    /**
+     * Get Vulnerabilities by Cve name and Os name
+     * @param $cveName
+     * @param $osName
+     * @return array
+     */
+
+    public function getVulnerabilitiesByCveNameAndOsName($cveName, $osName)
+    {
+
+        $os = $this->_pakiti->getDao("Os")->getByName($osName);
+        if (!is_object($os)) {
+            return array();
+        }
+
+
+        $cves = $this->_pakiti->getDao("Cve")->getCvesByName($cveName);
+        if (empty($cves)) {
+            return array();
+        }
+
+        $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByOs($os);
+        if (!is_object($osGroup)) {
+            return array();
+        }
+
+        $cveDefsIds = array_map(function ($cve) {
+            return $cve->getCveDefId();
+        }, $cves);
+
+        return $this->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroup->getId());
     }
 
     /**
@@ -316,19 +415,6 @@ class VulnerabilitiesManager extends DefaultManager
     /*
      * Used by dpkgvercmp
      */
-    private function order($val)
-    {
-        if ($val == '') return 0;
-        if ($val == '~') return -1;
-        if (ctype_digit($val)) return 0;
-        if (!ord($val)) return 0;
-        if (ctype_alpha($val)) return ord($val);
-        return ord($val) + 256;
-    }
-
-    /*
-     * Used by dpkgvercmp
-     */
     private function dpkgvercmp_in($a, $b)
     {
         $i = 0;
@@ -338,8 +424,8 @@ class VulnerabilitiesManager extends DefaultManager
         while ($i < $l || $j < $k) {
             $first_diff = 0;
             while (($i < $l && !ctype_digit($a[$i])) || ($j < $k && !ctype_digit($b[$j]))) {
-                $vc = order($a[$i]);
-                $rc = order($b[$j]);
+                $vc = $this->order($a[$i]);
+                $rc = $this->order($b[$j]);
                 if ($vc != $rc) return $vc - $rc;
                 $i++;
                 $j++;
@@ -358,6 +444,20 @@ class VulnerabilitiesManager extends DefaultManager
         }
         return 0;
     }
+
+    /*
+     * Used by dpkgvercmp
+     */
+    private function order($val)
+    {
+        if ($val == '') return 0;
+        if ($val == '~') return -1;
+        if (ctype_digit($val)) return 0;
+        if (!ord($val)) return 0;
+        if (ctype_alpha($val)) return ord($val);
+        return ord($val) + 256;
+    }
+
 
     /*
     * Compare  RPM versions

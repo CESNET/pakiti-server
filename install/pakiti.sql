@@ -189,6 +189,7 @@ create table `CveDef` (
   `refUrl` varchar(255) not null,
   `vdsSubSourceDefId` integer(10) not null,
   primary key (`id`),
+  unique key `unique` (`definitionId`, `title`, `refUrl`, `vdsSubSourceDefId`),
   foreign key (`vdsSubSourceDefId`) references VdsSubSourceDef(`id`) on delete cascade
 ) ENGINE=INNODB;
 
