@@ -216,9 +216,9 @@ class FeederModule extends DefaultModule {
         $this->getPakiti()->getManager("DbManager")->commit();
 
         # Find vulnerabilities
-        $this->getPakiti()->getManager("VulnerabilitiesManager")->findVulnerablePkgsForSpecificHost($this->_host);
+        $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
 
-        $cveCount = $this->getPakiti()->getManager("VulnerabilitiesManager")->getHostCvesCount($this->_host);
+        $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
         $this->_report->setNumOfCves($cveCount);
         $this->getPakiti()->getManager("ReportsManager")->updateReport($this->_report);
     }

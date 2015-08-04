@@ -259,7 +259,7 @@ class HTMLModule extends DefaultModule
         foreach ($hosts as $host) {
             $i++;
             // Get last report
-            $cvesCount = $this->getPakiti()->getManager("VulnerabilitiesManager")->getHostCvesCount($host);
+            $cvesCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
             $lastReportId = $host->getLastReportId();
             $report = $this->getPakiti()->getManager("ReportsManager")->getReportById($lastReportId);
             $reportsCount = $this->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host);

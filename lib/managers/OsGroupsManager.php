@@ -32,9 +32,10 @@ class OsGroupsManager extends DefaultManager{
         return $this->getPakiti()->getDao("OsGroup")->getIdByName($name);
     }
 
-    public function getOsGroupByOs(Os &$os){
-        Utils::log(LOG_DEBUG, "Getting os group by os [os={$os->getName()}]", __FILE__, __LINE__);
-        return $this->getPakiti()->getDao("OsGroup")->getByOsId($os->getId());
+    public function getOsGroupByOsId($osId){
+        Utils::log(LOG_DEBUG, "Getting os group by osId [osId={$osId}]", __FILE__, __LINE__);
+        $osGroup = $this->getPakiti()->getDao("OsGroup")->getByOsId($osId);
+        return $this->getPakiti()->getDao("OsGroup")->getById($osGroup->getId());
     }
 
 }

@@ -203,6 +203,17 @@ create table `PkgCveDef` (
   foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 ) ENGINE=INNODB;
 
+create table `Exceptions` (
+  `cveId` integer(10) not null,
+  `pkgId` integer(10) not null,
+  `osGroupId` integer(10) not null,
+  `reason` varchar(255) not null,
+  `modifier` varchar(255) not null,
+  unique key `unique` (`cveId`, `pkgId`, `osGroupId`),
+  foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
+  foreign key (`cveId`) references Cve(`id`) on delete cascade
+) ENGINE=INNODB;
+
 create table `Vulnerability` (
   `id` integer(10) not null auto_increment,
   `name` varchar(254) not null,

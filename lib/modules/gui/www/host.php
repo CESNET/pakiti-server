@@ -59,17 +59,15 @@ switch ($view) {
         $pkgs =& $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $sort, $pageSize, $pageNum);
         break;
     case "cve":
-        $pkgs =& $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgs($host, $sort, $pageSize, $pageNum);
+        $pkgs =& $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($host, $sort, $pageSize, $pageNum);
         break;
 
 
 }
 $installedPkgsCount = $pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host);
 $reportsCount = $pakiti->getManager("ReportsManager")->getHostReportsCount($host);
-$cves = $pakiti->getManager("VulnerabilitiesManager")->getCvesForVulnerableHostPkgs($host);
-$vulnerablePkgsCount = $pakiti->getManager("VulnerabilitiesManager")->getHostCvesCount($host);
+$vulnerablePkgsCount = $pakiti->getManager("CveDefsManager")->getCvesCount($host);
 $report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
-
 //---- Output HTML
 
 $html->printHeader();
@@ -151,15 +149,12 @@ $html->printHeader();
         ?>
         <?php switch ($view) {
             case "cve": ?>
-                <?php
-                if (array_key_exists($pkg->getId(), $cves)) { ?>
                     <tr class="a<?php print ($i & 1) ?>">
-                        <td><?php print$pkg->getName() ?></td>
-                        <td><?php print$pkg->getVersionRelease() ?></td>
-                        <td><?php print$pkg->getArch() ?></td>
-                        <td><?php print implode(" ", $cves[$pkg->getId()]); ?></td>
+                        <td><?php print$pkg["Pkg"]->getName() ?></td>
+                        <td><?php print$pkg["Pkg"]->getVersionRelease() ?></td>
+                        <td><?php print$pkg["Pkg"]->getArch() ?></td>
+                        <td><?php print implode(" ", $pkg["CVE"]); ?></td>
                     </tr>
-                <?php } ?>
                 <?php break; ?>
             <?php case "installed": ?>
                 <tr class="a<?php print ($i & 1) ?>">

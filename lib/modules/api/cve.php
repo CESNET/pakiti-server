@@ -8,11 +8,11 @@
 include(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
 $pakiti = new Pakiti();
-$osName = Utils::getHttpGetVar("os");
-$cveName = Utils::getHttpGetVar("cve");
-$type = Utils::getHttpGetVar("type");
-$vulnerabilities = & $pakiti->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveNameAndOsName($cveName, $osName);
+$osName = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("os"));
+$cveName = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("cve"));
+$type = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("type"));
 
+$vulnerabilities = & $pakiti->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveNameAndOsName($cveName, $osName);
 switch($type){
     case "csv":
         header("Content-Type: text/plain");
@@ -30,7 +30,7 @@ switch($type){
         foreach($vulnerabilities as $vulnerability) {
             $cve = $xml->addChild("cve");
             $cve->addAttribute("name", $cveName);
-            $cve->addAttribute("advisory_url", "advisory_url");
+            $cve->addAttribute("advisory_url", "");
             $os = $cve->addChild("os");
             $os->addAttribute("name", $osName);
             $pkg = $os->addChild("pkg");

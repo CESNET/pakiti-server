@@ -26,7 +26,6 @@ class CveDefDao
 
             # Set the newly assigned id
             $cveDef->setId($this->db->getLastInsertedId());
-
     }
 
     public function getCveDefsByCveName($cveName)
@@ -44,4 +43,18 @@ class CveDefDao
       	refUrl='".$this->db->escape($cveDef->getRefUrl())."' and
       	vdsSubSourceDefId='".$this->db->escape($cveDef->getVdsSubSourceDefId()). "'");
     }
+
+    /**
+     * Find CveDef for Vulnerability
+     * @param Vulnerability $vul
+     * @return CveDef
+     */
+    public function getCveDefForVulnerability(Vulnerability $vul)
+    {
+        $sql = "select id as _id, definitionId as _definitionId, title as _title, refUrl as _refUrl, vdsSubSourceDefId as _vdsSubSourceDefId
+        from CveDef where CveDef.id=(select Vulnerability.cveDefId from Vulnerability where Vulnerability.id={$vul->getId()})";
+        $cveDef = $this->db->queryObject($sql, "CveDef");
+        return $cveDef;
+    }
+
 }

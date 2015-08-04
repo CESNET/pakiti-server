@@ -142,7 +142,7 @@ class CveSource extends Source implements ISource
                         }
                         $cveDef->setCves($cves);
 
-                        $this->_pakiti->getManager('CvesDefManager')->storeCveDef($cveDef);
+                        $this->_pakiti->getManager('CveDefsManager')->createCveDef($cveDef);
 
                     }else{
                         $cveDef->setId($cveDefId);
@@ -170,7 +170,7 @@ class CveSource extends Source implements ISource
                             $vuln->setArch($arch->getName());
 
                             # Get osGroup Id
-                            $osGroup = $this->_pakiti->getManager("HostsManager")->getOsGroup($osGroupName);
+                            $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByName($osGroupName);
                             if ($osGroup == null) {
                                 $osGroup = new OsGroup();
                                 $osGroup->setName($osGroupName);
