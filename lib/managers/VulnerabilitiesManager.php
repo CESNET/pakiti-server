@@ -27,6 +27,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE. 
 
+
 class VulnerabilitiesManager extends DefaultManager
 {
     private $_pakiti;
@@ -70,19 +71,94 @@ class VulnerabilitiesManager extends DefaultManager
         $cves = $this->getPakiti()->getManager("CveDefsManager")->getCvesForHost($host);
 
         $pkgsWithCves = array();
-        foreach($cves as $pkgId => $pkgCves){
-            foreach($pkgs as $pkg){
-                if($pkgId == $pkg->getId()){
+        foreach ($cves as $pkgId => $pkgCves) {
+            foreach ($pkgs as $pkg) {
+                if ($pkgId == $pkg->getId()) {
                     $pkgWithCve = array();
                     $pkgWithCve["Pkg"] = $pkg;
                     $pkgWithCve["CVE"] = $pkgCves;
-                    $pkgsWithCves[$pkgId]=$pkgWithCve;
+                    $pkgsWithCves[$pkgId] = $pkgWithCve;
                 }
             }
         }
 
         return $pkgsWithCves;
     }
+
+    /**
+     * Return Array of arrays that contains keys: [Host], [CVE], [HostGroups]
+     * Used in API
+     * @param $tag
+     * @param $hostgroup
+     * @return array
+     */
+    function getHostsWithCvesThatContainsSomeTag($htag, $hostGroupName, $cveName)
+    {
+        $hostsWithCvesThatContainsSomeTag = array();
+        $this->getPakiti()->getManager("DbManager")->begin();
+
+        if ($htag != "") {
+            try {
+                $hosts = $this->getPakiti()->getManager("HostsManager")->getHostsByTagName($htag);
+            } catch (Exception $e) {
+                return $hostsWithCvesThatContainsSomeTag;
+            }
+        } else {
+            $hosts = $this->getPakiti()->getManager("HostsManager")->getHosts("id");
+        }
+
+
+        if ($hostGroupName != "") {
+            $hostGroup = $this->getPakiti()->getManager("HostGroupsManager")->getHostGroupByName($hostGroupName);
+            if ($hostGroup == null) {
+                return $hostsWithCvesThatContainsSomeTag;
+            }
+        }
+        foreach ($hosts as $host) {
+            $hostWithCvesThatContainsSomeTag = array();
+            $pkgsWithCves = $this->getVulnerablePkgsWithCve($host);
+            $cvesWithTag = array();
+            foreach ($pkgsWithCves as $pkgWithCves) {
+                foreach ($pkgWithCves["CVE"] as $cve) {
+                    if (!empty($cve->getTag())) {
+                        if ($cveName != "") {
+                            if ($cveName == $cve->getName()) array_push($cvesWithTag, $cve);
+                        } else {
+                            array_push($cvesWithTag, $cve);
+                        }
+
+                    }
+                }
+            }
+            if (!empty($cvesWithTag)) {
+                $hostWithCvesThatContainsSomeTag["Host"] = $host;
+                $hostWithCvesThatContainsSomeTag["CVE"] = $cvesWithTag;
+
+                if ($hostGroupName != "") {
+                    $hostGroups = $this->getPakiti()->getManager("HostGroupsManager")->getHostGroupsByHost($host);
+                    if (in_array($hostGroupName, array_map(function ($hostGroup) {
+                        return $hostGroup->getName();
+                    }, $hostGroups))) {
+                        $hostWithCvesThatContainsSomeTag["HostGroups"] = array($this->getPakiti()->getManager("HostGroupsManager")->getHostGroupByName($hostGroupName));
+                        array_push($hostsWithCvesThatContainsSomeTag, $hostWithCvesThatContainsSomeTag);
+                    } else {
+                        continue;
+                    }
+
+                } else {
+                    $hostWithCvesThatContainsSomeTag["HostGroups"] = $this->getPakiti()->getManager("HostGroupsManager")->getHostGroupsByHost($host);
+                    array_push($hostsWithCvesThatContainsSomeTag, $hostWithCvesThatContainsSomeTag);
+
+                }
+
+            }
+
+
+        }
+        return $hostsWithCvesThatContainsSomeTag;
+
+    }
+
 
     /**
      * Find vulnerable packages for a specific host
@@ -159,7 +235,8 @@ class VulnerabilitiesManager extends DefaultManager
      * @param $osName
      * @return array
      */
-    public function getVulnerabilitiesByCveNameAndOsName($cveName, $osName){
+    public function getVulnerabilitiesByCveNameAndOsName($cveName, $osName)
+    {
         Utils::log(LOG_DEBUG, "Searching for vulnerable packages for all hosts", __FILE__, __LINE__);
         $os = $this->getPakiti()->getDao("Os")->getByName($osName);
         if (!is_object($os)) {

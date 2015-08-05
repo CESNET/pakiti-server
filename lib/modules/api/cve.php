@@ -1,7 +1,6 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: root
+ * User: Vadym Yanovskyy
  * Date: 8/2/15
  * Time: 6:29 PM
  */
@@ -11,6 +10,13 @@ $pakiti = new Pakiti();
 $osName = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("os"));
 $cveName = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("cve"));
 $type = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("type"));
+
+//Default output type is CSV
+if ($type == "") {
+    $type = "csv";
+}
+
+//TODO: Add authorization
 
 $vulnerabilities = & $pakiti->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveNameAndOsName($cveName, $osName);
 switch($type){

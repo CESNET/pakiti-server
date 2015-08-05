@@ -51,7 +51,32 @@ class CveDao
 
     public function getCvesByCveDef(CveDef &$cveDef)
     {
-        return $this->db->queryObjects("select id as _id, name as _name, cveDefId as _cveDefId from Cve where Cve.cveDefId={$cveDef->getId()}", "Cve");
+        return $this->db->queryObjects("select id
+        as _id, name as _name, cveDefId
+        as _cveDefId from Cve where
+        Cve.cveDefId={$cveDef->getId()}", "Cve");
+    }
+
+    public function getCveNames()
+    {
+        $sql = "select DISTINCT name from Cve limit 50"; //TODO remove limit
+        $cveNamesDb =& $this->db->queryToMultiRow($sql);
+        $cveNames = array();
+        if ($cveNamesDb != null) {
+            foreach ($cveNamesDb as $cveNameDb) {
+                array_push($cveNames, $cveNameDb["name"]);
+            }
+        }
+        return $cveNames;
+    }
+
+    public function getAllCves()
+    {
+        return $this->db->queryObjects(
+            "select
+    		id as _id, name as _name, cveDefId as _cveDefId
+            from
+      	      Cve", "Cve");
     }
 
 

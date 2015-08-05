@@ -120,6 +120,7 @@ class CveSource extends Source implements ISource
             #)
 
             # Store them into the list of Vulnerabilities
+            print_r($defs);
             if ($defs) {
                 # Reformat data into
                 foreach ($defs as $def) {
@@ -175,7 +176,7 @@ class CveSource extends Source implements ISource
                                 $osGroup = new OsGroup();
                                 $osGroup->setName($osGroupName);
                                 # osGropu is not defined in the DB, so created it
-                                $osGroup = $this->_pakiti->getManager('HostsManager')->createOsGroup($osGroupName);
+                                $osGroup = $this->_pakiti->getManager('OsGroupsManager')->createOsGroup($osGroupName);
                             }
                             $vuln->setOsGroupId($osGroup->getId());
 

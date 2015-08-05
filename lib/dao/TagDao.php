@@ -107,7 +107,7 @@ class TagDao {
     }
     return $this->db->queryObject(
     	"select 
-    		id as _id, name as _name, description as _description, timestamp as _timestamp, enabled as _enabled
+    		id as _id, name as _name, description as _description
       from 
       	Tag 
       where
@@ -118,5 +118,11 @@ class TagDao {
   public function deleteTagsByHostId($hostId) {
     $this->db->query("delete from HostTag where hostId={$hostId}");
   }
+
+  public function deleteTagsByCveId($cveId)
+  {
+    $this->db->query("delete from CveTag where cveId={$cveId}");
+  }
+
 }
 ?>

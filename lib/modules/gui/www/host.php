@@ -153,7 +153,28 @@ $html->printHeader();
                         <td><?php print$pkg["Pkg"]->getName() ?></td>
                         <td><?php print$pkg["Pkg"]->getVersionRelease() ?></td>
                         <td><?php print$pkg["Pkg"]->getArch() ?></td>
-                        <td><?php print implode(" ", $pkg["CVE"]); ?></td>
+
+                        <td><?php
+                            foreach ($pkg["CVE"] as $cve) {
+                                if (!empty($cve->getTag())) {
+                                    foreach ($cve->getTag() as $tag) {
+                                        print "<span";
+                                        if ($tag->getName() == "Critical") {
+                                            print " class=\"critical_cve\"";
+                                        }
+
+                                        if ($tag->getName() == "High") {
+                                            print " class=\"high_cve\"";
+                                        }
+
+                                        print ">" . $cve->getName() . " " . "</span>";
+                                    }
+                                } else {
+                                    print $cve->getName() . " ";
+                                }
+
+                            }
+                            ?></td>
                     </tr>
                 <?php break; ?>
             <?php case "installed": ?>
@@ -161,15 +182,6 @@ $html->printHeader();
                     <td><?php print$pkg->getName() ?></td>
                     <td><?php print$pkg->getVersionRelease() ?></td>
                     <td><?php print$pkg->getArch() ?></td>
-                    <td>
-                        <?php
-                        if (array_key_exists($pkg->getId(), $cves)) {
-                            ?>
-                            <?php print implode(" ", $cves[$pkg->getId()]); ?>
-                            <?php
-                        }
-                        ?>
-                    </td>
                 </tr>
                 <?php break; ?>
             <?php } ?>

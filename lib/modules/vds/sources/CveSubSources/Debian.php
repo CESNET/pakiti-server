@@ -98,7 +98,9 @@ class Debian extends SubSource implements ISubSource
                     die ("Format error (multiple CVE lines) at " . $num);
                 $rec['cves'] = array();
                 foreach ($cves as $cve)
-                    array_push($rec['cves'], $cve);
+                    if (!empty($cve)) {
+                        array_push($rec['cves'], $cve);
+                    }
                 continue;
             }
 

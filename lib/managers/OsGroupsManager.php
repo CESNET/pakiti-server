@@ -38,4 +38,15 @@ class OsGroupsManager extends DefaultManager{
         return $this->getPakiti()->getDao("OsGroup")->getById($osGroup->getId());
     }
 
+    public function createOsGroup($name)
+    {
+        Utils::log(LOG_DEBUG, "Creating osGroup $name", __FILE__, __LINE__);
+        $osGroup = new OsGroup();
+        $osGroup->setName($name);
+        $this->getPakiti()->getDao("OsGroup")->create($osGroup);
+
+        return $osGroup;
+    }
+
+
 }
