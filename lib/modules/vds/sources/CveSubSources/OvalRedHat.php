@@ -95,6 +95,7 @@ class OvalRedHat extends SubSource implements ISubSource {
                 }
                 array_push($defs, $def);
             }
+            $this->updateSubSourceLastChecked($subSourceDef);
         }
         return $defs;
     }

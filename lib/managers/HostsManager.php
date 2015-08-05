@@ -279,23 +279,14 @@ class HostsManager extends DefaultManager {
     return $arch;
   }
 
-  /*
-   * Get Host's OsGroup
-   */
-  public function getHostOsGroup(Host $host){
-    return $this->getPakiti()->getManager("DbManager")->queryObject(
-        "select OsGroup.id as _id, OsGroup.name as _name from OsOsGroup
-          JOIN OsGroup ON OsOsGroup.osGroupId = OsGroup.id
-          where OsOsGroup.osId=". $this->getPakiti()->getManager("DbManager")->escape($host->getOsId()), "OsGroup");
-  }
 
-  /* 
-   * Get osGroup
-   */
-  public function getOsGroup($name) {
-    Utils::log(LOG_DEBUG, "Getting osGroup by Name", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("OsGroup")->getByName($name);
-  }
+//  /*
+//   * Get osGroup
+//   */
+//  public function getOsGroup($name) {
+//    Utils::log(LOG_DEBUG, "Getting osGroup by Name", __FILE__, __LINE__);
+//    return $this->getPakiti()->getDao("OsGroup")->getByName($name);
+//  }
 
 
   /* 

@@ -60,6 +60,15 @@ class CveSource extends Source implements ISource
         # Get module ID from the DB
     }
 
+
+    /*
+     * Get the name of this class.
+     */
+    public function getClassName() {
+        return get_class();
+    }
+
+
     /*
      * Ask all CVE sources to provide the complete list of CVE definitions
      */
@@ -121,16 +130,23 @@ class CveSource extends Source implements ISource
                     $cveDef->setRefUrl($def['ref_url']);
                     $cveDef->setVdsSubSourceDefId($def['subSourceDefId']);
 
-                    # CVEs
-                    $cves = array();
-                    foreach ($def['cves'] as $cveName) {
-                        $cve = new Cve();
-                        $cve->setName($cveName);
-                        array_push($cves, $cve);
-                    }
-                    $cveDef->setCves($cves);
+                    $cveDefId = $this->_pakiti->getDao("CveDef")->getCveDefId($cveDef);
 
-                    $this->_pakiti->getManager('CvesDefManager')->storeCveDef($cveDef);
+                    if ($cveDefId == null){
+                        # CVEs
+                        $cves = array();
+                        foreach ($def['cves'] as $cveName) {
+                            $cve = new Cve();
+                            $cve->setName($cveName);
+                            array_push($cves, $cve);
+                        }
+                        $cveDef->setCves($cves);
+
+                        $this->_pakiti->getManager('CveDefsManager')->createCveDef($cveDef);
+
+                    }else{
+                        $cveDef->setId($cveDefId);
+                    }
 
                     foreach ($def['osGroup'] as $osGroupName => $defsPkg) {
                         foreach ($defsPkg as $defPkg) {
@@ -154,7 +170,7 @@ class CveSource extends Source implements ISource
                             $vuln->setArch($arch->getName());
 
                             # Get osGroup Id
-                            $osGroup = $this->_pakiti->getManager("HostsManager")->getOsGroup($osGroupName);
+                            $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByName($osGroupName);
                             if ($osGroup == null) {
                                 $osGroup = new OsGroup();
                                 $osGroup->setName($osGroupName);

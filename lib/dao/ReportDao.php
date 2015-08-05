@@ -73,16 +73,24 @@ class ReportDao {
     }
     return $id;
   }
+
+
   
   public function update(Report &$report) {
     $this->db->query(
       "update Report set
-      	name='".$this->db->escape($report->getName())."',
-      	description='".$this->db->escape($report->getName())."',
-      	timestamp=now(),
-      	enabled=".$this->db->escape($report->getEnabled())."
+      	processedOn='".$this->db->escape(date('Y-m-d H:i:s', $report->getProcessedOn()))."',
+      	receivedOn='".$this->db->escape(date('Y-m-d H:i:s', $report->getReceivedOn()))."',
+        throughProxy=".$this->db->escape($report->getThroughProxy()).",
+        proxyHostname='".$this->db->escape($report->getProxyHostname())."',
+        numOfInstalledPkgs=".$this->db->escape($report->getNumOfInstalledPkgs()).",
+        numOfVulnerablePkgsSec=".$this->db->escape($report->getNumOfVulnerablePkgsSec()).",
+        numOfVulnerablePkgsNorm=".$this->db->escape($report->getNumOfVulnerablePkgsNorm()).",
+        numOfCves=".$this->db->escape($report->getNumOfCves())."
       where id=".$report->getId());
   }
+
+
   
   public function delete(Report &$report) {
     $this->db->query(

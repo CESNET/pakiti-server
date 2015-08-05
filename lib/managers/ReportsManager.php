@@ -98,6 +98,20 @@ class ReportsManager extends DefaultManager {
 
     return $report;
   }
+
+  public function updateReport(Report &$report)
+  {
+    if ($report == null || $report->getId() == -1) {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Report object is not valid or Report.id is not set");
+    }
+
+    Utils::log(LOG_DEBUG, "Updating the report", __FILE__, __LINE__);
+
+    $this->getPakiti()->getDao("Report")->update($report);
+
+  }
+
   
   /*
    * Retrieve both hashes for the report header and list of pkgs
