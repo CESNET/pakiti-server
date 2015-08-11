@@ -45,7 +45,16 @@ class RepositoriesSource extends Source implements ISource {
 
   public function retrieveVulnerabilities() {
   }
-  
+
+
+  /*
+   * Get the name of this class.
+   */
+  public function getClassName() {
+    return get_class();
+  }
+
+
   protected function retreivePkgs() {
   }
 }

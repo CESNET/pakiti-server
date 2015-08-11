@@ -29,7 +29,6 @@
 
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 require(realpath(dirname(__FILE__)) . '/../Html.php');
-require(realpath(dirname(__FILE__)) . '/../../vds/VdsModule.php');
 
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);

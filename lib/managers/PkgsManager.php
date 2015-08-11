@@ -62,10 +62,10 @@ class PkgsManager extends DefaultManager {
 
     return $pkgs;
   }
-  
-  /*
-   * Returns count of installed pkgs.
-   */
+
+    /*
+     * Returns count of installed pkgs.
+     */
   public function getInstalledPkgsCount(Host &$host) {
     if (($host == null) || ($host->getId() == -1)) {
       Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);

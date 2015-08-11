@@ -39,6 +39,47 @@ class CveDao
       	cveDefId ='" . $this->db->escape($cveDefId) . "'", "Cve");
     }
 
+    public function getCvesByName($name){
+        return $this->db->queryObjects(
+            "select
+    		id as _id, name as _name, cveDefId as _cveDefId
+            from
+      	      Cve
+            where
+              name='" . $this->db->escape($name) . "'", "Cve");
+    }
+
+    public function getCvesByCveDef(CveDef &$cveDef)
+    {
+        return $this->db->queryObjects("select id
+        as _id, name as _name, cveDefId
+        as _cveDefId from Cve where
+        Cve.cveDefId={$cveDef->getId()}", "Cve");
+    }
+
+    public function getCveNames()
+    {
+        $sql = "select DISTINCT name from Cve limit 50"; //TODO remove limit
+        $cveNamesDb =& $this->db->queryToMultiRow($sql);
+        $cveNames = array();
+        if ($cveNamesDb != null) {
+            foreach ($cveNamesDb as $cveNameDb) {
+                array_push($cveNames, $cveNameDb["name"]);
+            }
+        }
+        return $cveNames;
+    }
+
+    public function getAllCves()
+    {
+        return $this->db->queryObjects(
+            "select
+    		id as _id, name as _name, cveDefId as _cveDefId
+            from
+      	      Cve", "Cve");
+    }
+
+
 
 }
 

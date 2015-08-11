@@ -91,7 +91,7 @@ class InstalledPkgDao
                 $sql .= "$where order by pkg.arch";
                 break;
             case "version":
-                $sql .= "$where order by inst.version, inst.release";
+                $sql .= "$where order by pkg.version, pkg.release";
                 break;
             default:
                 // oderByName by default

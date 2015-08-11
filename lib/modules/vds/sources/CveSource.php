@@ -34,20 +34,20 @@ require_once(realpath(dirname(__FILE__)) . '/../lib/Source.php');
  * They are little bit different.
  */
 
-class OvalsSource extends Source implements ISource
+class CveSource extends Source implements ISource
 {
-    private static $NAME = "Ovals";
+    private static $NAME = "Cve";
     private $_pakiti;
 
     /*
-     * Load all types of OVAL sources
+     * Load all types of CVE sources
      */
     public function __construct(Pakiti &$pakiti)
     {
         parent::__construct($pakiti);
 
         $this->_pakiti =& $pakiti;
-        $this->setName(OvalsSource::$NAME);
+        $this->setName(CveSource::$NAME);
     }
 
     /*
@@ -60,12 +60,21 @@ class OvalsSource extends Source implements ISource
         # Get module ID from the DB
     }
 
+
     /*
-     * Ask all OVAL sources to provide the complete list of CVE definitions
+     * Get the name of this class.
+     */
+    public function getClassName() {
+        return get_class();
+    }
+
+
+    /*
+     * Ask all CVE sources to provide the complete list of CVE definitions
      */
     public function retrieveVulnerabilities()
     {
-        Utils::log(LOG_DEBUG, "Synchronizing Ovals", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Synchronizing CVE", __FILE__, __LINE__);
         $vulnerabilities = array();
 
         foreach ($this->getSubSources() as $subSource) {
@@ -111,6 +120,7 @@ class OvalsSource extends Source implements ISource
             #)
 
             # Store them into the list of Vulnerabilities
+            print_r($defs);
             if ($defs) {
                 # Reformat data into
                 foreach ($defs as $def) {
@@ -121,16 +131,23 @@ class OvalsSource extends Source implements ISource
                     $cveDef->setRefUrl($def['ref_url']);
                     $cveDef->setVdsSubSourceDefId($def['subSourceDefId']);
 
-                    # CVEs
-                    $cves = array();
-                    foreach ($def['cves'] as $cveName) {
-                        $cve = new Cve();
-                        $cve->setName($cveName);
-                        array_push($cves, $cve);
-                    }
-                    $cveDef->setCves($cves);
+                    $cveDefId = $this->_pakiti->getDao("CveDef")->getCveDefId($cveDef);
 
-                    $this->_pakiti->getManager('CvesDefManager')->storeCveDef($cveDef);
+                    if ($cveDefId == null){
+                        # CVEs
+                        $cves = array();
+                        foreach ($def['cves'] as $cveName) {
+                            $cve = new Cve();
+                            $cve->setName($cveName);
+                            array_push($cves, $cve);
+                        }
+                        $cveDef->setCves($cves);
+
+                        $this->_pakiti->getManager('CveDefsManager')->createCveDef($cveDef);
+
+                    }else{
+                        $cveDef->setId($cveDefId);
+                    }
 
                     foreach ($def['osGroup'] as $osGroupName => $defsPkg) {
                         foreach ($defsPkg as $defPkg) {
@@ -139,7 +156,7 @@ class OvalsSource extends Source implements ISource
 
                             $vuln->setCveDefId($cveDef->getId());
 
-                            # OVAL from RH doesn't contain arch, so use all
+                            # OVAL from RH and DSA doesn't contain arch, so use all
                             $archName = 'all';
                             $arch = $this->_pakiti->getManager("HostsManager")->getArch($archName);
 
@@ -154,12 +171,12 @@ class OvalsSource extends Source implements ISource
                             $vuln->setArch($arch->getName());
 
                             # Get osGroup Id
-                            $osGroup = $this->_pakiti->getManager("HostsManager")->getOsGroup($osGroupName);
+                            $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByName($osGroupName);
                             if ($osGroup == null) {
                                 $osGroup = new OsGroup();
                                 $osGroup->setName($osGroupName);
                                 # osGropu is not defined in the DB, so created it
-                                $osGroup = $this->_pakiti->getManager('HostsManager')->createOsGroup($osGroupName);
+                                $osGroup = $this->_pakiti->getManager('OsGroupsManager')->createOsGroup($osGroupName);
                             }
                             $vuln->setOsGroupId($osGroup->getId());
 
