@@ -175,6 +175,16 @@ h1 {
   padding: 2px;
 }
 
+.critical_cve {
+  color: #FF0000;
+  font-weight: bold;
+}
+
+.high_cve {
+  color: #FFA500;
+  font-weight: bold;
+}
+
 /* FORMS */
 form{
     padding:5px 10px;

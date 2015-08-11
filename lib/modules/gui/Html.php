@@ -240,6 +240,54 @@ class HTMLModule extends DefaultModule
         }
     }
 
+    public function printCveTags(&$cves)
+    {
+        print "
+  	<table class=\"tableList\">
+        <tr>
+            <th>Enable</th>
+            <th>CVE</th>
+            <th>CVE Tag</th>
+            <th>Reason</th>
+            <th>Modifier</th>
+            <th>Timestamp</th>
+            <th>&nbsp;</th>
+        </tr>";
+        $i = 0;
+        foreach ($cves as $cveId => $cve) {
+            foreach ($cve->getTag() as $tag) {
+                print "<tr class=\"a" . ($i & 1) . "\">";
+                if ($tag->getEnabled() == 1) {
+                    print "<td> <input type=" . "checkbox" . " checked> </td>";
+                } else {
+                    print "<td> <input type=" . "checkbox" . "> </td>";
+                }
+
+
+                print "<td>";
+                print "<span";
+                if ($tag->getName() == "Critical") {
+                    print " class=\"critical_cve\"";
+                }
+
+                if ($tag->getName() == "High") {
+                    print " class=\"high_cve\"";
+                }
+
+                print ">" . $cve->getName() . "</span>";
+                print "</td>";
+                print "<td>" . $tag->getName() . "</td>";
+                print "<td>" . $tag->getReason() . "</td>";
+                print "<td>" . $tag->getModifier() . "</td>";
+                print "<td>" . $tag->getTimestamp() . "</td>";
+                print "</tr>";
+            }
+
+        }
+
+        print "</table>";
+    }
+
     public function printHosts(&$hosts)
     {
         print "
@@ -329,6 +377,7 @@ class HTMLModule extends DefaultModule
     	<a href=\"archs.php\">Archs</a>
     	<a href=\"vds.php\">VDS</a>
     	<a href=\"tags.php\">Tags</a>
+    	<a href=\"cve_tags.php\">CVE Tags</a>
     </div>";
     }
 

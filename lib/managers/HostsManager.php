@@ -135,7 +135,7 @@ class HostsManager extends DefaultManager {
     if (is_object($host)) {
       $host->setArch($this->getPakiti()->getDao("Arch")->getById($host->getArchId()));
       $host->setOs($this->getPakiti()->getDao("Os")->getById($host->getOsId()));
-      $host->setDomain($this->getPakiti()->getDao("Domain")->getById($host->getDomainId()));  
+      $host->setDomain($this->getPakiti()->getDao("Domain")->getById($host->getDomainId()));
     } else return null;
     
     return $host;
@@ -181,6 +181,32 @@ class HostsManager extends DefaultManager {
         }
     }
     
+    return $hosts;
+  }
+
+  /*
+   * Get Host by tag name
+   */
+  public function getHostsByTagName($tagName)
+  {
+    $tagId = $this->getPakiti()->getManager("TagsManager")->getTagIdByName($tagName);
+    if ($tagId == -1) {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("The tag $tagName does not exist");
+    }
+
+
+    $sql = "select Host.id from Host join HostTag on Host.id=HostTag.hostId where
+          HostTag.tagId={$tagId}";
+
+    $hostIdsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
+    $hosts = array();
+    if ($hostIdsDb != null) {
+      foreach ($hostIdsDb as $hostIdDb) {
+        $host = $this->getHostById($hostIdDb["id"]);
+        array_push($hosts, $host);
+      }
+    }
     return $hosts;
   }
 
@@ -287,19 +313,6 @@ class HostsManager extends DefaultManager {
 //    Utils::log(LOG_DEBUG, "Getting osGroup by Name", __FILE__, __LINE__);
 //    return $this->getPakiti()->getDao("OsGroup")->getByName($name);
 //  }
-
-
-  /* 
-   * Create osGroup
-   */
-  public function createOsGroup($name) {
-    Utils::log(LOG_DEBUG, "Creating osGroup $name", __FILE__, __LINE__);
-    $osGroup = new OsGroup();
-    $osGroup->setName($name);
-    $this->getPakiti()->getDao("OsGroup")->create($osGroup);
-
-    return $osGroup;
-  }
 
 
   /*

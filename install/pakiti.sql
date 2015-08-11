@@ -57,8 +57,6 @@ create table `Tag` (
   `id` integer(10) not null auto_increment,
   `name` varchar(63) not null,
   `description` varchar(255),
-  `timestamp` timestamp default CURRENT_TIMESTAMP,
-  `enabled` int(1) default 1,
   primary key (`id`),
   unique key `name` (`name`)
 ) ENGINE=INNODB;
@@ -212,6 +210,18 @@ create table `Exceptions` (
   unique key `unique` (`cveId`, `pkgId`, `osGroupId`),
   foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
   foreign key (`cveId`) references Cve(`id`) on delete cascade
+) ENGINE=INNODB;
+
+create table `CveTag` (
+  `cveId` integer(10) not null,
+  `tagId` integer(10) not null,
+  `reason` varchar(255),
+  `timestamp` timestamp default CURRENT_TIMESTAMP,
+  `enabled` int(1) default 1,
+  `modifier` varchar(255),
+  unique key `unique` (`cveId`, `tagId`),
+  foreign key (`cveId`) references Cve(`id`) on delete cascade,
+  foreign key (`tagId`) references Tag(`id`)  on delete cascade
 ) ENGINE=INNODB;
 
 create table `Vulnerability` (

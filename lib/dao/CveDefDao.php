@@ -44,6 +44,7 @@ class CveDefDao
       	vdsSubSourceDefId='".$this->db->escape($cveDef->getVdsSubSourceDefId()). "'");
     }
 
+
     /**
      * Find CveDef for Vulnerability
      * @param Vulnerability $vul
