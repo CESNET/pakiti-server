@@ -140,7 +140,10 @@ $html->printHeader();
         <th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "version")); ?>">Installed
                 version</a></th>
         <th><a href="<?php print $html->getQueryString(array("sortBy" => "arch")); ?>">Architecture</a></th>
-        <th><a>CVEs</a></th>
+        <?php
+        if ($view === "cve") print "<th><a>CVEs</a></th>\n";
+        ?>
+
     </tr>
     <?php
     $i = 0;
@@ -156,21 +159,23 @@ $html->printHeader();
 
                         <td><?php
                             foreach ($pkg["CVE"] as $cve) {
-                                if (!empty($cve->getTag())) {
-                                    foreach ($cve->getTag() as $tag) {
-                                        print "<span";
-                                        if ($tag->getName() == "Critical") {
+                                $tags = $cve->getTag();
+                                if (!empty($tags)) {
+                                    foreach ($tags as $tag) {
+                                        print "<a href=\"cve.php?cve=" . $cve->getName() . "\"><span";
+                                        if ($tag->getName() == "Critical" && $tag->getEnabled()) {
                                             print " class=\"critical_cve\"";
                                         }
 
-                                        if ($tag->getName() == "High") {
+                                        if ($tag->getName() == "High" && $tag->getEnabled()) {
                                             print " class=\"high_cve\"";
                                         }
 
-                                        print ">" . $cve->getName() . " " . "</span>";
+                                        print ">" . $cve->getName() . " " . "</span></a>";
                                     }
                                 } else {
-                                    print $cve->getName() . " ";
+                                    print "<a href=\"cve.php?cve=" . $cve->getName() . "\">";
+                                    print $cve->getName() . " </a>\n";
                                 }
 
                             }

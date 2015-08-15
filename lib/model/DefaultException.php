@@ -1,6 +1,6 @@
 <?php
 require_once(realpath(dirname(__FILE__)) . '/User.php');
-require_once(realpath(dirname(__FILE__)) . '/CveException.php');
+# require_once(realpath(dirname(__FILE__)) . '/CveException.php');
 require_once(realpath(dirname(__FILE__)) . '/PkgException.php');
 
 /**

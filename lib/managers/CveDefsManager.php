@@ -43,6 +43,7 @@ class CveDefsManager extends DefaultManager
         $cve = $this->getPakiti()->getDao("Cve")->getCve();
         if (is_object($cve)) {
             $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+            $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
         }
         return $cve;
     }
@@ -53,6 +54,7 @@ class CveDefsManager extends DefaultManager
         if (is_array($cves)) {
             foreach ($cves as $cve) {
                 $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
             }
         }
         return $cves;
@@ -69,7 +71,6 @@ class CveDefsManager extends DefaultManager
         $pkgsCves = $this->getCvesForHost($host);
         foreach ($pkgsCves as $pkgCves) {
             $cvesCount += count($pkgCves);
-
         }
         return $cvesCount;
     }
@@ -78,28 +79,23 @@ class CveDefsManager extends DefaultManager
      * Return Cves that have been associated with some Tags without duplicities.
      * @return array
      */
-    public function getCvesWithTags()
+    public function getCveNamesWithTags()
     {
-        $cves = $this->getAllCves();
-        $cvesWithTags = array();
-        foreach ($cves as $cve) {
-            if (!empty($cve->getTag())) {
-                if (!in_array($cve->getName(), array_map(function ($cve) {
-                    return $cve->getName();
-                }, $cvesWithTags))
-                )
-                array_push($cvesWithTags, $cve);
-            }
+
+        $cveNamesWithTags = array();
+        $cveNamesAssociatedWithSomeTags = $this->getPakiti()->getManager("DbManager")->queryToMultiRow("select DISTINCT cveName from CveTag");
+        foreach ($cveNamesAssociatedWithSomeTags as $cveNameAssociatedWithSomeTags) {
+            array_push($cveNamesWithTags, $cveNameAssociatedWithSomeTags['cveName']);
         }
-        return $cvesWithTags;
+        return $cveNamesWithTags;
     }
 
 
     public function getCveDefsForHost(Host $host){
         $pkgsCveDefs = array();
 
-        //Get OS group
-        $osGroup = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupByOsId($host->getOsId());
+        //Get OS groups
+        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
 
         //Get installed Pkgs on Host
         $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
@@ -107,7 +103,12 @@ class CveDefsManager extends DefaultManager
         //Get CveDefs for Vulnerable packages
         foreach ($installedPkgs as $installedPkg) {
             $sql = "select * from CveDef inner join PkgCveDef on CveDef.id = PkgCveDef.cveDefId
-                    where PkgCveDef.pkgId={$installedPkg->getId()} and PkgCveDef.osGroupId={$osGroup->getId()}";
+                    where PkgCveDef.pkgId={$installedPkg->getId()}
+                    and PkgCveDef.osGroupId in
+                    (" . implode(",", array_map("intval", array_map(function ($osGroup) {
+                    return $osGroup->getId();
+                }, $osGroups))) . ")";
+
             $cveDefsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
 
             # Create objects
@@ -120,7 +121,19 @@ class CveDefsManager extends DefaultManager
                     $cveDef->setTitle($cveDefDb["title"]);
                     $cveDef->setRefUrl($cveDefDb["refUrl"]);
                     $cveDef->setVdsSubSourceDefId($cveDefDb["vdsSubSourceDefId"]);
-                    $cveDef->setCves($this->getCvesByCveDef($cveDef));
+
+                    # Exclude CVEs with exceptions
+                    $cves = $this->getCvesByCveDef($cveDef);
+                    foreach ($cves as $cve) {
+                        foreach ($cve->getCveExceptions() as $cveException) {
+                            if ($cveException->getPkgId() === $installedPkg->getId() && $osGroup->getId() === $cveException->getOsGroupId()) {
+                                if (($key = array_search($cve, $cves)) !== false) {
+                                    unset($cves[$key]);
+                                }
+                            }
+                        }
+                    }
+                    $cveDef->setCves($cves);
                     array_push($cveDefs, $cveDef);
                 }
                 $pkgsCveDefs[$installedPkg->getId()] = $cveDefs;
@@ -135,6 +148,8 @@ class CveDefsManager extends DefaultManager
         foreach ($cves as $cve) {
             if (is_object($cve)) {
                 $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
+
             }
         }
         return $cves;
@@ -151,6 +166,8 @@ class CveDefsManager extends DefaultManager
         foreach ($cves as $cve) {
             if (is_object($cve)) {
                 $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
+
             }
         }
         return $cves;
@@ -171,11 +188,15 @@ class CveDefsManager extends DefaultManager
         foreach ($pkgsCveDefs as $pkgId => $pkgCveDefs) {
             $cves = array();
             foreach ($pkgCveDefs as $pkgCveDef) {
+
                 foreach ($pkgCveDef->getCves() as $cve) {
                     array_push($cves, $cve);
                 }
             }
-            $pkgsCves[$pkgId] = $cves;
+            if (!empty($cves)) {
+                $pkgsCves[$pkgId] = $cves;
+            }
+
         }
         return $pkgsCves;
 

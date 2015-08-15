@@ -37,7 +37,9 @@ class OsGroupDao {
   public function create(OsGroup &$osGroup) {
     $this->db->query(
       "insert into OsGroup set
-      	name='".$this->db->escape($osGroup->getName())."'");
+      	name='" . $this->db->escape($osGroup->getName()) . "',
+      	regex='" . $this->db->escape($osGroup->getRegex()) . "'
+      	");
     
     # Set the newly assigned id
     $osGroup->setId($this->db->getLastInsertedId());
@@ -50,19 +52,6 @@ class OsGroupDao {
   
   public function getByName($name) {
     return $this->getBy($name, "name");
-  }
-
-  public function getByOsId($osId)
-  {
-    $id = $this->db->queryToSingleValue(
-        "select
-            osGroupId
-         from
-      OsOsGroup
-         where
-          osId=$osId");
-
-    return $this->getById($id);
   }
   
   public function getIdByName($name) {
@@ -78,7 +67,7 @@ class OsGroupDao {
     }
     return $id;
   }
-  
+
   public function getOsGroupsIds($orderBy, $pageSize, $pageNum) {
     $sql = "select id from OsGroup order by name";
     
@@ -91,9 +80,11 @@ class OsGroupDao {
   }
   
   public function update(OsGroup &$osGroup) {
+    //print_r($this->db->escape($osGroup->getRegex()));
     $this->db->query(
       "update OsGroup set
-      	name='".$this->db->escape($osGroup->getName())."
+      	name='" . $this->db->escape($osGroup->getName()) . "',
+      	regex='" . $this->db->escape($osGroup->getRegex()) . "'
       where id=".$osGroup->getId());
   }
   
@@ -117,7 +108,8 @@ class OsGroupDao {
     return $this->db->queryObject(
     	"select 
     		id as _id,
-		name as _name
+		name as _name,
+		regex as _regex
       from 
       	OsGroup 
       where

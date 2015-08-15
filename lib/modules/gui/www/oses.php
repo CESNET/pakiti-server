@@ -32,12 +32,26 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
+$entries = Utils::getHttpPostVar("entries");
+if ($entries == "") {
+    $entries = 0;
+}
+
+if ($entries > 0) {
+    for ($i = 0; $i < $entries; $i++) {
+        if (Utils::getHttpPostVar("osGroup$i")) {
+            $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById(Utils::getHttpPostVar("osGroup$i"));
+            $osGroup->setRegex(Utils::getHttpPostVar("regex$i"));
+            $pakiti->getManager("OsGroupsManager")->updateOsGroup($osGroup);
+        }
+    }
+    $html->setMessage(sprintf("The changes have been saved.", $tagName));
+}
 
 $pageNum = $html->getHttpGetVar("pageNum", 0);
 $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
-
 $html->addHtmlAttribute("title", "List of all Oses");
-
+$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups("name");
 $oses = $pakiti->getManager("HostsManager")->getOses("name", $pageSize, $pageNum);
 $osesCount = sizeof($oses);
 
@@ -47,26 +61,56 @@ $html->printHeader();
 
 # Print table with oses
 ?>
-
-<div class="paging">
-<?php print $html->paging($osesCount, $pageSize, $pageNum) ?>
-</div>
-
 <table class="tableList">
-  <tr>
-    <th>Name</th>
-  </tr>
-<?php
-  $i = 0;
-  foreach ($oses as $os) {
-    $i++;
-    print "<tr class=\"a" . ($i & 1) . "\"><td>{$os->getName()}</td></tr>\n";
-  }
-?>
+    <tr>
+        <th>OS Name</th>
+        <th>Assigned groups</th>
+        <th></th>
+    </tr>
+    <?php
+    $i = 0;
+    foreach ($oses as $os) {
+        print "<tr class=\"a" . ($i & 1) . "\">\n<td>{$os->getName()}</td>";
+        $actualOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOs($os);
+        print "<td>" . implode(",", array_map(function ($osGroup) {
+                return $osGroup->getName();
+            }, $actualOsGroups)) . "</td>
+    </td>\n
+    </tr>\n";
+        $i++;
+    }
+    ?>
 </table>
-
-<div class="paging">
-<?php print $html->paging($osesCount, $pageSize, $pageNum) ?>
 </div>
+<div class="space"></div><h1>List of all OS Groups</h1>
+<form action="" name="osGroups" method="post">
+    <table class="tableList">
+        <tr>
+            <th>OS Group</th>
+            <th>Regular expression</th>
+            <th></th>
+        </tr>
+        <?php
+        $i = 0;
+        foreach ($osGroups as $osGroup) {
+            if ($osGroup->getName() !== "unknown") {
+                print "<tr>
+                <td>{$osGroup->getName()}</td>
+                <td>
+                <span class=\"slash\">/</span>
+                <input type=\"text\" name=\"regex$i\" value=\"" . $osGroup->getRegex() . "\" placeholder=\"insert regular expression here\">
+                <span class=\"slash\">/</span>
+                </td>
+
+                <td><input type=\"hidden\" name=\"osGroup$i\" value=\"" . $osGroup->getId() . "\" /></td>
+            </tr>";
+                $i++;
+            }
+        }
+        ?>
+    </table>
+    <?php print "<td><input type=\"hidden\" name=\"entries\" value=\"" . $i . "\"></td>" ?>
+    <input type="submit" value="Save changes">
+</form>
 
 <?php $html->printFooter(); ?>

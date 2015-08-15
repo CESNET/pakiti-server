@@ -32,9 +32,11 @@ switch ($type) {
             foreach ($host["HostGroups"] as $hostGroup) {
                 foreach ($host["CVE"] as $cve) {
                     foreach ($cve->getTag() as $tag) {
-                        print $tag->getName() . "," . "," . "," . $hostGroup->getName() . "," .
-                            $host["Host"]->getHostname() . "," . $host["Host"]->getArch()->getName() . "," .
-                            $host["Host"]->getOs()->getName() . "," . $cve->getName() . "," . ",";
+                        if ($tag->getEnabled()) {
+                            print $tag->getName() . "," . "," . "," . $hostGroup->getName() . "," .
+                                $host["Host"]->getHostname() . "," . $host["Host"]->getArch()->getName() . "," .
+                                $host["Host"]->getOs()->getName() . "," . $cve->getName() . "," . ",\n";
+                        }
                     }
                 }
             }

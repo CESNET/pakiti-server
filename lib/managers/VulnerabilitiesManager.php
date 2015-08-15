@@ -65,11 +65,14 @@ class VulnerabilitiesManager extends DefaultManager
         }
         Utils::log(LOG_DEBUG, "Getting the vulnerable packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
 
-        $osGroup = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupByOsId($host->getOsId());
+        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
+        $osGroupsIds = array_map(function ($osGroup) {
+            return $osGroup->getId();
+        }, $osGroups);
 
-        $pkgs = $this->getPakiti()->getDao("Vulnerability")->getVulnerablePkgs($host->getId(), $osGroup->getId(), $orderBy, $pageSize, $pageNum);
+        $pkgs = $this->getPakiti()->getDao("Vulnerability")->getVulnerablePkgs($host->getId(), $osGroupsIds, $orderBy, $pageSize, $pageNum);
+
         $cves = $this->getPakiti()->getManager("CveDefsManager")->getCvesForHost($host);
-
         $pkgsWithCves = array();
         foreach ($cves as $pkgId => $pkgCves) {
             foreach ($pkgs as $pkg) {
@@ -88,9 +91,13 @@ class VulnerabilitiesManager extends DefaultManager
     /**
      * Return Array of arrays that contains keys: [Host], [CVE], [HostGroups]
      * Used in API
-     * @param $tag
-     * @param $hostgroup
+     * @param $htag
+     * @param $hostGroupName
+     * @param $cveName
      * @return array
+     * @throws Exception
+     * @internal param $tag
+     * @internal param $hostgroup
      */
     function getHostsWithCvesThatContainsSomeTag($htag, $hostGroupName, $cveName)
     {
@@ -120,7 +127,8 @@ class VulnerabilitiesManager extends DefaultManager
             $cvesWithTag = array();
             foreach ($pkgsWithCves as $pkgWithCves) {
                 foreach ($pkgWithCves["CVE"] as $cve) {
-                    if (!empty($cve->getTag())) {
+                    $tags = $cve->getTag();
+                    if (!empty($tags)) {
                         if ($cveName != "") {
                             if ($cveName == $cve->getName()) array_push($cvesWithTag, $cve);
                         } else {
@@ -177,10 +185,10 @@ class VulnerabilitiesManager extends DefaultManager
         Utils::log(LOG_DEBUG, "Searching for vulnerable packages for specific host ", __FILE__, __LINE__);
 
         // If not in Os Group
-        $osGroup = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupByOsId($host->getOsId());
-        if ($osGroup == null) {
-            throw new Exception("Host's OS is not a member of any OsGroup");
-        }
+        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
+        $osGroupsIds = array_map(function ($osGroup) {
+            return $osGroup->getId();
+        }, $osGroups);
 
         //Get installed Pkgs on Host
         $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
@@ -188,7 +196,7 @@ class VulnerabilitiesManager extends DefaultManager
         //For each vulnerable package get Cvedef
         foreach ($installedPkgs as $installedPkg) {
             $confirmedVulnerabilities = array();
-            $potentialVulnerabilities = $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByPkgNameOsGroupIdArch($installedPkg->getName(), $osGroup->getId(), $installedPkg->getArch());
+            $potentialVulnerabilities = $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByPkgNameOsGroupIdArch($installedPkg->getName(), $osGroupsIds, $installedPkg->getArch());
             if (!empty($potentialVulnerabilities)) {
                 foreach ($potentialVulnerabilities as $potentialVulnerability) {
                     switch ($potentialVulnerability->getOperator()) {
@@ -204,8 +212,10 @@ class VulnerabilitiesManager extends DefaultManager
                     $cveDefs = array();
                     foreach ($confirmedVulnerabilities as $confirmedVulnerability) {
                         # Assign the Cvedef to the Package
-                        $this->getPakiti()->getManager("CveDefsManager")->assignPkgToCveDef($installedPkg->getId(),
-                            $this->getPakiti()->getDao("CveDef")->getCveDefForVulnerability($confirmedVulnerability)->getId(), $osGroup->getId());
+                        foreach ($osGroups as $osGroup) {
+                            $this->getPakiti()->getManager("CveDefsManager")->assignPkgToCveDef($installedPkg->getId(),
+                                $this->getPakiti()->getDao("CveDef")->getCveDefForVulnerability($confirmedVulnerability)->getId(), $osGroup->getId());
+                        }
                     }
                 }
             }
@@ -248,17 +258,18 @@ class VulnerabilitiesManager extends DefaultManager
             return array();
         }
 
-        $osGroup = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupByOsId($os->getId());
-        if (!is_object($osGroup)) {
-            return array();
-        }
+        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($os);
 
         $cveDefsIds = array_map(function ($cve) {
             return $cve->getCveDefId();
         }, $cves);
 
-        return $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroup->getId());
+        $osGroupsIds = array_map(function ($osGroup) {
+            return $osGroup->getId();
+        }, $osGroups);
+        return $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroupsIds);
     }
+
 
     /*
      * Compare packages version based on type of packages
@@ -329,17 +340,17 @@ class VulnerabilitiesManager extends DefaultManager
         return $arr;
     }
 
-    /*
-     * Used by dpkgvercmp
-     */
+    # Used by dpkgvercmp
     private function dpkgvercmp_in($a, $b)
     {
         $i = 0;
         $j = 0;
-        $l = strlen($a) - 1;
-        $k = strlen($b) - 1;
-        while ($i < $l || $j < $k) {
+        $l = strlen($a);
+        $k = strlen($b);
+
+        while ($i < $l && $j < $k) {
             $first_diff = 0;
+
             while (($i < $l && !ctype_digit($a[$i])) || ($j < $k && !ctype_digit($b[$j]))) {
                 $vc = $this->order($a[$i]);
                 $rc = $this->order($b[$j]);
@@ -347,20 +358,36 @@ class VulnerabilitiesManager extends DefaultManager
                 $i++;
                 $j++;
             }
-            while ($i < $l && $a[$i] == '0') $i++;
-            while ($j < $k && $b[$j] == '0') $j++;
-            while (($i < $l && ctype_digit($a[$i])) && ($j < $k && ctype_digit($b[$j]))) {
-                if (!$first_diff) $first_diff = ord($a[$i]) - ord($b[$j]);
+
+            # Cumulate digits into umber
+            $a_num = 0;
+            $a_has_num = 0;
+            while ($i < $l && ctype_digit($a[$i])) {
+                $a_num = $a_num * 10 + $a[$i];
+                $a_has_num = 1;
                 $i++;
+            }
+            $b_num = 0;
+            $b_has_num = 0;
+            while ($j < $k && ctype_digit($b[$j])) {
+                $b_num = $b_num * 10 + $b[$j];
+                $b_has_num = 1;
                 $j++;
             }
-            if ($i == $j && (ctype_digit($a[$i]) && ctype_digit($b[$j]))) return strcmp($a[$i], $b[$j]);
-            if (ctype_digit($a[$i])) return 1;
-            if (ctype_digit($b[$j])) return -1;
-            if ($first_diff) return $first_diff;
+
+            if (($a_has_num && $b_has_num) && $a_num != $b_num) {
+                return $a_num == $b_num ? 0 : ($a_num > $b_num ? 1 : -1);
+            }
+            if ($a_has_num && !$b_has_num) return 1;
+            if (!$a_has_num && $b_has_num) return -1;
+            if ($a_has_num == $b_has_num && ($i == $l || $j == $k)) {
+                return $l == $k ? 0 : ($l > $k ? 1 : -1);
+            }
         }
-        return 0;
+
+        return $l == $k ? 0 : ($l > $k ? 1 : -1);
     }
+
 
     /*
      * Used by dpkgvercmp
@@ -418,16 +445,20 @@ class VulnerabilitiesManager extends DefaultManager
         # Get epoch
         $epoch_a = substr($vera, 0, strpos($vera, ':'));
         $epoch_b = substr($verb, 0, strpos($verb, ':'));
+
         # If epoch is not there => 0
         if ($epoch_a == "") $epoch_a = "0";
         if ($epoch_b == "") $epoch_b = "0";
+
         if ($epoch_a > $epoch_b) return 1;
         if ($epoch_a < $epoch_b) return -1;
+
         # Compare versions
         $r = $this->dpkgvercmp_in($vera, $verb);
         if ($r) {
             return $r;
         }
+
         # Compare release
         return $this->dpkgvercmp_in($rela, $relb);
     }

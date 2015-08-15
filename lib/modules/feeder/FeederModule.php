@@ -27,7 +27,8 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-class FeederModule extends DefaultModule {
+class FeederModule extends DefaultModule
+{
     private $_version;
     private $_report;
     private $_host;
@@ -45,7 +46,8 @@ class FeederModule extends DefaultModule {
     private $_report_report;
     private $_report_pkgs;
 
-    public function __construct(Pakiti &$pakiti) {
+    public function __construct(Pakiti &$pakiti)
+    {
         parent::__construct($pakiti);
 
         $this->_host = new Host();
@@ -68,7 +70,7 @@ class FeederModule extends DefaultModule {
         # Get the hostname and ip of the reporting machine (could be a NAT machine)
         $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
         $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
-        Utils::log(LOG_DEBUG, "Report from [reporterHost=".$this->_host->getReporterHostname().",reporterIp=".$this->_host->getReporterIp()."]",
+        Utils::log(LOG_DEBUG, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
             __FILE__, __LINE__);
 
         # Is the host proxy?
@@ -79,7 +81,7 @@ class FeederModule extends DefaultModule {
             if (!$this->checkProxyAuthz($this->_host->getReporterHostname(), $this->_host->getReporterIp())) {
                 throw new Exception("Proxy " . $this->_host->getReporterHostname() . " is not authorized to send the reports");
             }
-            Utils::log(LOG_INFO, "Proxy logging [proxy=" . $this->_host->getReporterHostname()."] for [host=".$this->_host->getHostname()."]");
+            Utils::log(LOG_INFO, "Proxy logging [proxy=" . $this->_host->getReporterHostname() . "] for [host=" . $this->_host->getHostname() . "]");
 
             # If we are in proxy mode, the reporterHostname and reporterIp will be replaced with the real hostname and ip of the client machine.
             $this->_host->setReporterHostname($this->_host->getHostname());
@@ -92,14 +94,16 @@ class FeederModule extends DefaultModule {
     /*
      * Returns hostname of the reporting machine
      */
-    public function getReportHost() {
+    public function getReportHost()
+    {
         return $this->_host->getReporterHostname();
     }
 
     /*
      * Maps variables from the reports (depends on the report version) onto the local variables
      */
-    private function doReportMapping($version) {
+    private function doReportMapping($version)
+    {
         switch ($version) {
             # Legacy Pakiti client
             case "4":
@@ -109,8 +113,8 @@ class FeederModule extends DefaultModule {
                 $this->_report_os = Utils::getHttpVar(Constants::$REPORT_OS);
                 $this->_report_arch = Utils::getHttpVar(Constants::$REPORT_ARCH);
                 $this->_report_kernel = Utils::getHttpVar(Constants::$REPORT_KERNEL);
-                $this->_report_type  = Utils::getHttpVar(Constants::$REPORT_TYPE);
-                $this->_report_site  = Utils::getHttpVar(Constants::$REPORT_SITE);
+                $this->_report_type = Utils::getHttpVar(Constants::$REPORT_TYPE);
+                $this->_report_site = Utils::getHttpVar(Constants::$REPORT_SITE);
                 $this->_report_tag = Utils::getHttpVar(Constants::$REPORT_TAG);
                 $this->_report_report = Utils::getHttpVar(Constants::$REPORT_REPORT);
                 $this->_report_pkgs = Utils::getHttpVar(Constants::$REPORT_PKGS);
@@ -142,7 +146,7 @@ class FeederModule extends DefaultModule {
                 if (file_put_contents($tmpFileIn, $data) === FALSE) {
                     throw new Exception("Cannot write to the file '$tmpFileIn' during decoding cern_1 report");
                 }
-                if (system("openssl smime -decrypt -binary -inform DER -inkey ". Config::$CERN_REPORT_DECRYPTION_KEY ." -in $tmpFileIn -out $tmpFileOut") === FALSE) {
+                if (system("openssl smime -decrypt -binary -inform DER -inkey " . Config::$CERN_REPORT_DECRYPTION_KEY . " -in $tmpFileIn -out $tmpFileOut") === FALSE) {
                     throw new Exception("Cannot run openssl smime on the file '$tmpFileIn'");
                 }
                 # Clean up
@@ -162,15 +166,29 @@ class FeederModule extends DefaultModule {
                         }
                         # Get field name and value separatedly
                         $fields = explode(':', $line, 2);
-                        switch(trim($fields[0])) {
-                            case "ip": $this->_report_ip = trim($fields[1]); break;
-                            case "arch": $this->_report_arch = trim($fields[1]); break;
+                        switch (trim($fields[0])) {
+                            case "ip":
+                                $this->_report_ip = trim($fields[1]);
+                                break;
+                            case "arch":
+                                $this->_report_arch = trim($fields[1]);
+                                break;
                             # Get only the first hostname in the list, CERN sends all possible hostnames of the host
-                            case "host": $this->_report_hostname = trim($fields[1]); break;
-                            case "kernel": $this->_report_kernel = trim($fields[1]); break;
-                            case "packager": $this->_report_type = trim($fields[1]); break;
-                            case "site": $this->_report_site = trim($fields[1]); break;
-                            case "system": $this->_report_os = trim($fields[1]); break;
+                            case "host":
+                                $this->_report_hostname = trim($fields[1]);
+                                break;
+                            case "kernel":
+                                $this->_report_kernel = trim($fields[1]);
+                                break;
+                            case "packager":
+                                $this->_report_type = trim($fields[1]);
+                                break;
+                            case "site":
+                                $this->_report_site = trim($fields[1]);
+                                break;
+                            case "system":
+                                $this->_report_os = trim($fields[1]);
+                                break;
                         }
                     }
 
@@ -194,6 +212,10 @@ class FeederModule extends DefaultModule {
      */
     public function processReport()
     {
+        if (!$this->isHostSentNewData()) {
+            return false;
+        }
+
 
         # Start the transaction
         $this->getPakiti()->getManager("DbManager")->begin();
@@ -212,6 +234,7 @@ class FeederModule extends DefaultModule {
             $this->getPakiti()->getManager("DbManager")->rollback();
             throw $e;
         }
+
         # Commit the transaction
         $this->getPakiti()->getManager("DbManager")->commit();
 
@@ -221,12 +244,16 @@ class FeederModule extends DefaultModule {
         $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
         $this->_report->setNumOfCves($cveCount);
         $this->getPakiti()->getManager("ReportsManager")->updateReport($this->_report);
+
+        return true;
+
     }
 
     /*
      * Process all received entries
      */
-    public function prepareReport() {
+    public function prepareReport()
+    {
         Utils::log(LOG_DEBUG, "Preparing the report", __FILE__, __LINE__);
         $tag = null;
         $hostGroup = null;
@@ -277,9 +304,10 @@ class FeederModule extends DefaultModule {
     }
 
     /*
-     * Store the repor
+     * Store the report
      */
-    public function storeReport() {
+    public function storeReport()
+    {
         Utils::log(LOG_DEBUG, "Storing report to the DB", __FILE__, __LINE__);
 
         $this->_report->setProcessedOn(time());
@@ -287,30 +315,60 @@ class FeederModule extends DefaultModule {
         $this->_report = $this->getPakiti()->getManager("ReportsManager")->createReport($this->_report, $this->_host);
     }
 
-    /*
-     * Stores the report to the file for further processing (only applied in asynchronous mode).
-     * In order to save resources, store directly variables from the HTTP request ($_GET or $_POST).
-     */
-    public function storeReportToFile() {
-        Utils::log(LOG_DEBUG, "Storing report to file", __FILE__, __LINE__);
-
+    public function isHostSentNewData()
+    {
         # Get the host id from the DB
         $id = $this->getPakiti()->getManager("HostsManager")->getHostId($this->_host);
 
         # Get the hashes of the previous report, but only for hosts already stored in the DB
         if ($id != -1) {
-            $this->_host->setId($id);
-            $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($this->_host);
+            $host = $this->getPakiti()->getManager("HostsManager")->getHostById($id);
+            $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($host);
             $currentReportHeaderHash = $this->computeReportHeaderHash();
             $currentReportPkgsHash = $this->computeReportPkgsHash();
 
             # Check if the hashes are equals
-            if (($lastReportHashes != null) && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $currentReportHeaderHash) ||
-                    ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $currentReportPkgsHash))) {
+            if (($lastReportHashes != null) && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $currentReportPkgsHash) ||
+                    ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $currentReportPkgsHash))
+            ) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
                 Utils::log(LOG_DEBUG, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
-                exit;
+
+                // Recalculate vulnerable pkgs for a host in case a new definitions are appeared
+                $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($host);
+
+                //Update Last Host Report
+                $lastReport = $this->getPakiti()->getManager("ReportsManager")->getReportById($host->getLastReportId());
+                $timestamp = microtime(true);
+                $lastReport->setReceivedOn($timestamp);
+                $lastReport->setProcessedOn($timestamp);
+                $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
+                $lastReport->setNumOfCves($cveCount);
+                $lastReport->setId(-1);
+                // Create new Report from Last Report
+                $this->getPakiti()->getManager("ReportsManager")->createReport($lastReport, $host);
+                return false;
             }
+        }
+
+        # Store the hashes into the DB, but only for hosts already stored in the DB
+        if ($id != -1) {
+            $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $currentReportHeaderHash, $currentReportPkgsHash);
+        }
+
+        return true;
+
+    }
+
+    /*
+     * Stores the report to the file for further processing (only applied in asynchronous mode).
+     * In order to save resources, store directly variables from the HTTP request ($_GET or $_POST).
+     */
+    public function storeReportToFile()
+    {
+
+        if (!$this->isHostSentNewData()) {
+            exit;
         }
 
         # Create temporary file, filename mask: pakiti-report-[host]-[reportHost] and also store the timestamp to the file
@@ -318,10 +376,10 @@ class FeederModule extends DefaultModule {
         # Maximal number of attempts to open the file
         $count = 3;
 
-        $filename = "pakiti-report-".$this->_host->getHostname()."-".$this->_host->getReporterHostname();
-        $file = Config::$REPORTS_DIR."/".$filename;
-        Utils::log(LOG_DEBUG, "Storing report [file=".$file."]", __FILE__, __LINE__);
-        while (($reportFile = fopen($file,"w")) === FALSE) {
+        $filename = "pakiti-report-" . $this->_host->getHostname() . "-" . $this->_host->getReporterHostname();
+        $file = Config::$REPORTS_DIR . "/" . $filename;
+        Utils::log(LOG_DEBUG, "Storing report [file=" . $file . "]", __FILE__, __LINE__);
+        while (($reportFile = fopen($file, "w")) === FALSE) {
             $count--;
 
             # Wait a bit
@@ -330,8 +388,8 @@ class FeederModule extends DefaultModule {
             # Try to create the file three times, if the operation is not successfull, then throw the exception
             if ($count == 0) {
                 Utils::log(LOG_DEBUG, "Error creating the file", __FILE__, __LINE__);
-                throw new Exception("Cannot create the file containing host report [host=".$this->_host->getHostname().
-                    ", reporterHostname=".$this->_host->getReporterHostname()."]");
+                throw new Exception("Cannot create the file containing host report [host=" . $this->_host->getHostname() .
+                    ", reporterHostname=" . $this->_host->getReporterHostname() . "]");
             }
             Utils::log(LOG_DEBUG, "Cannot create the file, trying again ($count attempts left)", __FILE__, __LINE__);
         }
@@ -339,16 +397,16 @@ class FeederModule extends DefaultModule {
         switch ($this->_version) {
             case "4":
                 # Prepare the header
-                $header = Constants::$REPORT_TYPE."='".$this->_report_type."',".
-                    Constants::$REPORT_HOSTNAME."='".$this->_report_hostname."',".
-                    Constants::$REPORT_OS."='".$this->_report_os."',".
-                    Constants::$REPORT_TAG."='".$this->_report_tag."',".
-                    Constants::$REPORT_KERNEL."='".$this->_report_kernel."',".
-                    Constants::$REPORT_ARCH."='".$this->_report_arch."',".
-                    Constants::$REPORT_SITE."='".$this->_report_site."',".
-                    Constants::$REPORT_VERSION."='".$this->_version."',".
-                    Constants::$REPORT_REPORT."='".$this->_report_report."',".
-                    Constants::$REPORT_TIMESTAMP."='".$timestamp."'".
+                $header = Constants::$REPORT_TYPE . "='" . $this->_report_type . "'," .
+                    Constants::$REPORT_HOSTNAME . "='" . $this->_report_hostname . "'," .
+                    Constants::$REPORT_OS . "='" . $this->_report_os . "'," .
+                    Constants::$REPORT_TAG . "='" . $this->_report_tag . "'," .
+                    Constants::$REPORT_KERNEL . "='" . $this->_report_kernel . "'," .
+                    Constants::$REPORT_ARCH . "='" . $this->_report_arch . "'," .
+                    Constants::$REPORT_SITE . "='" . $this->_report_site . "'," .
+                    Constants::$REPORT_VERSION . "='" . $this->_version . "'," .
+                    Constants::$REPORT_REPORT . "='" . $this->_report_report . "'," .
+                    Constants::$REPORT_TIMESTAMP . "='" . $timestamp . "'" .
                     "\n";
 
                 # Store the data
@@ -360,17 +418,13 @@ class FeederModule extends DefaultModule {
 
         # Finally close the handler
         fclose($reportFile);
-
-        # Store the hashes into the DB, but only for hosts already stored in the DB
-        if ($id != -1) {
-            $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $currentReportHeaderHash, $currentReportPkgsHash);
-        }
     }
 
     /*
      * Process packages.
      */
-    public function storePkgs() {
+    public function storePkgs()
+    {
         Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
         # Load the actually stored packages from the DB, the array is already sorted by the pkgName
         $pkgs =& $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsAsArray($this->_host);
@@ -381,7 +435,7 @@ class FeederModule extends DefaultModule {
 
         // Find packages which should be added or updated
         foreach ($this->_pkgs as $pkgName => &$value) {
-            if (!array_key_exists($pkgName,$pkgs)) {
+            if (!array_key_exists($pkgName, $pkgs)) {
                 # Package is missing in the DB
                 $pkgsToAdd[$pkgName] =& $value;
             } elseif ($value['pkgVersion'] != $pkgs[$pkgName]['pkgVersion']) {
@@ -408,11 +462,12 @@ class FeederModule extends DefaultModule {
     /*
      * Parse the long string containing list of installed packages.
      */
-    protected function parsePkgs(&$pkgs) {
+    protected function parsePkgs(&$pkgs)
+    {
         Utils::log(LOG_DEBUG, "Parsing packages", __FILE__, __LINE__);
         $parsedPkgs = array();
         # Remove escape characters
-        $pkgs = str_replace ("\\", "", $pkgs);
+        $pkgs = str_replace("\\", "", $pkgs);
 
         # Go throught the string, each entry is separated by the new line
         $tok = strtok($pkgs, "\n");
@@ -428,7 +483,7 @@ class FeederModule extends DefaultModule {
                     # If the host uses dpkg we need to split version manually to version and release by the dash.
                     # Suppress warnings, if the version doesn't contain dash, only version will be filled, release will be empty
                     if ($this->_host->getType() == Constants::$PACKAGER_SYSTEM_DPKG) {
-                        @list ($pkgVersion, $pkgRelease) = explode('-',$pkgVersion);
+                        @list ($pkgVersion, $pkgRelease) = explode('-', $pkgVersion);
                     }
                     break;
                 case "cern_1":
@@ -451,7 +506,7 @@ class FeederModule extends DefaultModule {
                 # Remove epoch from the version
                 $versionWithoutEpoch = Utils::removeEpoch($pkgVersion);
                 # Compare result of the uname -r with the package version
-                if ($this->_host->getKernel() != $versionWithoutEpoch."-".$pkgRelease) {
+                if ($this->_host->getKernel() != $versionWithoutEpoch . "-" . $pkgRelease) {
                     # This verion of the kernel isn't booted
                     $tok = strtok("\n");
                     continue;
@@ -460,7 +515,7 @@ class FeederModule extends DefaultModule {
 
             # Finally iterate through all regexp which defines packages to ignore
             foreach (Config::$IGNORE_PACKAGES_PATTERNS as &$pkgNamePattern) {
-                if (preg_match("/$pkgNamePattern/",$pkgName) == 1) {
+                if (preg_match("/$pkgNamePattern/", $pkgName) == 1) {
                     # Skip this package, because it is in ignore list
                     $tok = strtok("\n");
                     continue;
@@ -469,7 +524,7 @@ class FeederModule extends DefaultModule {
             unset($pkgNamePattern);
 
             # $parsedPkgs['pkgName'] = array ( pkgVersion, pkgRelease, pkgArch );
-            $parsedPkgs[$pkgName] = array ( 'pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease, 'pkgArch' => $pkgArch );
+            $parsedPkgs[$pkgName] = array('pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease, 'pkgArch' => $pkgArch);
             $tok = strtok("\n");
         }
 
@@ -479,18 +534,19 @@ class FeederModule extends DefaultModule {
     /*
      * Check whether the proxy is authorized to send the reports on behalf of the host.
      */
-    protected function checkProxyAuthz($proxyHostname, $proxyIp) {
+    protected function checkProxyAuthz($proxyHostname, $proxyIp)
+    {
         Utils::log(LOG_DEBUG, "Checking the proxy authorization", __FILE__, __LINE__);
         switch (Config::$PROXY_AUTHENTICATION_MODE) {
             case Constants::$PROXY_AUTHN_MODE_HOSTNAME:
-                if (in_array(Utils::getHttpVar(Constants::$REPORT_HOSTNAME), Config::$PROXY_ALLOWED_PROXIES)) {
+                if (in_array($proxyHostname, Config::$PROXY_ALLOWED_PROXIES)) {
                     return TRUE;
                 } else {
                     return FALSE;
                 }
                 break;
             case Constants::$PROXY_AUTHN_MODE_IP:
-                if (in_array(Utils::getHttpVar(Constants::$REPORT_IP), Config::$PROXY_ALLOWED_PROXIES)) {
+                if (in_array($proxyIp, Config::$PROXY_ALLOWED_PROXIES)) {
                     return TRUE;
                 } else {
                     return FALSE;
@@ -509,18 +565,19 @@ class FeederModule extends DefaultModule {
     /*
      * Compute hash of the report header (hostname, ip, version, kernel, ...)
      */
-    protected function computeReportHeaderHash() {
+    protected function computeReportHeaderHash()
+    {
         Utils::log(LOG_DEBUG, "Computing the hash of the report header", __FILE__, __LINE__);
         switch ($this->_version) {
             case "4":
-                $header = Utils::getHttpVar(Constants::$REPORT_TYPE).
-                    Utils::getHttpVar(Constants::$REPORT_HOSTNAME).
-                    Utils::getHttpVar(Constants::$REPORT_OS).
-                    Utils::getHttpVar(Constants::$REPORT_TAG).
-                    Utils::getHttpVar(Constants::$REPORT_KERNEL).
-                    Utils::getHttpVar(Constants::$REPORT_ARCH).
-                    Utils::getHttpVar(Constants::$REPORT_SITE).
-                    Utils::getHttpVar(Constants::$REPORT_VERSION).
+                $header = Utils::getHttpVar(Constants::$REPORT_TYPE) .
+                    Utils::getHttpVar(Constants::$REPORT_HOSTNAME) .
+                    Utils::getHttpVar(Constants::$REPORT_OS) .
+                    Utils::getHttpVar(Constants::$REPORT_TAG) .
+                    Utils::getHttpVar(Constants::$REPORT_KERNEL) .
+                    Utils::getHttpVar(Constants::$REPORT_ARCH) .
+                    Utils::getHttpVar(Constants::$REPORT_SITE) .
+                    Utils::getHttpVar(Constants::$REPORT_VERSION) .
                     Utils::getHttpVar(Constants::$REPORT_REPORT);
 
                 return $this->computeHash($header);
@@ -531,7 +588,8 @@ class FeederModule extends DefaultModule {
     /*
      * Compute hash of the list of packages
      */
-    protected function computeReportPkgsHash() {
+    protected function computeReportPkgsHash()
+    {
         Utils::log(LOG_DEBUG, "Computing the hash of the list of the packages", __FILE__, __LINE__);
         return $this->computeHash(Utils::getHttpVar(Constants::$REPORT_PKGS));
     }
@@ -539,17 +597,19 @@ class FeederModule extends DefaultModule {
     /*
      * Compute the hash, currently MD5
      */
-    protected function computeHash($string) {
+    protected function computeHash($string)
+    {
         return md5($string);
     }
 
     /*
      * Make diff of the two arrays
      */
-    protected function array_compare_recursive($array1, $array2) {
+    protected function array_compare_recursive($array1, $array2)
+    {
         $diff = array();
         foreach ($array1 as $key => &$value) {
-            if (!array_key_exists($key,$array2)) {
+            if (!array_key_exists($key, $array2)) {
                 $diff[$key] = $value;
             } elseif (is_array($value)) {
                 if (!is_array($array2[$key])) {

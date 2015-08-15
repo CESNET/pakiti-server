@@ -24,6 +24,23 @@ class Cve {
 	private $_cveDefId = -1;
 
 	private $_tag = array();
+	private $_cveExceptions = array();
+
+	/**
+	 * @return array
+	 */
+	public function getCveExceptions()
+	{
+		return $this->_cveExceptions;
+	}
+
+	/**
+	 * @param array $cveExceptions
+	 */
+	public function setCveExceptions($cveExceptions)
+	{
+		$this->_cveExceptions = $cveExceptions;
+	}
 
 	/**
 	 * @return mixed

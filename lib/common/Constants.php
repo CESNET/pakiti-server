@@ -56,18 +56,18 @@ final class Constants {
                                              );
                                              
   # OS names mapping, used for cannonization of the OS name sent by the client. ? will be replaced by the version/release.
-  public static $OS_NAMES_MAPPING = array ( 'ScientificSL ([\w.-]+)' => 'Scientific Linux ${1}',
-					    'Scientific ([\w.-]+)' => 'Scientific Linux ${1}',
-					    'ScientificCERNSLC ([\w.-]+)' => 'Scientific Linux ${1}.cern',
-					    'RedHatEnterpriseServer ([\w.-]+)' => 'Red Hat Linux Server ${1}',
-					    'Scientific Linux SL release ([\w.-]+) .*' => 'Scientific Linux ${1}',
-					    'Scientific Linux CERN SLC release ([\w.-]+) .*' => 'Scientific Linux ${1}.cern',
-					    'Ubuntu ([\w.-]+)' => 'Ubuntu ${1}',
-					    'CentOS ([\w.-]+)' => 'CentOS Linux ${1}',
-					    'CentOS release ([\w.-]+) .*' => 'CentOS Linux ${1}',
-					    'Fedora ([\w.-]+)' => 'Fedora Linux ${1}',
-					    'SUSE LINUX ([\w.-]+)' => 'SUSE Linux ${1}',
-					    'Debian ([\w.-\/]+)' => 'Debian ${1}',
+    public static $OS_NAMES_MAPPING = array('^\s*ScientificSL ([\w.-]+)' => 'Scientific Linux ${1}',
+        '^\s*Scientific ([\w.-]+)' => 'Scientific Linux ${1}',
+        '^\s*ScientificCERNSLC ([\w.-]+)' => 'Scientific Linux ${1}.cern',
+        '^\s*RedHatEnterpriseServer ([\w.-]+)' => 'Red Hat Linux Server ${1}',
+        '^\s*Scientific Linux SL release ([\w.-]+) .*' => 'Scientific Linux ${1}',
+        '^\s*Scientific Linux CERN SLC release ([\w.-]+) .*' => 'Scientific Linux ${1}.cern',
+        '^\s*Ubuntu ([\w.-]+)' => 'Ubuntu ${1}',
+        '^\s*CentOS ([\w.-]+)' => 'CentOS Linux ${1}',
+        '^\s*CentOS release ([\w.-]+) .*' => 'CentOS Linux ${1}',
+        '^\s*Fedora ([\w.-]+)' => 'Fedora Linux ${1}',
+        '^\s*SUSE LINUX ([\w.-]+)' => 'SUSE Linux ${1}',
+        '^\s*Debian ([\w.-\/]+)' => 'Debian ${1}',
 					    );
 
   # Where to put OS names which do not have any mapping
