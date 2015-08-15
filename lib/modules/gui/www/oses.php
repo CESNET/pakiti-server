@@ -32,12 +32,32 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
+$entries = Utils::getHttpPostVar("entries");
+if ($entries == "") {
+    $entries = 0;
+}
+
+if ($entries > 0) {
+    for ($i = 0; $i < $entries; $i++) {
+        if (isset($_POST["ososgroup$i"])) {
+            $data = explode(' ', Utils::getHttpPostVar("ososgroup$i"));
+            $os = $pakiti->getManager("OsGroupsManager")->getOsById($data[0]);
+            # data[0] - osId
+            # data[1] - osGroupId
+            if ($data[1] !== "N/A") {
+                $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById($data[1]);
+                $pakiti->getManager("OsGroupsManager")->assignOsToOsGroup($os, $osGroup);
+            } else {
+                $pakiti->getManager("OsGroupsManager")->removeOsFromOsGroups($os);
+            }
+        }
+    }
+}
 
 $pageNum = $html->getHttpGetVar("pageNum", 0);
 $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
-
 $html->addHtmlAttribute("title", "List of all Oses");
-
+$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups("name");
 $oses = $pakiti->getManager("HostsManager")->getOses("name", $pageSize, $pageNum);
 $osesCount = sizeof($oses);
 
@@ -47,26 +67,38 @@ $html->printHeader();
 
 # Print table with oses
 ?>
-
-<div class="paging">
-<?php print $html->paging($osesCount, $pageSize, $pageNum) ?>
-</div>
-
-<table class="tableList">
-  <tr>
-    <th>Name</th>
-  </tr>
-<?php
-  $i = 0;
-  foreach ($oses as $os) {
-    $i++;
-    print "<tr class=\"a" . ($i & 1) . "\"><td>{$os->getName()}</td></tr>\n";
-  }
-?>
-</table>
-
-<div class="paging">
-<?php print $html->paging($osesCount, $pageSize, $pageNum) ?>
-</div>
-
+<form action="" method="post" name="os_osgroup_form">
+    <table class="tableList">
+        <tr>
+            <th>OS Name</th>
+            <th>OS Group</th>
+            <th></th>
+        </tr>
+        <?php
+        $i = 0;
+        foreach ($oses as $os) {
+            print "<tr class=\"a" . ($i & 1) . "\">
+    <td>{$os->getName()}</td>
+    <td>\n<select name=\"" . "ososgroup$i" . "\" style=\"width: 300px;\">\n";
+            $actualOsOsGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupByOsId($os->getId());
+            print "<option value=\"" . $os->getId() . " " . "N/A" . "\"";
+            if ($actualOsOsGroup == null) print " class=\"bold\" selected";
+            print ">N/A</option>\n";
+            foreach ($osGroups as $osGroup) {
+                print "<option";
+                if ($actualOsOsGroup !== null) {
+                    if ($actualOsOsGroup->getName() === $osGroup->getName()) print " class=\"bold\" selected";
+                }
+                print " value=\"" . $os->getId() . " " . $osGroup->getId() . "\">" . $osGroup->getName() . "</option>\n";
+            }
+            print "</select>\n
+    </td>\n
+    </tr>\n";
+            $i++;
+        }
+        ?>
+    </table>
+    <?php print "<td><input type=\"hidden\" name=\"entries\" value=\"" . $i . "\"></td>" ?>
+    <input type="submit" value="Save">
+</form>
 <?php $html->printFooter(); ?>

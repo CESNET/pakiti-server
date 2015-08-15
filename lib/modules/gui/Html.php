@@ -57,7 +57,8 @@ class HTMLModule extends DefaultModule
      */
     public function printHeader()
     {
-        print "<html>\n
+        print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" >';
+        print "\n<html>\n
     <head>\n
       <title>";
         if (isset($this->_htmlAttributes["title"])) {
@@ -240,7 +241,7 @@ class HTMLModule extends DefaultModule
         }
     }
 
-    public function printCveTags(&$cves)
+    public function printCveTags(&$cveNames)
     {
         print "
   	<table class=\"tableList\">
@@ -254,8 +255,9 @@ class HTMLModule extends DefaultModule
             <th>&nbsp;</th>
         </tr>";
         $i = 0;
-        foreach ($cves as $cveId => $cve) {
-            foreach ($cve->getTag() as $tag) {
+        foreach ($cveNames as $cveName) {
+            $tags = $this->getPakiti()->getManager("TagsManager")->getTagsByCveName($cveName);
+            foreach ($tags as $tag) {
                 print "<tr class=\"a" . ($i & 1) . "\">";
                 if ($tag->getEnabled() == 1) {
                     print "<td> <input type=" . "checkbox" . " checked> </td>";
@@ -274,7 +276,7 @@ class HTMLModule extends DefaultModule
                     print " class=\"high_cve\"";
                 }
 
-                print ">" . $cve->getName() . "</span>";
+                print ">" . $cveName . "</span>";
                 print "</td>";
                 print "<td>" . $tag->getName() . "</td>";
                 print "<td>" . $tag->getReason() . "</td>";
@@ -378,6 +380,7 @@ class HTMLModule extends DefaultModule
     	<a href=\"vds.php\">VDS</a>
     	<a href=\"tags.php\">Tags</a>
     	<a href=\"cve_tags.php\">CVE Tags</a>
+    	<a href=\"exceptions.php\">Exceptions</a>
     </div>";
     }
 

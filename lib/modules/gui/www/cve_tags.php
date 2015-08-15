@@ -45,14 +45,16 @@ if(Utils::getHttpPostVar("tag-create-form") == "sent"){
     $tag = new Tag();
     $tag->setName($tagName);
     $tag -> setReason($tagReason);
-    $cves = $pakiti ->getManager("CveDefsManager")->getCvesByName($cveName);
+
 
 
     try{
 
-     foreach($cves as $cve){
-        $pakiti->getManager("TagsManager")->assignTagToCve($cve, $tag);
-     }
+    //Check if exist some CVEs with this name
+    $cves = $pakiti ->getManager("CveDefsManager")->getCvesByName($cveName);
+    if(!empty($cves)){
+        $pakiti->getManager("TagsManager")->assignTagToCve($cves[0], $tag);
+    }
 
     $html -> setMessage(sprintf("Tag %s has been associated to %s.", $tagName, $cveName));
 
@@ -67,8 +69,7 @@ if(Utils::getHttpPostVar("tag-create-form") == "sent"){
 $html->addHtmlAttribute("title", "CVE Tags overview");
 $html->printHeader();
 $cveNames = $pakiti -> getManager("CveDefsManager")->getCveNames();
-$cvesWithTags = $pakiti -> getManager("CveDefsManager")->getCvesWithTags();
-
+$cveNamesWithTags = $pakiti -> getManager("CveDefsManager")->getCveNamesWithTags();
 ?>
 
         <table class="tableList">
@@ -116,6 +117,7 @@ $cvesWithTags = $pakiti -> getManager("CveDefsManager")->getCvesWithTags();
 
 
 <?php
-$html->printCveTags($cvesWithTags);
+
+$html->printCveTags($cveNamesWithTags);
 $html->printFooter();
 ?>

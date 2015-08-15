@@ -156,8 +156,9 @@ $html->printHeader();
 
                         <td><?php
                             foreach ($pkg["CVE"] as $cve) {
-                                if (!empty($cve->getTag())) {
-                                    foreach ($cve->getTag() as $tag) {
+                                $tags = $cve->getTag();
+                                if (!empty($tags)) {
+                                    foreach ($tags as $tag) {
                                         print "<span";
                                         if ($tag->getName() == "Critical") {
                                             print " class=\"critical_cve\"";

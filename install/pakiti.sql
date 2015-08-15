@@ -201,26 +201,30 @@ create table `PkgCveDef` (
   foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 ) ENGINE=INNODB;
 
-create table `Exceptions` (
-  `cveId` integer(10) not null,
+create table `CveException` (
+  `id` integer(10) not null auto_increment,
   `pkgId` integer(10) not null,
+  `cveName` varchar(63) not null,
   `osGroupId` integer(10) not null,
   `reason` varchar(255) not null,
   `modifier` varchar(255) not null,
-  unique key `unique` (`cveId`, `pkgId`, `osGroupId`),
+  `timestamp` datetime not null,
+  primary key (`id`),
+  unique key `unique` (`cveName`, `pkgId`, `osGroupId`),
   foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
-  foreign key (`cveId`) references Cve(`id`) on delete cascade
+  foreign key (`cveName`) references Cve(`name`) on delete cascade,
+  foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 ) ENGINE=INNODB;
 
 create table `CveTag` (
-  `cveId` integer(10) not null,
+  `cveName` varchar(63) not null,
   `tagId` integer(10) not null,
   `reason` varchar(255),
   `timestamp` timestamp default CURRENT_TIMESTAMP,
   `enabled` int(1) default 1,
   `modifier` varchar(255),
-  unique key `unique` (`cveId`, `tagId`),
-  foreign key (`cveId`) references Cve(`id`) on delete cascade,
+  unique key `unique` (`cveName`, `tagId`),
+  foreign key (`cveName`) references Cve(`name`) on delete cascade,
   foreign key (`tagId`) references Tag(`id`)  on delete cascade
 ) ENGINE=INNODB;
 

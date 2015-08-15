@@ -148,7 +148,7 @@ class PkgDao
         }
         return $this->db->queryObject(
             "select
-    		id as _id, name as _name
+    		id as _id, name as _name, version as _version, arch as _arch, `release` as _release
       from 
       	Pkg 
       where

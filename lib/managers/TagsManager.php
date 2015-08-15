@@ -60,7 +60,7 @@ class TagsManager extends DefaultManager {
   {
     $sql = "select Tag.id as _id, Tag.name as _name, Tag.description
             as _description, CveTag.reason as _reason, CveTag.modifier as _modifier, CveTag.timestamp as _timestamp,
-            CveTag.enabled as _enabled from CveTag join Tag on CveTag.tagId=Tag.id where CveTag.cveId={$cve->getId()}";
+            CveTag.enabled as _enabled from CveTag join Tag on CveTag.tagId=Tag.id where CveTag.cveName='" . $cve->getName() . "'";
 
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Tag");
   }
@@ -117,9 +117,9 @@ class TagsManager extends DefaultManager {
  */
   public function assignTagToCve(Cve &$cve, Tag &$tag)
   {
-    if ($cve == null || $cve->getId() == -1 || $tag == null) {
+    if ($cve == null || $cve->getName() == "" || $tag == null) {
       Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
-      throw new Exception("Cve object is not valid or Cve.id is not set");
+      throw new Exception("Cve object is not valid or Cve.name is not set");
     }
 
     # Check if the tag name is valid
@@ -133,13 +133,13 @@ class TagsManager extends DefaultManager {
     } else {
       $tag->setId($tagId);
     }
-    Utils::log(LOG_DEBUG, "Assinging the tag to the cve [cveId=" . $cve->getId() . ",tag=" . $tag->getName() . "]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Assinging the tag to the cve [cveName=" . $cve->getName() . ",tag=" . $tag->getName() . "]", __FILE__, __LINE__);
 
     # Check if the already assigned
     $isAssigned =
         $this->getPakiti()->getManager("DbManager")->queryToSingleValue(
             "select 1 from CveTag where
-      	 		cveId=" . $this->getPakiti()->getManager("DbManager")->escape($cve->getId()) . " and
+      	 		cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cve->getName()) . "' and
       	 		tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()));
 
     if ($isAssigned != null) {
@@ -148,7 +148,7 @@ class TagsManager extends DefaultManager {
       # Association between cve and cveTag doesn't exist, so create it
       $this->getPakiti()->getManager("DbManager")->query("
       		insert into CveTag set
-      			cveId=" . $this->getPakiti()->getManager("DbManager")->escape($cve->getId()) . ",
+      			cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cve->getName()) . "',
       	 		tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . ",
       	 		`reason`='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getReason()) . "'");
 
@@ -177,14 +177,14 @@ class TagsManager extends DefaultManager {
    */
   public function removeCveTags(Cve &$cve)
   {
-    if ($cve == null || $cve->getId() == -1) {
+    if ($cve == null || $cve->getName() == "") {
       Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
-      throw new Exception("Cve object is not valid or Cve.id is not set");
+      throw new Exception("Cve object is not valid or Cve.name is not set");
     }
 
-    Utils::log(LOG_DEBUG, "Removing all tags associated with the cve [cveId='{$cve->getId()}']", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Removing all tags associated with the cve [cveName='{$cve->getName()}']", __FILE__, __LINE__);
 
-    $this->getPakiti()->getDao("Tag")->deleteTagsByCveId($cve->getId());
+    $this->getPakiti()->getDao("Tag")->deleteTagsByCveName($cve->getName());
   }
   
   
@@ -203,4 +203,20 @@ class TagsManager extends DefaultManager {
 	}
         return $tags;
     }
+
+  /*
+ * Get all tags
+ */
+  public function getTagsByCveName($cveName)
+  {
+    Utils::log(LOG_DEBUG, "Getting tags by CVE name=" . $cveName, __FILE__, __LINE__);
+
+    if ($cveName == "") {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Cve name is not valid");
+    }
+    return $this->getPakiti()->getManager("DbManager")->queryObjects("select id as _id, name as _name,
+    description as _description, reason as _reason, modifier as _modifier, timestamp as
+    _timestamp from CveTag join Tag on CveTag.tagId = Tag.id  where cveName='" . $cveName . "'", "Tag");
+  }
 }

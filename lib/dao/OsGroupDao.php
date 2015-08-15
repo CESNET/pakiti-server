@@ -78,6 +78,12 @@ class OsGroupDao {
     }
     return $id;
   }
+
+  public function removeOsFromOsGroups($osId)
+  {
+    $this->db->query(
+        "delete from OsOsGroup where osId={$osId}");
+  }
   
   public function getOsGroupsIds($orderBy, $pageSize, $pageNum) {
     $sql = "select id from OsGroup order by name";
