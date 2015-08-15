@@ -13,7 +13,7 @@ class Pkg {
 
     public function getVersionRelease() {
         if (!empty($this->_release)) {
-            return $this->_version . "-" . $this->_release;
+            return $this->_version . "+" . $this->_release;
         } else return $this->_version;
     }
 

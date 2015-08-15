@@ -49,6 +49,14 @@ class CveDao
               name='" . $this->db->escape($name) . "'", "Cve");
     }
 
+    public function getCveNameById($cveId)
+    {
+        return $this->db->queryToSingleValue(
+            "select name from Cve
+              where id='" . $this->db->escape($cveId) . "'"
+        );
+    }
+
     public function getCvesByCveDef(CveDef &$cveDef)
     {
         return $this->db->queryObjects("select id
@@ -59,7 +67,7 @@ class CveDao
 
     public function getCveNames()
     {
-        $sql = "select DISTINCT name from Cve limit 50"; //TODO remove limit
+        $sql = "select DISTINCT name from Cve"; #where name like '" . "CVE-2014-967%" . "'"; //TODO remove limit
         $cveNamesDb =& $this->db->queryToMultiRow($sql);
         $cveNames = array();
         if ($cveNamesDb != null) {

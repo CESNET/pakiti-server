@@ -83,7 +83,6 @@ class TagDao {
       "update Tag set
       	name='".$this->db->escape($tag->getName())."',
       	description='".$this->db->escape($tag->getName())."',
-      	timestamp=now(),
       	enabled=".$this->db->escape($tag->getEnabled())."
       where id=".$tag->getId());
   }

@@ -78,6 +78,12 @@ class OsGroupDao {
     }
     return $id;
   }
+
+  public function getAllOsGroups()
+  {
+    $sql = "select id as _id, name as _name from OsGroup";
+    return $this->db->queryObjects($sql, "OsGroup");
+  }
   
   public function getOsGroupsIds($orderBy, $pageSize, $pageNum) {
     $sql = "select id from OsGroup order by name";

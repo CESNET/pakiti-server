@@ -88,9 +88,13 @@ class VulnerabilitiesManager extends DefaultManager
     /**
      * Return Array of arrays that contains keys: [Host], [CVE], [HostGroups]
      * Used in API
-     * @param $tag
-     * @param $hostgroup
+     * @param $htag
+     * @param $hostGroupName
+     * @param $cveName
      * @return array
+     * @throws Exception
+     * @internal param $tag
+     * @internal param $hostgroup
      */
     function getHostsWithCvesThatContainsSomeTag($htag, $hostGroupName, $cveName)
     {
