@@ -79,10 +79,10 @@ class OsGroupDao {
     return $id;
   }
 
-  public function getAllOsGroups()
+  public function removeOsFromOsGroups($osId)
   {
-    $sql = "select id as _id, name as _name from OsGroup";
-    return $this->db->queryObjects($sql, "OsGroup");
+    $this->db->query(
+        "delete from OsOsGroup where osId={$osId}");
   }
   
   public function getOsGroupsIds($orderBy, $pageSize, $pageNum) {

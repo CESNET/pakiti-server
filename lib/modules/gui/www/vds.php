@@ -25,8 +25,9 @@
 # ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE. 
-
+# POSSIBILITY OF SUCH DAMAGE.
+require(realpath(dirname(__FILE__)) . '/../../../common/DefaultModule.php');
+require(realpath(dirname(__FILE__)) . '/../../../modules/vds/VdsModule.php');
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 require(realpath(dirname(__FILE__)) . '/../Html.php');
 

@@ -186,6 +186,10 @@ h1 {
   font-weight: bold;
 }
 
+.bold {
+  font-weight: bold;
+}
+
 .high_cve {
   color: #FFA500;
   font-weight: bold;
