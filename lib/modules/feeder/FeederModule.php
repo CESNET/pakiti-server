@@ -525,14 +525,14 @@ class FeederModule extends DefaultModule
         Utils::log(LOG_DEBUG, "Checking the proxy authorization", __FILE__, __LINE__);
         switch (Config::$PROXY_AUTHENTICATION_MODE) {
             case Constants::$PROXY_AUTHN_MODE_HOSTNAME:
-                if (in_array(Utils::getHttpVar(Constants::$REPORT_HOSTNAME), Config::$PROXY_ALLOWED_PROXIES)) {
+                if (in_array($proxyHostname, Config::$PROXY_ALLOWED_PROXIES)) {
                     return TRUE;
                 } else {
                     return FALSE;
                 }
                 break;
             case Constants::$PROXY_AUTHN_MODE_IP:
-                if (in_array(Utils::getHttpVar(Constants::$REPORT_IP), Config::$PROXY_ALLOWED_PROXIES)) {
+                if (in_array($proxyIp, Config::$PROXY_ALLOWED_PROXIES)) {
                     return TRUE;
                 } else {
                     return FALSE;
