@@ -48,7 +48,7 @@ $selectedCveName = Utils::getHttpPostVar("cve-name");
 $cveExceptions = array();
 
 $cveNames = $pakiti->getManager("CveDefsManager")->getCveNames();
-$osGroups = $pakiti->getManager("OsGroupsManager")->getAOsGroups();
+$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
 
 if ($entries > 0) {
     for ($i = 0; $i < $entries; $i++) {

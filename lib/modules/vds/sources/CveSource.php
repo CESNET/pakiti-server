@@ -120,7 +120,6 @@ class CveSource extends Source implements ISource
             #)
 
             # Store them into the list of Vulnerabilities
-            print_r($defs);
             if ($defs) {
                 # Reformat data into
                 foreach ($defs as $def) {
