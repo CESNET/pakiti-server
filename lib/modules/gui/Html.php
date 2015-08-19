@@ -57,7 +57,8 @@ class HTMLModule extends DefaultModule
      */
     public function printHeader()
     {
-        print "<html>\n
+        print '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" >';
+        print "\n<html>\n
     <head>\n
       <title>";
         if (isset($this->_htmlAttributes["title"])) {
@@ -378,6 +379,7 @@ class HTMLModule extends DefaultModule
     	<a href=\"vds.php\">VDS</a>
     	<a href=\"tags.php\">Tags</a>
     	<a href=\"cve_tags.php\">CVE Tags</a>
+    	<a href=\"exceptions.php\">Exceptions</a>
     </div>";
     }
 

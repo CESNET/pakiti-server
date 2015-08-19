@@ -43,6 +43,7 @@ class CveDefsManager extends DefaultManager
         $cve = $this->getPakiti()->getDao("Cve")->getCve();
         if (is_object($cve)) {
             $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+            $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
         }
         return $cve;
     }
@@ -53,6 +54,7 @@ class CveDefsManager extends DefaultManager
         if (is_array($cves)) {
             foreach ($cves as $cve) {
                 $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
             }
         }
         return $cves;
@@ -120,7 +122,19 @@ class CveDefsManager extends DefaultManager
                     $cveDef->setTitle($cveDefDb["title"]);
                     $cveDef->setRefUrl($cveDefDb["refUrl"]);
                     $cveDef->setVdsSubSourceDefId($cveDefDb["vdsSubSourceDefId"]);
-                    $cveDef->setCves($this->getCvesByCveDef($cveDef));
+
+                    # Exclude CVEs with exceptions
+                    $cves = $this->getCvesByCveDef($cveDef);
+                    foreach ($cves as $cve) {
+                        foreach ($cve->getCveExceptions() as $cveException) {
+                            if ($cveException->getPkgId() === $installedPkg->getId() && $osGroup->getId() === $cveException->getOsGroupId()) {
+                                if (($key = array_search($cve, $cves)) !== false) {
+                                    unset($cves[$key]);
+                                }
+                            }
+                        }
+                    }
+                    $cveDef->setCves($cves);
                     array_push($cveDefs, $cveDef);
                 }
                 $pkgsCveDefs[$installedPkg->getId()] = $cveDefs;
@@ -135,6 +149,8 @@ class CveDefsManager extends DefaultManager
         foreach ($cves as $cve) {
             if (is_object($cve)) {
                 $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
+
             }
         }
         return $cves;
@@ -151,6 +167,8 @@ class CveDefsManager extends DefaultManager
         foreach ($cves as $cve) {
             if (is_object($cve)) {
                 $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
+
             }
         }
         return $cves;

@@ -145,6 +145,12 @@ h1 {
   background-color: #F8F8F8;
 }
 
+.tableDetail .headerCheckBox {
+  font-weight: bold;
+  width: 10px;
+  background-color: #F8F8F8;
+}
+
 .errors {
   float: left;
   width: 100%;
@@ -177,6 +183,10 @@ h1 {
 
 .critical_cve {
   color: #FF0000;
+  font-weight: bold;
+}
+
+.bold {
   font-weight: bold;
 }
 

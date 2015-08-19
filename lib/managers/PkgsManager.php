@@ -174,7 +174,16 @@ class PkgsManager extends DefaultManager {
     }
     unset($pkgName);
   }
-  
+
+  public function getPkgsByCveNameAndOsGroup($cveName, OsGroup $osGroup)
+  {
+    $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch from PkgCveDef
+        join Cve on PkgCveDef.cveDefId = Cve.cveDefId join Pkg on Pkg.id=PkgCveDef.pkgId where Cve.name='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'
+        and osGroupId={$osGroup->getId()} and (Pkg.id not in (select pkgId from CveException where osGroupId={$osGroup->getId()}))";
+    return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
+  }
+
+
   /*
    * Removes all installed packages associated with the host.
    */
@@ -206,6 +215,11 @@ class PkgsManager extends DefaultManager {
    */
   public function getPkg($pkgName) {
     return $this->getPakiti()->getDao("Pkg")->getByName($pkgName);
+  }
+
+  public function getPkgById($pkgId)
+  {
+    return $this->getPakiti()->getDao("Pkg")->getById($pkgId);
   }
    
   /*
