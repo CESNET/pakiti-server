@@ -69,7 +69,6 @@ class VulnerabilitiesManager extends DefaultManager
 
         $pkgs = $this->getPakiti()->getDao("Vulnerability")->getVulnerablePkgs($host->getId(), $osGroup->getId(), $orderBy, $pageSize, $pageNum);
         $cves = $this->getPakiti()->getManager("CveDefsManager")->getCvesForHost($host);
-
         $pkgsWithCves = array();
         foreach ($cves as $pkgId => $pkgCves) {
             foreach ($pkgs as $pkg) {

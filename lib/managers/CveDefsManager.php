@@ -183,11 +183,15 @@ class CveDefsManager extends DefaultManager
         foreach ($pkgsCveDefs as $pkgId => $pkgCveDefs) {
             $cves = array();
             foreach ($pkgCveDefs as $pkgCveDef) {
+
                 foreach ($pkgCveDef->getCves() as $cve) {
                     array_push($cves, $cve);
                 }
             }
-            $pkgsCves[$pkgId] = $cves;
+            if (!empty($cves)) {
+                $pkgsCves[$pkgId] = $cves;
+            }
+
         }
         return $pkgsCves;
 

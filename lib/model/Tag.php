@@ -8,6 +8,7 @@ class Tag
 {
     private $_id = -1;
     private $_name;
+    private $_cveName;
     private $_description;
     private $_reason;
     private $_modifier;
@@ -27,6 +28,22 @@ class Tag
     public function setId($value)
     {
         $this->_id = $value;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCveName()
+    {
+        return $this->_cveName;
+    }
+
+    /**
+     * @param mixed $cveName
+     */
+    public function setCveName($cveName)
+    {
+        $this->_cveName = $cveName;
     }
 
     public function getName()

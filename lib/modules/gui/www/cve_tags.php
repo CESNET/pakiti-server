@@ -34,35 +34,51 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 $html = new HtmlModule($pakiti);
 
 /* TEMPORARY SENT FORM */
-if(Utils::getHttpPostVar("tag-create-form") == "sent"){
+switch(Utils::getHttpPostVar("act")){
+    case "create":
+        $cveName = Utils::getHttpPostVar("cve");
+        $tagName = Utils::getHttpPostVar("tag");
 
-    $cveName = Utils::getHttpPostVar("cve-name");
+        if($cveName !== "N/A" && $tagName !== "N/A"){
+             $tagReason = Utils::getHttpPostVar("reason");
 
-    $tagName = Utils::getHttpPostVar("cve-tag");
+            $tag = new Tag();
+            $tag->setName($tagName);
+            $tag -> setReason($tagReason);
 
-    $tagReason = Utils::getHttpPostVar("tag-reason");
+            try{
 
-    $tag = new Tag();
-    $tag->setName($tagName);
-    $tag -> setReason($tagReason);
+            //Check if exist some CVEs with this name
+            $cves = $pakiti ->getManager("CveDefsManager")->getCvesByName($cveName);
+            if(!empty($cves)){
+                $pakiti->getManager("TagsManager")->assignTagToCve($cves[0], $tag);
+            }
+
+            $html -> setMessage(sprintf("Tag %s has been associated to %s.", $tagName, $cveName));
+
+            } catch (Exception $e){
+                $html -> setMessage(sprintf("%s", $e->getMessage()));
+            }
+        }
+        break;
+
+    case "update":
+        $tag = $pakiti->getManager("TagsManager")->getCveTagByCveNameAndTagId(Utils::getHttpPostVar("cveName"), Utils::getHttpPostVar("tagId"));
+        $tag->setEnabled(Utils::getHttpPostVar("isEnable"));
+        $pakiti->getManager("TagsManager")->updateCveTag($tag);
+        break;
+
+    case "delete":
+        $tag = $pakiti->getManager("TagsManager")->getCveTagByCveNameAndTagId(Utils::getHttpPostVar("cveName"), Utils::getHttpPostVar("tagId"));
+        $pakiti->getManager("TagsManager")->deleteCveTag($tag);
+        break;
 
 
 
-    try{
 
-    //Check if exist some CVEs with this name
-    $cves = $pakiti ->getManager("CveDefsManager")->getCvesByName($cveName);
-    if(!empty($cves)){
-        $pakiti->getManager("TagsManager")->assignTagToCve($cves[0], $tag);
-    }
+}
 
-    $html -> setMessage(sprintf("Tag %s has been associated to %s.", $tagName, $cveName));
-
-    } catch (Exception $e){
-        $html -> setMessage(sprintf("%s", $e->getMessage()));
-    }
-
-
+if(Utils::getHttpPostVar("act") == "update"){
 
 }
 
@@ -76,12 +92,13 @@ $cveNamesWithTags = $pakiti -> getManager("CveDefsManager")->getCveNamesWithTags
             <tr align="top">
                 <th>Add new entry</th>
             </tr>
-            <form action="" method="post">
+            <form action="" name="tags" method="post">
             <td>
 
-                <label for="cve-name">CVE: </label>
+                <label for="cve">CVE: </label>
 
-                <select name="cve-name">
+                <select name="cve">
+                    <option value="N/A" selected></option>
                     <?php foreach($cveNames as $cveName){?>
                         <option> <?php print $cveName; ?> </option>
                     <?php } ?>
@@ -89,22 +106,25 @@ $cveNamesWithTags = $pakiti -> getManager("CveDefsManager")->getCveNamesWithTags
 
 
 
-                <label for="cve-tag">CVE Tag: </label>
-                <select name="cve-tag">
-                    <option value="Critical" selected>Critical</option>
+                <label for="tag">CVE Tag: </label>
+                <select name="tag">
+                    <option value="N/A" selected></option>
+                    <option value="Critical" >Critical</option>
                     <option value="High">High</option>
                 </select>
 
 
 
-                <label for="tag-reason">Reason: </label>
-                <input type="text" name="tag-reason" size="50">
+                <label for="reason">Reason: </label>
+                <input type="text" name="reason" size="50">
 
 
 
                 <input type="submit" value="Add">
-
-                <input type="hidden" name="tag-create-form" value="sent" />
+                <input type="hidden" name="act" value="create" />
+                <input type="hidden" name="tagId" value="" />
+                <input type="hidden" name="cveName" value="" />
+                <input type="hidden" name="isEnable" value="" />
             </td>
 
             <tr>

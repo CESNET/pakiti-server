@@ -173,7 +173,7 @@ class TagsManager extends DefaultManager {
   }
 
   /*
-   * Removes all tags associated with the host.
+   * Removes all tags associated with the CVE.
    */
   public function removeCveTags(Cve &$cve)
   {
@@ -215,8 +215,68 @@ class TagsManager extends DefaultManager {
       Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
       throw new Exception("Cve name is not valid");
     }
-    return $this->getPakiti()->getManager("DbManager")->queryObjects("select id as _id, name as _name,
+    return $this->getPakiti()->getManager("DbManager")->queryObjects("select id as _id, cveName as _cveName, name as _name,
     description as _description, reason as _reason, modifier as _modifier, timestamp as
-    _timestamp from CveTag join Tag on CveTag.tagId = Tag.id  where cveName='" . $cveName . "'", "Tag");
+    _timestamp, enabled as _enabled from CveTag join Tag on CveTag.tagId = Tag.id  where cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'", "Tag");
+  }
+
+  /** Get Tag by CveName and TagId
+   * @param $cveName
+   * @param $tagId
+   * @return mixed
+   * @throws Exception
+   */
+  public function getCveTagByCveNameAndTagId($cveName, $tagId)
+  {
+    if ($cveName == "") {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Cve name is not valid");
+    }
+
+    if (!is_numeric($tagId)) {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Tag id is not valid");
+    }
+
+    return $this->getPakiti()->getManager("DbManager")->queryObject("select id as _id, cveName as _cveName, name as _name,
+    description as _description, reason as _reason, modifier as _modifier, timestamp as
+    _timestamp, enabled as _enabled from CveTag join Tag on CveTag.tagId = Tag.id  where cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'
+    and tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tagId) . "
+    ", "Tag");
+  }
+
+  public function updateCveTag(Tag &$tag)
+  {
+    if ($tag->getCveName() == "") {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Tag CVE name is not valid");
+    }
+
+    if (!is_numeric($tag->getId())) {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Tag id is not valid");
+    }
+
+    $this->getPakiti()->getManager("DbManager")->query("update CveTag set cveName= '" . $this->getPakiti()->getManager("DbManager")->escape($tag->getCveName()) . "', tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . ",
+     reason='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getReason()) . "', modifier= '" . $this->getPakiti()->getManager("DbManager")->escape($tag->getModifier()) . "', timestamp ='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getTimestamp()) . "',
+    enabled=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getEnabled()) . " where cveName='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getCveName()) . "' and tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . "");
+  }
+
+  /**
+   * Delete tag from CveTag table
+   */
+  public function deleteCveTag(Tag &$tag)
+  {
+    if ($tag->getCveName() == "") {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Tag CVE name is not valid");
+    }
+
+    if (!is_numeric($tag->getId())) {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Tag id is not valid");
+    }
+
+    $this->getPakiti()->getManager("DbManager")->query("delete from CveTag where cveName='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getCveName()) . "' and tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . "");
   }
 }
