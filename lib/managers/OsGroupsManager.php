@@ -64,6 +64,16 @@ class OsGroupsManager extends DefaultManager{
 
     }
 
+    /**
+     * Check if Os belongs to Os group
+     * @param Os $os
+     * @param OsGroup $osGroup
+     */
+    public function isOsBelongToOsGroup(Os &$os, OsGroup &$osGroup)
+    {
+
+    }
+
 
     /**
      * Create association between Os and OsGroup
@@ -76,7 +86,8 @@ class OsGroupsManager extends DefaultManager{
         }
         Utils::log(LOG_DEBUG, "Assigning the os to the os group [os=" . $os->getName() . ",osGroupName=" . $osGroup->getName() . "]", __FILE__, __LINE__);
 
-        # Check if the tag already exists
+        # TODO: Rewrite to more OsGroups per Os
+        # Check if the os already exists
         $isAssigned =
             $this->getPakiti()->getManager("DbManager")->queryToSingleValue(
                 "select 1 from OsOsGroup where

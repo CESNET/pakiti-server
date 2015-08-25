@@ -162,7 +162,7 @@ $html->printHeader();
                                 $tags = $cve->getTag();
                                 if (!empty($tags)) {
                                     foreach ($tags as $tag) {
-                                        print "<span";
+                                        print "<a href=\"cve.php?cve=" . $cve->getName() . "\"><span";
                                         if ($tag->getName() == "Critical" && $tag->getEnabled()) {
                                             print " class=\"critical_cve\"";
                                         }
@@ -171,9 +171,10 @@ $html->printHeader();
                                             print " class=\"high_cve\"";
                                         }
 
-                                        print ">" . $cve->getName() . " " . "</span>";
+                                        print ">" . $cve->getName() . " " . "</span></a>";
                                     }
                                 } else {
+                                    print "<a href=\"cve.php?cve=" . $cve->getName() . "\"><span";
                                     print $cve->getName() . " ";
                                 }
 

@@ -1,10 +1,10 @@
 <?php
 # Copyright (c) 2011, CESNET. All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or
 # without modification, are permitted provided that the following
 # conditions are met:
-# 
+#
 #   o Redistributions of source code must retain the above
 #     copyright notice, this list of conditions and the following
 #     disclaimer.
@@ -12,7 +12,7 @@
 #     copyright notice, this list of conditions and the following
 #     disclaimer in the documentation and/or other materials
 #     provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
 # CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -26,46 +26,19 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-require(realpath(dirname(__FILE__)) . '/../../../common/DefaultModule.php');
-require(realpath(dirname(__FILE__)) . '/../../../modules/vds/VdsModule.php');
+
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 require(realpath(dirname(__FILE__)) . '/../Html.php');
 
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
-$html->addHtmlAttribute("title", "Vulnerability Definition System");
+$cve = $html->getHttpGetVar("cve");
+$html->addHtmlAttribute("title", "Selected CVE: " . $cve);
 
-$vds = new VdsModule($pakiti);
-
-$sources = $vds->getSources();
 //---- Output HTML
 
 $html->printHeader();
-
-# Print table with oses
 ?>
-
-<table class="tableList">
-  <tr>
-    <th>VDS Sources</th>
-  </tr>
-<?php
-  $i = 0;
-  foreach ($sources as $source) {
-    $i++;
-    print "<tr class=\"a" . ($i & 1) . "\"><td>{$source->getName()}</td></tr>\n";
-    foreach ($source->getSubSources() as $subSource) {
-      $i++;
-      print "<tr class=\"a" . ($i & 1) . "\"><td>&nbsp;{$subSource->getName()}</td></tr>\n";
-      foreach ($subSource->getSubSourceDefs() as $subSourceDef) {
-	$i++;
-    print "";
-	print "<tr class=\"a" . ($i & 1) . "\"><td>&nbsp;&nbsp;Name: {$subSourceDef->getName()}, URI: {$subSourceDef->getUri()}</td></tr>\n";
-      }
-    }
-  }
-?>
-</table>
-
-<?php $html->printFooter(); ?>
+<a href="https://bugzilla.redhat.com/show_bug.cgi?id=<?= $cve ?>">Link to the RedHat Bugzilla</a><br/><a
+    href="https://security-tracker.debian.org/tracker/<?= $cve ?>">Link to the Debian Advisories</a>

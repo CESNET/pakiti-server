@@ -27,6 +27,7 @@ create table `Os` (
 create table `OsGroup` (
   `id` integer(10) not null auto_increment,
   `name` varchar(63) not null,
+  `regex` varchar(63) not null,
   primary key (`id`),
   unique key `name` (`name`)
 ) ENGINE=INNODB;
