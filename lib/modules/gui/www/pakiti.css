@@ -151,6 +151,12 @@ h1 {
   background-color: #F8F8F8;
 }
 
+.slash {
+  width: 20px;
+  text-align: center;
+  line-height: 25px;
+  font-size: 20px;
+}
 .errors {
   float: left;
   width: 100%;

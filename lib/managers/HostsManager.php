@@ -306,15 +306,6 @@ class HostsManager extends DefaultManager {
   }
 
 
-//  /*
-//   * Get osGroup
-//   */
-//  public function getOsGroup($name) {
-//    Utils::log(LOG_DEBUG, "Getting osGroup by Name", __FILE__, __LINE__);
-//    return $this->getPakiti()->getDao("OsGroup")->getByName($name);
-//  }
-
-
   /*
    * Separates the domain name from the hostname
    */

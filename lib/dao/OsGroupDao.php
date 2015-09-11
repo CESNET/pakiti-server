@@ -37,9 +37,7 @@ class OsGroupDao {
   public function create(OsGroup &$osGroup) {
     $this->db->query(
       "insert into OsGroup set
-      	name='" . $this->db->escape($osGroup->getName()) . "',
-      	regex=" . $this->db->escape($osGroup->getRegex()) . "'
-      	");
+      	name='".$this->db->escape($osGroup->getName())."'");
     
     # Set the newly assigned id
     $osGroup->setId($this->db->getLastInsertedId());
@@ -80,12 +78,6 @@ class OsGroupDao {
     }
     return $id;
   }
-
-  public function removeOsFromOsGroups($osId)
-  {
-    $this->db->query(
-        "delete from OsOsGroup where osId={$osId}");
-  }
   
   public function getOsGroupsIds($orderBy, $pageSize, $pageNum) {
     $sql = "select id from OsGroup order by name";
@@ -101,8 +93,7 @@ class OsGroupDao {
   public function update(OsGroup &$osGroup) {
     $this->db->query(
       "update OsGroup set
-      	name='" . $this->db->escape($osGroup->getName()) . "',
-      	regex='" . $this->db->escape($osGroup->getRegex()) . "'
+      	name='".$this->db->escape($osGroup->getName())."
       where id=".$osGroup->getId());
   }
   
