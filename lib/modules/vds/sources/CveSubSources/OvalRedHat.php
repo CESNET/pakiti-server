@@ -46,7 +46,7 @@ class OvalRedHat extends SubSource implements ISubSource {
             $oval->load($subSourceDef->getUri());
 
             if ($oval === FALSE) {
-                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
                 throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
             }
 

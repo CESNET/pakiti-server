@@ -53,14 +53,14 @@ class Debian extends SubSource implements ISubSource
         if ($path === false OR !is_dir($path)) {
             exec('svn checkout '.$this->getSubSourceDefs()[0]->getUri().' 2>&1', $output, $return_code);
             if ($return_code) {
-                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
                 throw new Exception("An error occurred while trying to checkout svn: " . join("\n", $output));
             }
 
         } else {
             exec('svn up DSA 2>&1', $output, $return_code);
             if ($return_code) {
-                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
                 throw new Exception("An error occurred while trying to update svn: " . join("\n", $output));
             }
         }
@@ -72,7 +72,7 @@ class Debian extends SubSource implements ISubSource
         $dsaFile = fopen($this->_dsaPath, "r");
 
         if (!$dsaFile) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("Unable to open DSA file!");
         }
 
@@ -142,7 +142,7 @@ class Debian extends SubSource implements ISubSource
                     $package['name'] = $name;
                     $package['version'] = $upstream_version;
                     $package['release'] = $debian_revision;
-                    $package['operator'] = "<";
+                    $package['operator'] = '<';
                     if (!array_key_exists('osGroup', $rec))
                         $rec['osGroup'] = array();
                     if (!array_key_exists($deb_release, $rec['osGroup']))
@@ -157,7 +157,7 @@ class Debian extends SubSource implements ISubSource
                     continue;
                 }
 
-                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
                 throw new Exception("Format error at line " . $num);
             }
 

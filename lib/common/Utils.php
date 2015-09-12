@@ -90,7 +90,7 @@ final class Utils {
     if (Config::$ENABLE_OUTGOING_PROXY == 1) {
            $opts = array('http' => array('proxy' => Config::$OUTGOING_PROXY,
           															 'request_fulluri' => true));
-           Utils::log(LOG_DEBUG, "Using outgoing proxy: ".Config::$OUTGOING_PROXY);
+      Utils::log(LOG_DEBUG, "Using outgoing proxy: " . Config::$OUTGOING_PROXY);
     } else {
            $opts = array('http' => array('method'=>"GET"));
     }

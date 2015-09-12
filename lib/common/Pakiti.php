@@ -37,7 +37,7 @@ final class Pakiti {
   public function init() {
     # Setup logging facility
     openlog("Pakiti", LOG_PERROR | LOG_ODELAY, LOG_LOCAL0);
-    
+
     Utils::log(LOG_DEBUG, "Pakiti initialized", __FILE__, __LINE__);
   }
   

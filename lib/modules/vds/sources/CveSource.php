@@ -178,7 +178,6 @@ class CveSource extends Source implements ISource
                                 $osGroup = $this->_pakiti->getManager('OsGroupsManager')->createOsGroup($osGroupName);
                             }
                             $vuln->setOsGroupId($osGroup->getId());
-
                             $vuln->setOperator($defPkg['operator']);
 
                             array_push($vulnerabilities, $vuln);

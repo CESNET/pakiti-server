@@ -40,10 +40,10 @@ class PkgsManager extends DefaultManager {
   
   public function getInstalledPkgsAsArray(Host $host) {
     if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    Utils::log(LOG_DEBUG, "Getting the packages stored in the DB [hostId=".$host->getId()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Getting the packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
 
     return $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsAsArray($host);
   }
@@ -53,10 +53,10 @@ class PkgsManager extends DefaultManager {
    */
   public function getInstalledPkgs(Host &$host, $orderBy = "id", $pageSize = -1, $pageNum = -1) {
     if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    Utils::log(LOG_DEBUG, "Getting the packages stored in the DB [hostId=".$host->getId()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Getting the packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
     
     $pkgs =& $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgs($host, $orderBy, $pageSize, $pageNum);
 
@@ -68,10 +68,10 @@ class PkgsManager extends DefaultManager {
      */
   public function getInstalledPkgsCount(Host &$host) {
     if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    Utils::log(LOG_DEBUG, "Getting the count of installed packages stored in the DB [hostId=".$host->getId()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Getting the count of installed packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
     
     return $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsCount($host);
   }
@@ -81,50 +81,59 @@ class PkgsManager extends DefaultManager {
    */
   public function addPkgs(Host &$host, &$pkgs) {
     if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    
-    Utils::log(LOG_DEBUG, "Adding packages [hostId=".$host->getId().", pkgsCount=".sizeof($pkgs)."]", __FILE__, __LINE__);
-   
-   	foreach ($pkgs as $pkgName => &$value) {
-	# Usage of BINARY when comparing package names is due to case-sensitivness
-      $sql = "insert into InstalledPkg 
+
+    Utils::log(LOG_DEBUG, "Adding packages [hostId=" . $host->getId() . ", pkgsCount=" . sizeof($pkgs) . "]", __FILE__, __LINE__);
+
+    foreach ($pkgs as $pkgName => & $pkgArchs) {
+      foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+        # Usage of BINARY when comparing package names is due to case-sensitivness
+        $sql = "insert into InstalledPkg
       		(`pkgId`, `hostId`)
-      	select 
+      	select
       		p.id,". $this->getPakiti()->getManager("DbManager")->escape($host->getId())."
          from
          	Pkg p
          where
-         	binary p.name='".$this->getPakiti()->getManager("DbManager")->escape($pkgName)."'";
-    
-      $this->getPakiti()->getManager("DbManager")->query($sql);
-      
-      if ($this->getPakiti()->getManager("DbManager")->getNumberOfAffectedRows() == 0) {
-        # When affected rows is 0, it probably means, that the package name 
-        # doesn't exist in the table Pkg or the package architecture doesn't exist.
+         	binary p.name='" . $this->getPakiti()->getManager("DbManager")->escape($pkgName) . "' and
+         	p.version='" . $this->getPakiti()->getManager("DbManager")->escape($versionAndRelease["pkgVersion"]) . "' and
+            p.arch='" . $this->getPakiti()->getManager("DbManager")->escape($pkgArch) . "' and
+            p.release='" . $this->getPakiti()->getManager("DbManager")->escape($versionAndRelease["pkgRelease"]) . "'";
+        $this->getPakiti()->getManager("DbManager")->query($sql);
 
-        # Check if the package architecture is
-        if (($archId = $this->getPakiti()->getDao("Arch")->getIdByName($value['pkgArch'])) == -1) {
-          $arch = new Arch();
-          $arch->setName($value['pkgArch']);
-          $this->getPakiti()->getDao("Arch")->create($arch);
-        }
-        # We must check if the package is already stored in the table Pkg, if not => store it
-        if (($pkgId = $this->getPkgId($pkgName)) == -1) {
-          $pkgId = $this->addPkg($pkgName, $value['pkgVersion'],$value["pkgArch"], $value['pkgRelease']);
+        if ($this->getPakiti()->getManager("DbManager")->getNumberOfAffectedRows() == 0) {
+          # When affected rows is 0, it probably means, that the package name
+          # doesn't exist in the table Pkg or the package architecture doesn't exist.
 
-        }
+          # Check if the package architecture is
+          if (($archId = $this->getPakiti()->getDao("Arch")->getIdByName($pkgArch)) == -1) {
+            $arch = new Arch();
+            $arch->setName($pkgArch);
+            $this->getPakiti()->getDao("Arch")->create($arch);
+          }
+          # We must check if the package is already stored in the table Pkg, if not => store it
+          if ($pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease["pkgVersion"], $versionAndRelease["pkgRelease"], $pkgArch) == -1) {
+            $tmpPkg = new Pkg();
+            $tmpPkg->setName($pkgName);
+            $tmpPkg->setVersion($versionAndRelease['pkgVersion']);
+            $tmpPkg->setRelease($versionAndRelease['pkgRelease']);
+            $tmpPkg->setArch($pkgArch);
+            $this->getPakiti()->getDao("Pkg")->create($tmpPkg);
+            $pkgId = $tmpPkg->getId();
+          }
 
-        # Try the insert the entry once again
-        $sql = "insert into InstalledPkg
+          # Try the insert the entry once again
+          $sql = "insert into InstalledPkg
         			(`pkgId`, `hostId` )
  						values (
         			$pkgId,". $this->getPakiti()->getManager("DbManager")->escape($host->getId()).")";
-        $this->getPakiti()->getManager("DbManager")->query($sql);
+          $this->getPakiti()->getManager("DbManager")->query($sql);
+        }
       }
     }
-    unset($value);
+    unset($pkgArchs);
   }
   
   /*
@@ -132,26 +141,32 @@ class PkgsManager extends DefaultManager {
    */
   public function updatePkgs(Host &$host, &$pkgs) {
     if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    
-    Utils::log(LOG_DEBUG, "Updating packages [hostId=".$host->getId().", pkgsCount=".sizeof($pkgs)."]", __FILE__, __LINE__);
-    
-    foreach ($pkgs as $pkgName => &$value) {
-      $sql = "update InstalledPkg inst inner join Pkg pkg
-              on inst.pkgId = pkg.Id
-              set
-      			`version`='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgVersion'])."',
-      			`release`='".$this->getPakiti()->getManager("DbManager")->escape($value['pkgRelease'])."',
-      			arch = '".$this->getPakiti()->getManager("DbManager")->escape($value['pkgArch'])."'
-      		  where
-      			hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and 
-      			pkg.Id=".$this->getPkgId($pkgName)."";
-       
-      $this->getPakiti()->getManager("DbManager")->query($sql);
+
+    Utils::log(LOG_DEBUG, "Updating packages [hostId=" . $host->getId() . ", pkgsCount=" . sizeof($pkgs) . "]", __FILE__, __LINE__);
+
+    foreach ($pkgs as $pkgName => &$pkgArchs) {
+      foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+
+        # We must check if the package is already stored in the table Pkg, if not => store it
+        if ($pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease["pkgVersion"], $versionAndRelease["pkgRelease"], $pkgArch) == -1) {
+          $tmpPkg = new Pkg();
+          $tmpPkg->setName($pkgName);
+          $tmpPkg->setVersion($versionAndRelease['pkgVersion']);
+          $tmpPkg->setRelease($versionAndRelease['pkgRelease']);
+          $tmpPkg->setArch($pkgArch);
+          $this->getPakiti()->getDao("Pkg")->create($tmpPkg);
+          $pkgId = $tmpPkg->getId();
+        }
+
+
+        $sql = "update InstalledPkg set pkgId={$pkgId} where hostId={$host->getId()} and pkgId={$versionAndRelease['pkgIdThatShouldBeUpdate']}";
+        $this->getPakiti()->getManager("DbManager")->query($sql);
+      }
     }
-    unset($value);
+    unset($pkgArchs);
   }
   
 	/*
@@ -159,20 +174,22 @@ class PkgsManager extends DefaultManager {
    */
   public function removePkgs(Host &$host, &$pkgs) {
     if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    
-    Utils::log(LOG_DEBUG, "Removing packages [hostId=".$host->getId().", pkgsCount=".sizeof($pkgs)."]", __FILE__, __LINE__);
-    
-    foreach ($pkgs as $pkgName => &$value) {
-      $sql = "delete from InstalledPkg where
+
+    Utils::log(LOG_DEBUG, "Removing packages [hostId=" . $host->getId() . ", pkgsCount=" . sizeof($pkgs) . "]", __FILE__, __LINE__);
+
+    foreach ($pkgs as $pkgName => &$pkgArchs) {
+      foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+        $sql = "delete from InstalledPkg where
       	hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and
-      	pkgId=".$this->getPkgId($pkgName)."";
-      
-      $this->getPakiti()->getManager("DbManager")->query($sql);
+      	pkgId=" . $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease['pkgVersion'], $versionAndRelease['pkgRelease'], $pkgArch) . "";
+
+        $this->getPakiti()->getManager("DbManager")->query($sql);
+      }
     }
-    unset($pkgName);
+    unset($pkgArchs);
   }
 
   /** Return Packages by CveName and Os Group
@@ -184,12 +201,12 @@ class PkgsManager extends DefaultManager {
   public function getPkgsByCveNameAndOsGroup($cveName, OsGroup $osGroup)
   {
     if (($osGroup == null) || ($osGroup->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("OsGroup object is not valid or OsGroup.id is not set");
     }
 
     if ($cveName == "" || $cveName == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Cve name is not valid");
     }
 
@@ -199,31 +216,29 @@ class PkgsManager extends DefaultManager {
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
   }
 
+  public function getPkgId($name, $version, $release, $arch)
+  {
+    if ((!isset($name)) || !isset($version) || !isset($release) || !isset($arch)) {
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+      throw new Exception("Some of the parameters is not set");
+    }
+    return $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($name,
+        $version, $release, $arch);
+  }
+
 
   /*
    * Removes all installed packages associated with the host.
    */
   public function removeHostPackages(Host &$host) {
     if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    
-    Utils::log(LOG_DEBUG, "Removing installed packages [hostname=".$host->getHostname()."]", __FILE__, __LINE__);
+
+    Utils::log(LOG_DEBUG, "Removing installed packages [hostname=" . $host->getHostname() . "]", __FILE__, __LINE__);
     
     $this->getPakiti()->getManager("DbManager")->query("delete from InstalledPkg where hostId={$host->getId()}");
-  }
-  
-  /*
-   * Gets the package ID by the name.
-   */
-  public function getPkgId($pkgName) {
-    $id = $this->getPakiti()->getManager("DbManager")->queryToSingleValue(
-      "select id from Pkg where binary name='" . $this->getPakiti()->getManager("DbManager")->escape($pkgName) ."'");
-    if ($id == null) {
-      return -1;
-    }
-    return $id;
   }
 
   /*

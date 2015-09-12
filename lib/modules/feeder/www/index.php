@@ -44,19 +44,22 @@ try {
     # Synchronous mode - process data immediatelly
     #---------------------------------------------
     elseif (Config::$FEEDER_MODE ==Constants::$FEEDER_SYNCHRONOUS_MODE) {
+        if (Config::$BACKUP == TRUE) {
+            $feeder->storeReportToFile();
+        }
         # Process incomming data
-        if ($feeder->processReport()) {
-            # Should we send the results back to the client?
-            if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
-                //TODO   $feeder->sendResultsBack();
-            }
+        $feeder->processReport();
+
+        # Should we send the results back to the client?
+        if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
+            print $feeder->sendResultsBack();
         }
     }
 
     # Something is wrong here
     #------------------------
     else {
-        Utils::log(LOG_ERROR, "Undefined feeder mode");
+        Utils::log(LOG_ERR, "Undefined feeder mode");
         print Constants::$RETURN_ERROR;
         exit;
     }

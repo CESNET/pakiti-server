@@ -231,7 +231,7 @@ create table `Vulnerability` (
   `release` varchar(63) not null,
   `arch` varchar(10) not null,
   `osGroupId` integer(10) not null,
-  `operator` char(1) not null,
+  `operator` char(2) not null,
   `cveDefId` integer(10) not null,
   primary key (`id`),
   unique key `unique` (`name`, `version`, `release`, `arch`, `osGroupId`, `operator`, `cveDefId`),

@@ -36,7 +36,7 @@ class HostDao {
   
   public function create(Host &$host) {
     if ($host == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid");
     }
     $this->db->query(
@@ -60,7 +60,7 @@ class HostDao {
   
   public function getId(Host &$host) {
     if ($host == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid");
     }
     $id = $this->db->queryToSingleValue(
@@ -149,7 +149,7 @@ class HostDao {
   
   public function update(Host &$host) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
     $dbHost = $this->getById($host->getId());
@@ -202,14 +202,14 @@ class HostDao {
       $sql .= $sqle . " where id=".$host->getId();
       
       $this->db->query($sql);
-    
+
       Utils::log(LOG_DEBUG, "Host updated", __FILE__, __LINE__);
     }
   }
   
   public function delete(Host &$host) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
     $this->db->query(

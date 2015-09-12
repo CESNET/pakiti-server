@@ -35,7 +35,7 @@ class HostsManager extends DefaultManager {
   public function storeHostFromReport(Host &$host) {
     Utils::log(LOG_DEBUG, "Storing the host from the report", __FILE__, __LINE__);
     if ($host == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     } 
     
@@ -50,7 +50,7 @@ class HostsManager extends DefaultManager {
   public function getHostFromReport(Host &$host, &$pkgs) {
     Utils::log(LOG_DEBUG, "Getting the host from the report", __FILE__, __LINE__);
     if ($host == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     } 
     
@@ -118,10 +118,10 @@ class HostsManager extends DefaultManager {
    */
   public function getHostId(Host &$host) {
     if ($host == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid.");
     }
-    
+
     Utils::log(LOG_DEBUG, "Getting the host ID", __FILE__, __LINE__);
     return $this->getPakiti()->getDao("Host")->getId($host);
   }
@@ -191,7 +191,7 @@ class HostsManager extends DefaultManager {
   {
     $tagId = $this->getPakiti()->getManager("TagsManager")->getTagIdByName($tagName);
     if ($tagId == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("The tag $tagName does not exist");
     }
 
@@ -223,7 +223,7 @@ class HostsManager extends DefaultManager {
    */
   public function deleteHost(Host &$host) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
     // Related data in the db is delete using delete on cascade
@@ -232,7 +232,7 @@ class HostsManager extends DefaultManager {
 
   public function setLastReportId(Host &$host, Report &$report) {
     if ($host == null || $host->getId() == -1 || $report == null || $report->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host or Report pobject is not valid or Host.id or Report.id is not set");
     }
      return $this->getPakiti()->getDao("Host")->setLastReportId($host->getId(), $report->getId()); 

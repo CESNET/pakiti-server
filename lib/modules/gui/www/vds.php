@@ -54,14 +54,18 @@ $html->printHeader();
   $i = 0;
   foreach ($sources as $source) {
     $i++;
-    print "<tr class=\"a" . ($i & 1) . "\"><td>{$source->getName()}</td></tr>\n";
+    print "<tr class=\"a" . ($i & 1) . "\"><td><b>{$source->getName()}</b></td></tr>\n";
     foreach ($source->getSubSources() as $subSource) {
       $i++;
-      print "<tr class=\"a" . ($i & 1) . "\"><td>&nbsp;{$subSource->getName()}</td></tr>\n";
+      print "<tr class=\"a" . ($i & 1) . "\"><td>&nbsp;<font color=\"red\"><b>{$subSource->getName()}</b></font></td></tr>\n";
       foreach ($subSource->getSubSourceDefs() as $subSourceDef) {
 	$i++;
     print "";
-	print "<tr class=\"a" . ($i & 1) . "\"><td>&nbsp;&nbsp;Name: {$subSourceDef->getName()}, URI: {$subSourceDef->getUri()}</td></tr>\n";
+        print "<tr class=\"a" . ($i & 1) . "\"><td><div>
+	<div>&nbsp;&nbsp;<u>Name:</u> {$subSourceDef->getName()}</div>
+	<div>&nbsp;&nbsp;<u>URI:</u> {$subSourceDef->getUri()}</div>
+	<div>&nbsp;&nbsp;<u>Last check:</u> {$subSourceDef->getLastChecked()}</div>
+	</div></td></tr>\n";
       }
     }
   }

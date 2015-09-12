@@ -106,6 +106,21 @@ class PkgDao
         return $this->getBy($name, "name");
     }
 
+    public function getPkgIdByNameVersionReleaseArch($pkgName, $pkgVersion, $pkgRelease, $pkgArch)
+    {
+        $sql = "select id from Pkg where binary
+        name='" . $this->db->escape($pkgName) . "' and
+        version='" . $this->db->escape($pkgVersion) . "' and
+      	arch='" . $this->db->escape($pkgArch) . "' and
+      	`release`='" . $this->db->escape($pkgRelease) . "'";
+        $id = $this->db->queryToSingleValue($sql);
+
+        if ($id == null) {
+            return -1;
+        }
+        return $id;
+    }
+
     /*
      * Update the pkg in the DB
      */
