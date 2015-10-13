@@ -39,17 +39,10 @@ if ($entries == "") {
 
 if ($entries > 0) {
     for ($i = 0; $i < $entries; $i++) {
-        if (isset($_POST["ososgroup$i"])) {
-            $data = explode(' ', Utils::getHttpPostVar("ososgroup$i"));
-            $os = $pakiti->getManager("OsGroupsManager")->getOsById($data[0]);
-            # data[0] - osId
-            # data[1] - osGroupId
-            if ($data[1] !== "N/A") {
-                $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById($data[1]);
-                $pakiti->getManager("OsGroupsManager")->assignOsToOsGroup($os, $osGroup);
-            } else {
-                $pakiti->getManager("OsGroupsManager")->removeOsFromOsGroups($os);
-            }
+        if (Utils::getHttpPostVar("osGroup$i")) {
+            $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById(Utils::getHttpPostVar("osGroup$i"));
+            $osGroup->setRegex(Utils::getHttpPostVar("regex$i"));
+            $pakiti->getManager("OsGroupsManager")->updateOsGroup($osGroup);
         }
     }
     $html->setMessage(sprintf("The changes have been saved.", $tagName));
@@ -68,38 +61,56 @@ $html->printHeader();
 
 # Print table with oses
 ?>
-<form action="" method="post" name="os_osgroup_form">
+<table class="tableList">
+    <tr>
+        <th>OS Name</th>
+        <th>Assigned groups</th>
+        <th></th>
+    </tr>
+    <?php
+    $i = 0;
+    foreach ($oses as $os) {
+        print "<tr class=\"a" . ($i & 1) . "\">\n<td>{$os->getName()}</td>";
+        $actualOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOs($os);
+        print "<td>" . implode(",", array_map(function ($osGroup) {
+                return $osGroup->getName();
+            }, $actualOsGroups)) . "</td>
+    </td>\n
+    </tr>\n";
+        $i++;
+    }
+    ?>
+</table>
+</div>
+<div class="space"></div><h1>List of all OS Groups</h1>
+<form action="" name="osGroups" method="post">
     <table class="tableList">
         <tr>
-            <th>OS Name</th>
             <th>OS Group</th>
+            <th>Regular expression</th>
             <th></th>
         </tr>
         <?php
         $i = 0;
-        foreach ($oses as $os) {
-            print "<tr class=\"a" . ($i & 1) . "\">
-    <td>{$os->getName()}</td>
-    <td>\n<select name=\"" . "ososgroup$i" . "\" style=\"width: 300px;\">\n";
-            $actualOsOsGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupByOsId($os->getId());
-            print "<option value=\"" . $os->getId() . " " . "N/A" . "\"";
-            if ($actualOsOsGroup == null) print " class=\"bold\" selected";
-            print ">N/A</option>\n";
-            foreach ($osGroups as $osGroup) {
-                print "<option";
-                if ($actualOsOsGroup !== null) {
-                    if ($actualOsOsGroup->getName() === $osGroup->getName()) print " class=\"bold\" selected";
-                }
-                print " value=\"" . $os->getId() . " " . $osGroup->getId() . "\">" . $osGroup->getName() . "</option>\n";
+        foreach ($osGroups as $osGroup) {
+            if ($osGroup->getName() !== "unknown") {
+                print "<tr>
+                <td>{$osGroup->getName()}</td>
+                <td>
+                <span class=\"slash\">/</span>
+                <input type=\"text\" name=\"regex$i\" value=\"" . $osGroup->getRegex() . "\" placeholder=\"insert regular expression here\">
+                <span class=\"slash\">/</span>
+                </td>
+
+                <td><input type=\"hidden\" name=\"osGroup$i\" value=\"" . $osGroup->getId() . "\" /></td>
+            </tr>";
+                $i++;
             }
-            print "</select>\n
-    </td>\n
-    </tr>\n";
-            $i++;
         }
         ?>
     </table>
     <?php print "<td><input type=\"hidden\" name=\"entries\" value=\"" . $i . "\"></td>" ?>
-    <input type="submit" value="Save">
+    <input type="submit" value="Save changes">
 </form>
+
 <?php $html->printFooter(); ?>

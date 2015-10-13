@@ -94,8 +94,8 @@ class CveDefsManager extends DefaultManager
     public function getCveDefsForHost(Host $host){
         $pkgsCveDefs = array();
 
-        //Get OS group
-        $osGroup = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupByOsId($host->getOsId());
+        //Get OS groups
+        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
 
         //Get installed Pkgs on Host
         $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
@@ -103,7 +103,12 @@ class CveDefsManager extends DefaultManager
         //Get CveDefs for Vulnerable packages
         foreach ($installedPkgs as $installedPkg) {
             $sql = "select * from CveDef inner join PkgCveDef on CveDef.id = PkgCveDef.cveDefId
-                    where PkgCveDef.pkgId={$installedPkg->getId()} and PkgCveDef.osGroupId={$osGroup->getId()}";
+                    where PkgCveDef.pkgId={$installedPkg->getId()}
+                    and PkgCveDef.osGroupId in
+                    (" . implode(",", array_map("intval", array_map(function ($osGroup) {
+                    return $osGroup->getId();
+                }, $osGroups))) . ")";
+
             $cveDefsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
 
             # Create objects

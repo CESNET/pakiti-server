@@ -50,6 +50,11 @@ class OvalRedHat extends SubSource implements ISubSource {
                 throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
             }
 
+            $currentSubSourceHash = $this->computeHash($oval->saveXML());
+            if (!$this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
+                continue;
+            }
+
             # Get the XPath
             $this->_xpath = new DOMXPath($oval);
 
@@ -96,6 +101,7 @@ class OvalRedHat extends SubSource implements ISubSource {
                 array_push($defs, $def);
             }
             $this->updateSubSourceLastChecked($subSourceDef);
+            $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
         }
         return $defs;
     }

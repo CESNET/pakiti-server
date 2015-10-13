@@ -32,13 +32,7 @@ create table `OsGroup` (
   unique key `name` (`name`)
 ) ENGINE=INNODB;
 
-create table `OsOsGroup` (
-  `osId` integer(10) not null,
-  `osGroupId` integer(10) not null,
-  unique key `unique` (`osId`, `osGroupId`),
-  foreign key (`osId`) references Os(`id`) on delete cascade,
-    foreign key (`osGroupId`) references OsGroup(`id`)  on delete cascade
-) ENGINE=INNODB;
+insert into OsGroup (`name`, `regex`) values ('unknown', '');
 
 create table `Arch` (
   `id` integer(10) not null auto_increment,
@@ -167,6 +161,7 @@ create table `VdsSubSourceDef` (
   `uri` varchar(255) not null,
   `enabled` integer(1) not null,
   `lastChecked` datetime not null,
+  `lastSubSourceDefHash` char(32),
   `vdsSubSourceId` integer(10) not null,
   primary key (`id`),
   unique key `unique` (`name`),

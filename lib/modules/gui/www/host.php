@@ -174,8 +174,8 @@ $html->printHeader();
                                         print ">" . $cve->getName() . " " . "</span></a>";
                                     }
                                 } else {
-                                    print "<a href=\"cve.php?cve=" . $cve->getName() . "\"><span";
-                                    print $cve->getName() . " ";
+                                    print "<a href=\"cve.php?cve=" . $cve->getName() . "\">";
+                                    print $cve->getName() . " </a>\n";
                                 }
 
                             }
