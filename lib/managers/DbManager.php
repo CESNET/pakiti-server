@@ -64,7 +64,7 @@ final class DbManager {
    * Escape SQL parameters
    */
   public function escape($string) {
-	return $this->_dbLink->real_escape_string($string);
+    return $this->_dbLink->real_escape_string(htmlspecialchars($string));
   }
 
   /*

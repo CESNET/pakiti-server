@@ -322,8 +322,8 @@ class FeederModule extends DefaultModule
 
         # Get the hashes of the previous report, but only for hosts already stored in the DB
         if ($id != -1) {
-            $this->_host->setId($id);
-            $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($this->_host);
+            $host = $this->getPakiti()->getManager("HostsManager")->getHostById($id);
+            $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($host);
             $currentReportHeaderHash = $this->computeReportHeaderHash();
             $currentReportPkgsHash = $this->computeReportPkgsHash();
 
@@ -333,6 +333,20 @@ class FeederModule extends DefaultModule
             ) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
                 Utils::log(LOG_DEBUG, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
+
+                // Recalculate vulnerable pkgs for a host in case a new definitions are appeared
+                $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($host);
+
+                //Update Last Host Report
+                $lastReport = $this->getPakiti()->getManager("ReportsManager")->getReportById($host->getLastReportId());
+                $timestamp = microtime(true);
+                $lastReport->setReceivedOn($timestamp);
+                $lastReport->setProcessedOn($timestamp);
+                $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
+                $lastReport->setNumOfCves($cveCount);
+                $lastReport->setId(-1);
+                // Create new Report from Last Report
+                $this->getPakiti()->getManager("ReportsManager")->createReport($lastReport, $host);
                 return false;
             }
         }

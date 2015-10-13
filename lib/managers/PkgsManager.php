@@ -175,7 +175,7 @@ class PkgsManager extends DefaultManager {
     unset($pkgName);
   }
 
-  /**Return Packages by CveName and Os Group
+  /** Return Packages by CveName and Os Group
    * @param $cveName
    * @param OsGroup $osGroup
    * @return mixed

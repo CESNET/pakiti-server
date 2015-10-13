@@ -86,6 +86,15 @@ class SubSource {
     }
   }
 
+
+  /*
+   * Compute the hash, currently MD5
+   */
+  protected function computeHash($string)
+  {
+    return md5($string);
+  }
+
   public function removeSubSourceDef(ISubSourceDef &$subSourceDef) {
     $this->_db->query(
       "delete from VdsSubSourceDef where id=".$this->_db->escape($subSourceDef->getId()));
@@ -103,6 +112,38 @@ class SubSource {
         lastChecked='".$this->_db->escape($subSourceDef->getLastChecked())."',
         vdsSubSourceId=".$this->_db->escape($subSourceDef->getSubSourceId())." 
       where id=".$this->_db->escape($subSourceDef->getId()));
+  }
+
+  public function getLastSubSourceDefHash(ISubSourceDef &$subSourceDef)
+  {
+    $row = $this->_db->queryToSingleRow("select lastSubSourceDefHash from VdsSubSourceDef
+        where id=" . $this->_db->escape($subSourceDef->getId()));
+    return $row[0];
+  }
+
+  protected function isSubSourceDefContainsNewData(ISubSourceDef &$subSourceDef, $currentSubSourceHash)
+  {
+    $lastSubSourceHash = $this->getLastSubSourceDefHash($subSourceDef);
+
+    if ($lastSubSourceHash != null && $lastSubSourceHash == $currentSubSourceHash) {
+      # Data are the same as stored one, so we do not need to store anything
+      Utils::log(LOG_DEBUG, "SubSourceDef [SubSourceDef=" . $subSourceDef->getName() . "] doesn't contain any new data, exiting...", __FILE__, __LINE__);
+      $this->updateSubSourceLastChecked($subSourceDef);
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Update SubSourceDef has in DB
+   * @param ISubSourceDef $subSourceDef
+   * @param $subSourceDefHash
+   */
+  public function updateLastSubSourceDefHash(ISubSourceDef &$subSourceDef, $subSourceDefHash)
+  {
+    $this->_db->query("update VdsSubSourceDef
+      set lastSubSourceDefHash='" . $this->_db->escape($subSourceDefHash) . "' where
+      id=" . $this->_db->escape($subSourceDef->getId()));
   }
 
    /*

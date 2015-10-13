@@ -53,13 +53,15 @@ class Debian extends SubSource implements ISubSource
         if ($path === false OR !is_dir($path)) {
             exec('svn checkout '.$this->getSubSourceDefs()[0]->getUri().' 2>&1', $output, $return_code);
             if ($return_code) {
-                die("An error occurred while trying to checkout svn: " . join("\n", $output));
+                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                throw new Exception("An error occurred while trying to checkout svn: " . join("\n", $output));
             }
 
         } else {
             exec('svn up DSA 2>&1', $output, $return_code);
             if ($return_code) {
-                die("An error occurred while trying to update svn: " . join("\n", $output));
+                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                throw new Exception("An error occurred while trying to update svn: " . join("\n", $output));
             }
         }
 
@@ -67,95 +69,112 @@ class Debian extends SubSource implements ISubSource
 
     public function processDSA()
     {
-        $dsaFile = fopen($this->_dsaPath, "r") or die("Unable to open DSA file!");
+        $dsaFile = fopen($this->_dsaPath, "r");
+
+        if (!$dsaFile) {
+            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            throw new Exception("Unable to open DSA file!");
+        }
+
         $num = 0;
         $defs = array();
-        while (($line = fgets($dsaFile)) !== false) {
-            $num++;
 
-            /* Record header */
-            $ret = preg_match('/^\[.+\] (DSA-\S+) (.*)$/', $line, $matches);
-            if ($ret === 1) {
-                if (!empty($rec)) {
-                    if (array_key_exists('cves', $rec))
-                        array_push($defs, $rec);
-                }
+        $currentSubSourceHash = $this->computeHash(stream_get_contents($dsaFile));
+        fseek($dsaFile, 0);
 
-                $rec = array();
-                $rec['subSourceDefId'] = $this->getSubSourceDefs()[0]->getId(); // Only one
-                $rec['definition_id'] = $matches[1];
-                $rec['severity'] = "n/a";
-                $rec['title'] = $matches[1] . ": " . $matches[2];
-                $rec['ref_url'] = "https://security-tracker.debian.org/tracker/" . $matches[1];
-                continue;
-            }
+        if ($this->isSubSourceDefContainsNewData($this->getSubSourceDefs()[0], $currentSubSourceHash)) {
+            while (($line = fgets($dsaFile)) !== false) {
+                $num++;
 
-            /* CVEs */
-            $ret = preg_match('/^\s+{(.+)}\s*$/', $line, $matches);
-            if ($ret === 1) {
-                $cves = preg_split("/\s/", $matches[1]);
-                if (array_key_exists('cves', $rec))
-                    die ("Format error (multiple CVE lines) at " . $num);
-                $rec['cves'] = array();
-                foreach ($cves as $cve)
-                    if (!empty($cve)) {
-                        array_push($rec['cves'], $cve);
+                /* Record header */
+                $ret = preg_match('/^\[.+\] (DSA-\S+) (.*)$/', $line, $matches);
+                if ($ret === 1) {
+                    if (!empty($rec)) {
+                        if (array_key_exists('cves', $rec))
+                            array_push($defs, $rec);
                     }
-                continue;
-            }
 
-            /* Debian versions affected */
-            $ret = preg_match('/^\s+\[(\S+)\]\s+-\s+(\S+)\s+(.*)$/', $line, $matches);
-            if ($ret === 1) {
-                $deb_release = $matches[1];
-                $name = $matches[2];
-                $list = preg_split("/\s+/", $matches[3]);
-                $package_version = $list[0];
-                if ($package_version == "<not-affected>" ||
-                    $package_version == "<unfixed>" ||
-                    $package_version == "<end-of-life>"
-                ) {
+                    $rec = array();
+                    $rec['subSourceDefId'] = $this->getSubSourceDefs()[0]->getId(); // Only one
+                    $rec['definition_id'] = $matches[1];
+                    $rec['severity'] = "n/a";
+                    $rec['title'] = $matches[1] . ": " . $matches[2];
+                    $rec['ref_url'] = "https://security-tracker.debian.org/tracker/" . $matches[1];
                     continue;
                 }
-                /* see deb-version(5) for version number format */
-                $ret = preg_match('/^[\.+-:~A-Za-z0-9]+$/', $package_version);
-                if ($ret !== 1)
-                    die ("Format error at line " . $num);
-                /* rsplit('-', $package_version): */
-                $ver = explode('-', $package_version);
-                $debian_revision = array_pop($ver);
-                $upstream_version = implode('-', $ver);
-                $package = array();
-                $package['name'] = $name;
-                $package['version'] = $upstream_version;
-                $package['release'] = $debian_revision;
-                $package['operator'] = "<";
-                if (!array_key_exists('osGroup', $rec))
-                    $rec['osGroup'] = array();
-                if (!array_key_exists($deb_release, $rec['osGroup']))
-                    $rec['osGroup'][$deb_release] = array();
-                array_push($rec['osGroup'][$deb_release], $package);
-                continue;
+
+                /* CVEs */
+                $ret = preg_match('/^\s+{(.+)}\s*$/', $line, $matches);
+                if ($ret === 1) {
+                    $cves = preg_split("/\s/", $matches[1]);
+                    if (array_key_exists('cves', $rec))
+                        die ("Format error (multiple CVE lines) at " . $num);
+                    $rec['cves'] = array();
+                    foreach ($cves as $cve)
+                        if (!empty($cve)) {
+                            array_push($rec['cves'], $cve);
+                        }
+                    continue;
+                }
+
+                /* Debian versions affected */
+                $ret = preg_match('/^\s+\[(\S+)\]\s+-\s+(\S+)\s+(.*)$/', $line, $matches);
+                if ($ret === 1) {
+                    $deb_release = $matches[1];
+                    $name = $matches[2];
+                    $list = preg_split("/\s+/", $matches[3]);
+                    $package_version = $list[0];
+                    if ($package_version == "<not-affected>" ||
+                        $package_version == "<unfixed>" ||
+                        $package_version == "<end-of-life>"
+                    ) {
+                        continue;
+                    }
+                    /* see deb-version(5) for version number format */
+                    $ret = preg_match('/^[\.+-:~A-Za-z0-9]+$/', $package_version);
+                    if ($ret !== 1)
+                        die ("Format error at line " . $num);
+                    /* rsplit('-', $package_version): */
+                    $ver = explode('-', $package_version);
+                    $debian_revision = array_pop($ver);
+                    $upstream_version = implode('-', $ver);
+                    $package = array();
+                    $package['name'] = $name;
+                    $package['version'] = $upstream_version;
+                    $package['release'] = $debian_revision;
+                    $package['operator'] = "<";
+                    if (!array_key_exists('osGroup', $rec))
+                        $rec['osGroup'] = array();
+                    if (!array_key_exists($deb_release, $rec['osGroup']))
+                        $rec['osGroup'][$deb_release] = array();
+                    array_push($rec['osGroup'][$deb_release], $package);
+                    continue;
+                }
+
+                /*Ignore NOTE */
+                $ret = preg_match('/^\s+NOTE:/', $line);
+                if ($ret === 1) {
+                    continue;
+                }
+
+                Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+                throw new Exception("Format error at line " . $num);
             }
 
-            /*Ignore NOTE */
-            $ret = preg_match('/^\s+NOTE:/', $line);
-            if ($ret === 1) {
-                continue;
+            //Add last one
+            if (!empty($rec)) {
+                if (array_key_exists('cves', $rec))
+                    array_push($defs, $rec);
             }
 
+            $this->updateLastSubSourceDefHash($this->getSubSourceDefs()[0], $currentSubSourceHash);
 
-            die ("Format error at line " . $num);
         }
 
-        //Add last one
-        if (!empty($rec)) {
-            if (array_key_exists('cves', $rec))
-                array_push($defs, $rec);
-        }
 
         fclose($dsaFile);
         $this->updateSubSourceLastChecked($this->getSubSourceDefs()[0]);
+
         return $defs;
     }
 

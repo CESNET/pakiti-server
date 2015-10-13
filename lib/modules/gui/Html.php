@@ -295,7 +295,6 @@ class HTMLModule extends DefaultModule
         print "
   	<table class=\"tableList\">
         <tr>
-                <th>CVEs</a></th>
                 <th><a href=\"" . $this->getQueryString(array("sortBy" => "hostname")) . "\">Hostname</a></th>
                 <th><a href=\"" . $this->getQueryString(array("sortBy" => "hostGroup")) . "\">HostGroup</a></th>
                 <th><a href=\"" . $this->getQueryString(array("sortBy" => "os")) . "\">Os</a></th>
@@ -309,7 +308,6 @@ class HTMLModule extends DefaultModule
         foreach ($hosts as $host) {
             $i++;
             // Get last report
-            $cvesCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
             $lastReportId = $host->getLastReportId();
             $report = $this->getPakiti()->getManager("ReportsManager")->getReportById($lastReportId);
             $reportsCount = $this->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host);
@@ -319,7 +317,6 @@ class HTMLModule extends DefaultModule
 
             print "
         	<tr class=\"a" . ($i & 1) . "\">
-                <td>" . $cvesCount . "</td>
                 <td><a href=\"host.php?hostId=" . $host->getId() . "\">" . $host->getHostname() . "</a></td>
                 <td>";
 

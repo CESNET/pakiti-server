@@ -53,69 +53,57 @@ class OsGroupsManager extends DefaultManager{
         return $this->getPakiti()->getDao("OsGroup")->getIdByName($name);
     }
 
-    public function getOsGroupByOsId($osId){
-        Utils::log(LOG_DEBUG, "Getting os group by osId [osId={$osId}]", __FILE__, __LINE__);
-        $osGroup = $this->getPakiti()->getDao("OsGroup")->getByOsId($osId);
-        if ($osGroup != null) {
-            return $this->getPakiti()->getDao("OsGroup")->getById($osGroup->getId());
-        } else {
-            return null;
-        }
-
-    }
-
-    /**
-     * Create association between Os and OsGroup
+    /** For a particular Os find its OsGroups
+     * @param Os $os
+     * @return array
+     * @throws Exception
      */
-    public function assignOsToOsGroup(Os &$os, OsGroup &$osGroup)
+    public function getOsGroupsByOs(Os $os)
     {
-        if (($os == null) || ($os->getId() == -1) || ($osGroup == null)) {
+        if (($os == null) || ($os->getName() == "")) {
             Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
-            throw new Exception("Os or OsGroup object is not valid or Os.id|OsGroup.id is not set");
+            throw new Exception("Os object is not valid or Os.name is not set");
         }
-        Utils::log(LOG_DEBUG, "Assigning the os to the os group [os=" . $os->getName() . ",osGroupName=" . $osGroup->getName() . "]", __FILE__, __LINE__);
 
-        # Check if the tag already exists
-        $isAssigned =
-            $this->getPakiti()->getManager("DbManager")->queryToSingleValue(
-                "select 1 from OsOsGroup where
-    	 		osId=" . $this->getPakiti()->getManager("DbManager")->escape($os->getId()) . "");
-
-        if ($isAssigned == null) {
-            # Association between os and osGroup doesn't exist, so create it
-            $this->getPakiti()->getManager("DbManager")->query(
-                "insert into OsOsGroup set
-          osId=" . $this->getPakiti()->getManager("DbManager")->escape($os->getId()) . ",
-    	 		osGroupId=" . $this->getPakiti()->getManager("DbManager")->escape($osGroup->getId()));
-        } else {
-            # Update
-            $this->getPakiti()->getManager("DbManager")->query(
-                "update OsOsGroup set
-          osId=" . $this->getPakiti()->getManager("DbManager")->escape($os->getId()) . ",
-    	 		osGroupId=" . $this->getPakiti()->getManager("DbManager")->escape($osGroup->getId()) . " where
-    	 		osId=" . $this->getPakiti()->getManager("DbManager")->escape($os->getId()) . "");
+        $osGroups = array();
+        foreach ($this->getOsGroups("name") as $osGroup) {
+            if ($osGroup->getRegex()) {
+                if (preg_match("/" . htmlspecialchars_decode($osGroup->getRegex()) . "/", $os->getName()) == 1) array_push($osGroups, $osGroup);
+            }
         }
-    }
-
-    public function removeOsFromOsGroups(Os &$os)
-    {
-        if (($os == null) || ($os->getId() == -1)) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
-            throw new Exception("Os object is not valid or Os.id is not set");
+        // if Os doesn't have any OsGroups if belongs to Unknown OsGroup
+        if (empty($osGroups)) {
+            $unknownOsGroup = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupByName("unknown");
+            array_push($osGroups, $unknownOsGroup);
         }
-        Utils::log(LOG_DEBUG, "Removing the os from all os groups [os=" . $os->getName() . "]", __FILE__, __LINE__);
-
-        $this->getPakiti()->getDao("OsGroup")->removeOsFromOsGroups($os->getId());
+        return $osGroups;
     }
 
     public function createOsGroup($name)
     {
+        if ($name == "") {
+            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            throw new Exception("OsGroup name is not valid");
+        }
+
         Utils::log(LOG_DEBUG, "Creating osGroup $name", __FILE__, __LINE__);
         $osGroup = new OsGroup();
         $osGroup->setName($name);
         $this->getPakiti()->getDao("OsGroup")->create($osGroup);
 
         return $osGroup;
+    }
+
+    public function updateOsGroup(OsGroup $osGroup)
+    {
+        if (($osGroup == null) || ($osGroup->getId() == -1)) {
+            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            throw new Exception("OsGroup object is not valid or Os.id is not set");
+        }
+
+        Utils::log(LOG_DEBUG, "Updating osGroup {$osGroup->getName()}", __FILE__, __LINE__);
+        $this->getPakiti()->getDao("OsGroup")->update($osGroup);
+
     }
 
 }
