@@ -35,7 +35,7 @@ class HostGroupDao {
   }
   
   public function create(HostGroup &$hostGroup) {
-    Utils::log(LOG_DEBUG, "Creating [hostGroup=".$hostGroup->getName()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Creating [hostGroup=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
     $this->db->query(
       "insert into HostGroup set
       	name='".$this->db->escape($hostGroup->getName())."'");
@@ -132,7 +132,7 @@ class HostGroupDao {
   }
 
   public function update(HostGroup &$hostGroup) {
-    Utils::log(LOG_DEBUG, "Updating [hostGroup=".$hostGroup->getName()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Updating [hostGroup=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
     $this->db->query(
       "update HostGroup set
       	name='".$this->db->escape($hostGroup->getName())."
@@ -140,7 +140,7 @@ class HostGroupDao {
   }
   
   public function delete(HostGroup &$hostGroup) {
-    Utils::log(LOG_DEBUG, "Deleting [hostGroup=".$hostGroup->getName()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Deleting [hostGroup=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
     $this->db->query(
       "delete from HostGroup where id=".$hostGroup->getId());
   }

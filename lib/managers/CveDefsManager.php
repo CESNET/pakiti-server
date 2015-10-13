@@ -19,7 +19,7 @@ class CveDefsManager extends DefaultManager
 
     public function createCveDef(CveDef &$cveDef){
         if ($cveDef == null) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("CveDef object is not valid");
         }
 

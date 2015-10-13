@@ -70,7 +70,7 @@ class FeederModule extends DefaultModule
         # Get the hostname and ip of the reporting machine (could be a NAT machine)
         $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
         $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
-        Utils::log(LOG_DEBUG, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
+        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
             __FILE__, __LINE__);
 
         # Is the host proxy?
@@ -81,7 +81,7 @@ class FeederModule extends DefaultModule
             if (!$this->checkProxyAuthz($this->_host->getReporterHostname(), $this->_host->getReporterIp())) {
                 throw new Exception("Proxy " . $this->_host->getReporterHostname() . " is not authorized to send the reports");
             }
-            Utils::log(LOG_INFO, "Proxy logging [proxy=" . $this->_host->getReporterHostname() . "] for [host=" . $this->_host->getHostname() . "]");
+            Utils::log(LOG_DEBUG, "Proxy logging [proxy=" . $this->_host->getReporterHostname() . "] for [host=" . $this->_host->getHostname() . "]");
 
             # If we are in proxy mode, the reporterHostname and reporterIp will be replaced with the real hostname and ip of the client machine.
             $this->_host->setReporterHostname($this->_host->getHostname());
@@ -89,6 +89,20 @@ class FeederModule extends DefaultModule
         } else {
             $this->_report->setTroughtProxy(Constants::$HOST_IS_NOT_PROXY);
         }
+    }
+
+    public function sendResultsBack()
+    {
+        $return_string = "";
+        $pkgs =& $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($this->_host, "id", -1, -1);
+        foreach ($pkgs as $pkg) {
+            foreach ($pkg['CVE'] as $pkgCve) {
+                if (!empty($pkgCve->getTag())) {
+                    $return_string = $return_string . str_pad($pkg["Pkg"]->getName(), 30) . str_pad($pkg["Pkg"]->getVersionRelease(), 30) . $pkg["Pkg"]->getArch() . "\n";
+                }
+            }
+        }
+        print($return_string);
     }
 
     /*
@@ -212,17 +226,17 @@ class FeederModule extends DefaultModule
      */
     public function processReport()
     {
-        if (!$this->isHostSentNewData()) {
-            return false;
-        }
-
 
         # Start the transaction
         $this->getPakiti()->getManager("DbManager")->begin();
 
         try {
-            # Parse the data and store the report
+            # Parse the data
             $this->prepareReport();
+
+            if (!$this->isHostSentNewData()) {
+                return false;
+            }
 
             # Process the list of package, synchronize received list of installed packages with one in the DB
             $this->storePkgs();
@@ -332,7 +346,7 @@ class FeederModule extends DefaultModule
                     ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $currentReportPkgsHash))
             ) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
-                Utils::log(LOG_DEBUG, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
+                Utils::log(LOG_INFO, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
 
                 // Recalculate vulnerable pkgs for a host in case a new definitions are appeared
                 $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($host);
@@ -347,6 +361,7 @@ class FeederModule extends DefaultModule
                 $lastReport->setId(-1);
                 // Create new Report from Last Report
                 $this->getPakiti()->getManager("ReportsManager")->createReport($lastReport, $host);
+                $this->getPakiti()->getManager("DbManager")->commit();
                 return false;
             }
         }
@@ -366,18 +381,13 @@ class FeederModule extends DefaultModule
      */
     public function storeReportToFile()
     {
-
-        if (!$this->isHostSentNewData()) {
-            exit;
-        }
-
         # Create temporary file, filename mask: pakiti-report-[host]-[reportHost] and also store the timestamp to the file
         $timestamp = microtime(true);
         # Maximal number of attempts to open the file
         $count = 3;
 
         $filename = "pakiti-report-" . $this->_host->getHostname() . "-" . $this->_host->getReporterHostname();
-        $file = Config::$REPORTS_DIR . "/" . $filename;
+        $file = Config::$BACKUP_DIR . "/" . $filename;
         Utils::log(LOG_DEBUG, "Storing report [file=" . $file . "]", __FILE__, __LINE__);
         while (($reportFile = fopen($file, "w")) === FALSE) {
             $count--;
@@ -387,26 +397,26 @@ class FeederModule extends DefaultModule
 
             # Try to create the file three times, if the operation is not successfull, then throw the exception
             if ($count == 0) {
-                Utils::log(LOG_DEBUG, "Error creating the file", __FILE__, __LINE__);
+                Utils::log(LOG_ERR, "Error creating the file", __FILE__, __LINE__);
                 throw new Exception("Cannot create the file containing host report [host=" . $this->_host->getHostname() .
                     ", reporterHostname=" . $this->_host->getReporterHostname() . "]");
             }
-            Utils::log(LOG_DEBUG, "Cannot create the file, trying again ($count attempts left)", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Cannot create the file, trying again ($count attempts left)", __FILE__, __LINE__);
         }
 
         switch ($this->_version) {
             case "4":
                 # Prepare the header
-                $header = Constants::$REPORT_TYPE . "='" . $this->_report_type . "'," .
-                    Constants::$REPORT_HOSTNAME . "='" . $this->_report_hostname . "'," .
-                    Constants::$REPORT_OS . "='" . $this->_report_os . "'," .
-                    Constants::$REPORT_TAG . "='" . $this->_report_tag . "'," .
-                    Constants::$REPORT_KERNEL . "='" . $this->_report_kernel . "'," .
-                    Constants::$REPORT_ARCH . "='" . $this->_report_arch . "'," .
-                    Constants::$REPORT_SITE . "='" . $this->_report_site . "'," .
-                    Constants::$REPORT_VERSION . "='" . $this->_version . "'," .
-                    Constants::$REPORT_REPORT . "='" . $this->_report_report . "'," .
-                    Constants::$REPORT_TIMESTAMP . "='" . $timestamp . "'" .
+                $header = Constants::$REPORT_TYPE . "=\"" . $this->_report_type . "\"," .
+                    Constants::$REPORT_HOSTNAME . "=\"" . $this->_report_hostname . "\"," .
+                    Constants::$REPORT_OS . "=\"" . $this->_report_os . "\"," .
+                    Constants::$REPORT_TAG . "=\"" . $this->_report_tag . "\"," .
+                    Constants::$REPORT_KERNEL . "=\"" . $this->_report_kernel . "\"," .
+                    Constants::$REPORT_ARCH . "=\"" . $this->_report_arch . "\"," .
+                    Constants::$REPORT_SITE . "=\"" . $this->_report_site . "\"," .
+                    Constants::$REPORT_VERSION . "=\"" . $this->_version . "\"," .
+                    Constants::$REPORT_REPORT . "=\"" . $this->_report_report . "\"," .
+                    Constants::$REPORT_TIMESTAMP . "=\"" . $timestamp . "\"" .
                     "\n";
 
                 # Store the data
@@ -428,29 +438,59 @@ class FeederModule extends DefaultModule
         Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
         # Load the actually stored packages from the DB, the array is already sorted by the pkgName
         $pkgs =& $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsAsArray($this->_host);
-
         $pkgsToAdd = array();
         $pkgsToUpdate = array();
         $pkgsToRemove = array();
 
         // Find packages which should be added or updated
-        foreach ($this->_pkgs as $pkgName => &$value) {
+        foreach ($this->_pkgs as $pkgName => $pkgArchs) {
             if (!array_key_exists($pkgName, $pkgs)) {
                 # Package is missing in the DB
-                $pkgsToAdd[$pkgName] =& $value;
-            } elseif ($value['pkgVersion'] != $pkgs[$pkgName]['pkgVersion']) {
-                $pkgsToUpdate[$pkgName] =& $value;
-            } elseif ($value['pkgRelease'] != $pkgs[$pkgName]['pkgRelease']) {
-                $pkgsToUpdate[$pkgName] =& $value;
-            } elseif ($value['pkgArch'] != $pkgs[$pkgName]['pkgArch']) {
-                $pkgsToUpdate[$pkgName] =& $value;
+                $pkgsToAdd[$pkgName] = $pkgArchs;
+
+            } else {
+                foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+
+                    if (!array_key_exists($pkgArch, $pkgs[$pkgName])) {
+                        $pkgsToAdd[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
+                            'pkgRelease' => $versionAndRelease["pkgRelease"]);
+
+                    } elseif ($versionAndRelease['pkgVersion'] != $pkgs[$pkgName][$pkgArch]['pkgVersion']) {
+                        $pkgIdThatShouldBeUpdate = $this->getPakiti()->getManager("PkgsManager")->getPkgId($pkgName,
+                            $pkgs[$pkgName][$pkgArch]['pkgVersion'], $pkgs[$pkgName][$pkgArch]['pkgRelease'], $pkgArch);
+
+                        $pkgsToUpdate[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
+                            'pkgRelease' => $versionAndRelease["pkgRelease"], 'pkgIdThatShouldBeUpdate' => $pkgIdThatShouldBeUpdate);
+
+                    } elseif ($versionAndRelease['pkgRelease'] != $pkgs[$pkgName][$pkgArch]['pkgRelease']) {
+                        $pkgIdThatShouldBeUpdate = $this->getPakiti()->getManager("PkgsManager")->getPkgId($pkgName,
+                            $pkgs[$pkgName][$pkgArch]['pkgVersion'], $pkgs[$pkgName][$pkgArch]['pkgRelease'], $pkgArch);
+
+                        $pkgsToUpdate[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
+                            'pkgRelease' => $versionAndRelease["pkgRelease"], 'pkgIdThatShouldBeUpdate' => $pkgIdThatShouldBeUpdate);
+                    }
+                }
+
             }
         }
 
         // Find packages which should be deleted
-        foreach (array_keys($pkgs) as $pkgName) {
+        foreach ($pkgs as $pkgName => $pkgArchs) {
+
+            # Check what architecture we should remove
             if (!array_key_exists($pkgName, $this->_pkgs)) {
-                array_push($pkgsToRemove, $pkgName);
+                foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+                    $pkgsToRemove[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
+                        'pkgRelease' => $versionAndRelease["pkgRelease"]);
+                }
+            } else {
+
+                foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+                    if (!array_key_exists($pkgArch, $this->_pkgs[$pkgName])) {
+                        $pkgsToRemove[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
+                            'pkgRelease' => $versionAndRelease["pkgRelease"]);
+                    }
+                }
             }
         }
 
@@ -524,7 +564,7 @@ class FeederModule extends DefaultModule
             unset($pkgNamePattern);
 
             # $parsedPkgs['pkgName'] = array ( pkgVersion, pkgRelease, pkgArch );
-            $parsedPkgs[$pkgName] = array('pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease, 'pkgArch' => $pkgArch);
+            $parsedPkgs[$pkgName][$pkgArch] = array('pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease);
             $tok = strtok("\n");
         }
 

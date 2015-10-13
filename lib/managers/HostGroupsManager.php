@@ -99,10 +99,10 @@ class HostGroupsManager extends DefaultManager {
    */
   public function assignHostToHostGroup(Host &$host, HostGroup &$hostGroup) {
     if (($host == null) || ($host->getId() == -1) || ($hostGroup == null)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host or HostGroup object is not valid or Host.id|HostGroup.id is not set");
-    } 
-    Utils::log(LOG_DEBUG, "Assigning the host to the host group [host=".$host->getHostname().",hostGroupName=".$hostGroup->getName()."]", __FILE__, __LINE__);
+    }
+    Utils::log(LOG_DEBUG, "Assigning the host to the host group [host=" . $host->getHostname() . ",hostGroupName=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
     
     # Check if the hostGroup name is valid
     if ($hostGroup->getName() == "") {
@@ -115,8 +115,8 @@ class HostGroupsManager extends DefaultManager {
     } else {
       $hostGroup->setId($hostGroupId);
     }
-    
-    Utils::log(LOG_DEBUG, "Assinging the host to the hostGroup [hostId=".$host->getId().",hostGroupId=".$hostGroup->getId()."]", __FILE__, __LINE__);
+
+    Utils::log(LOG_DEBUG, "Assinging the host to the hostGroup [hostId=" . $host->getId() . ",hostGroupId=" . $hostGroup->getId() . "]", __FILE__, __LINE__);
     # Check if the tag already exists
     $isAssigned = 
       $this->getPakiti()->getManager("DbManager")->queryToSingleValue(
@@ -138,10 +138,10 @@ class HostGroupsManager extends DefaultManager {
    */
   public function removeHostFromHostGroups(Host &$host) {
      if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
-    } 
-    Utils::log(LOG_DEBUG, "Removing the host from all host groups [host=".$host->getHostname()."]", __FILE__, __LINE__);
+       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+       throw new Exception("Host object is not valid or Host.id is not set");
+     }
+    Utils::log(LOG_DEBUG, "Removing the host from all host groups [host=" . $host->getHostname() . "]", __FILE__, __LINE__);
     
     $this->getPakiti()->getDao("HostGroup")->removeHostFromHostGroups($host->getId());
   }

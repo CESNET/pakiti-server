@@ -72,13 +72,13 @@ class ReportsManager extends DefaultManager {
    */
   public function createReport(Report &$report, Host &$host) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    
+
     Utils::log(LOG_DEBUG, "Creating the report", __FILE__, __LINE__);
     if ($report == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Report object is not valid");
     } 
     
@@ -102,7 +102,7 @@ class ReportsManager extends DefaultManager {
   public function updateReport(Report &$report)
   {
     if ($report == null || $report->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Report object is not valid or Report.id is not set");
     }
 
@@ -118,11 +118,11 @@ class ReportsManager extends DefaultManager {
    */
   public function getLastReportHashes(Host &$host) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-    
-    Utils::log(LOG_DEBUG, "Getting last report hashes [hostId=".$host->getId()."]", __FILE__, __LINE__);
+
+    Utils::log(LOG_DEBUG, "Getting last report hashes [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
     
     $row = $this->getPakiti()->getManager("DbManager")->queryToSingleRow(
         "select lastReportHeaderHash, lastReportPkgsHash from Host where id=" . $this->getPakiti()->getManager("DbManager")->escape($host->getId()));
@@ -139,11 +139,11 @@ class ReportsManager extends DefaultManager {
    */
   public function storeReportHashes(Host &$host, $headerHash, $pkgsHash) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-   
-    Utils::log(LOG_DEBUG, "Storing the report hashes [hostId=".$host->getId().",headerHash=$headerHash,pkgsHash=$pkgsHash]", __FILE__, __LINE__);
+
+    Utils::log(LOG_DEBUG, "Storing the report hashes [hostId=" . $host->getId() . ",headerHash=$headerHash,pkgsHash=$pkgsHash]", __FILE__, __LINE__);
    
     $this->getPakiti()->getManager("DbManager")->query(
         "update Host set lastReportHeaderHash='" . $this->getPakiti()->getManager("DbManager")->escape($headerHash) . "',
@@ -155,10 +155,10 @@ class ReportsManager extends DefaultManager {
    */
   public function removeHostReports(Host &$host) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-   
+
     Utils::log(LOG_DEBUG, "Removing all reports associated with the host [hostname='{$host->getHostname()}']", __FILE__, __LINE__);
     
     $this->getPakiti()->getDao("Report")->deleteReportsByHostId($host->getId());

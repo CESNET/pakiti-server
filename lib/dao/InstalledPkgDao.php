@@ -135,14 +135,10 @@ class InstalledPkgDao
 
         $installedPkgsDb =& $this->db->queryToMultiRow($sql);
         $installedPkgs = array();
+
         if ($installedPkgsDb != null) {
             foreach ($installedPkgsDb as $installedPkgDb) {
-                $pkgTmp = array();
-                $pkgTmp["pkgVersion"] = $installedPkgDb["pkgVersion"];
-                $pkgTmp["pkgRelease"] = $installedPkgDb["pkgRelease"];
-                $pkgTmp["pkgArch"] = $installedPkgDb["pkgArch"];
-
-                $installedPkgs[$installedPkgDb["pkgName"]] = $pkgTmp;
+                $installedPkgs[$installedPkgDb["pkgName"]][$installedPkgDb["pkgArch"]] = array('pkgVersion' => $installedPkgDb["pkgVersion"], 'pkgRelease' => $installedPkgDb["pkgRelease"]);
             }
         }
         return $installedPkgs;

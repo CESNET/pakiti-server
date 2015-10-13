@@ -57,7 +57,7 @@ try {
   # Something is wrong here
   #------------------------
   else {
-    Utils::log(LOG_ERROR, "Undefined feeder mode");
+    Utils::log(LOG_ERR, "Undefined feeder mode");
     print Constants::$RETURN_ERROR;
     exit;
   }

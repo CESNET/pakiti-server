@@ -51,7 +51,7 @@ class CveExceptionsManager extends DefaultManager
     public function createCveException(CveException &$exception)
     {
         if ($exception == null) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("Exception object is not valid");
         }
 

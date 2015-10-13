@@ -60,7 +60,7 @@ class VulnerabilitiesManager extends DefaultManager
     public function getVulnerablePkgsWithCve(Host &$host, $orderBy = "id", $pageSize = -1, $pageNum = -1)
     {
         if (($host == null) || ($host->getId() == -1)) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("Host object is not valid or Host.id is not set");
         }
         Utils::log(LOG_DEBUG, "Getting the vulnerable packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
@@ -178,7 +178,7 @@ class VulnerabilitiesManager extends DefaultManager
     public function calculateVulnerablePkgsForSpecificHost(Host $host)
     {
         if ($host == null || $host->getId() == -1) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("Host object is not valid or Host.id is not set");
         }
 
@@ -192,7 +192,6 @@ class VulnerabilitiesManager extends DefaultManager
 
         //Get installed Pkgs on Host
         $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
-
         //For each vulnerable package get Cvedef
         foreach ($installedPkgs as $installedPkg) {
             $confirmedVulnerabilities = array();
@@ -202,6 +201,7 @@ class VulnerabilitiesManager extends DefaultManager
                     switch ($potentialVulnerability->getOperator()) {
                         //TODO: Add more operator cases
                         case "<":
+                            $value = $this->vercmp($host->getType(), $installedPkg->getVersion(), $installedPkg->getRelease(), $potentialVulnerability->getVersion(), $potentialVulnerability->getRelease());
                             if ($this->vercmp($host->getType(), $installedPkg->getVersion(), $installedPkg->getRelease(), $potentialVulnerability->getVersion(), $potentialVulnerability->getRelease()) < 0) {
                                 array_push($confirmedVulnerabilities, $potentialVulnerability);
                             }
@@ -300,6 +300,7 @@ class VulnerabilitiesManager extends DefaultManager
                     $verb = $ver_b;
                     $relb = $rel_b;
                 }
+
                 return $this->dpkgvercmp($vera, $rela, $verb, $relb);
                 break;
             case "rpm":
@@ -443,6 +444,7 @@ class VulnerabilitiesManager extends DefaultManager
     private function dpkgvercmp($vera, $rela, $verb, $relb)
     {
         # Get epoch
+
         $epoch_a = substr($vera, 0, strpos($vera, ':'));
         $epoch_b = substr($verb, 0, strpos($verb, ':'));
 
@@ -455,6 +457,7 @@ class VulnerabilitiesManager extends DefaultManager
 
         # Compare versions
         $r = $this->dpkgvercmp_in($vera, $verb);
+
         if ($r) {
             return $r;
         }

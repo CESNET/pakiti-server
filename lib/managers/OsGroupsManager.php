@@ -61,7 +61,7 @@ class OsGroupsManager extends DefaultManager{
     public function getOsGroupsByOs(Os $os)
     {
         if (($os == null) || ($os->getName() == "")) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("Os object is not valid or Os.name is not set");
         }
 
@@ -82,7 +82,7 @@ class OsGroupsManager extends DefaultManager{
     public function createOsGroup($name)
     {
         if ($name == "") {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("OsGroup name is not valid");
         }
 
@@ -97,7 +97,7 @@ class OsGroupsManager extends DefaultManager{
     public function updateOsGroup(OsGroup $osGroup)
     {
         if (($osGroup == null) || ($osGroup->getId() == -1)) {
-            Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("OsGroup object is not valid or Os.id is not set");
         }
 

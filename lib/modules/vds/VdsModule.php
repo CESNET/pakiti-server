@@ -132,8 +132,8 @@ class VdsModule extends DefaultModule {
 
           # Finally add the VDS source 
           array_push($this->_sources, $source);
-          
-          Utils::log(LOG_DEBUG, "VDS source loaded [name=".$source->getName()."]", __FILE__, __LINE__);
+
+          Utils::log(LOG_DEBUG, "VDS source loaded [name=" . $source->getName() . "]", __FILE__, __LINE__);
         }
       }
     }  
@@ -145,11 +145,11 @@ class VdsModule extends DefaultModule {
    */
   protected function registerSource(ISource &$source) {
     if ($source == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("source is null");
     }
-    
-    Utils::log(LOG_DEBUG, "Registering VDS source [name=".$source->getName()."]", __FILE__, __LINE__);
+
+    Utils::log(LOG_DEBUG, "Registering VDS source [name=" . $source->getName() . "]", __FILE__, __LINE__);
     
     $this->getPakiti()->getManager("DbManager")->begin();
     if (($id = $this->getPakiti()->getDao("VdsSource")->getIdByName($source->getName())) != -1) {
@@ -165,10 +165,10 @@ class VdsModule extends DefaultModule {
    */
   protected function isSourceRegistered(ISource &$source) {
     if ($source == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("source is null");
     }
-    Utils::log(LOG_DEBUG, "Checking if the VDS source is registered [name=".$source->getName()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Checking if the VDS source is registered [name=" . $source->getName() . "]", __FILE__, __LINE__);
     
     if (($id = $this->getPakiti()->getDao("VdsSource")->getIdByName($source->getName())) != -1) {
       $source->setId($id);

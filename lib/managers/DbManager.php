@@ -39,14 +39,14 @@ final class DbManager {
    */
   public function begin() {
     if (!$this->_dbLink->query("begin")) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction begin failed: " . $this->_dbLink->error);
     }
     Utils::log(LOG_DEBUG, "Starting transaction", __FILE__, __LINE__);
   }
   public function commit() {
     if (!$res = $this->_dbLink->query("commit")) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction commit failed: " . $this->_dbLink->error);
     }
     Utils::log(LOG_DEBUG, "Commiting transaction", __FILE__, __LINE__);
@@ -54,7 +54,7 @@ final class DbManager {
   
   public function rollback() {
     if (!$res = $this->_dbLink->query("rollback")) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction rollback failed: " . $this->_dbLink->error);
     }
     Utils::log(LOG_DEBUG, "Transaction rollback!", __FILE__, __LINE__);
@@ -140,16 +140,16 @@ final class DbManager {
     # Create DB connection
     $this->_dbLink = new mysqli(Config::$DB_HOST,Config::$DB_USER, Config::$DB_PASSWORD);
     if ($this->_dbLink->connect_errno != 0) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Cannot establish connection with the database [host=" . Config::$DB_HOST . ",user=" . Config::$DB_USER . "], error: " . mysqli_connect_error());
     }  
     
     # Select the DB
     if (!$this->_dbLink->select_db(Config::$DB_NAME)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Cannot select database [database=" . Config::$DB_NAME . "], probably database hasn't been initialized yet, run bin/initDB.php, error: " . $this->_dbLink->error);  
     }
-    Utils::log(LOG_DEBUG, "Successfully conected to the database [dbName=".Config::$DB_NAME.",dbHost=".Config::$DB_HOST.",dbUser=".Config::$DB_USER."]",
+    Utils::log(LOG_DEBUG, "Successfully conected to the database [dbName=" . Config::$DB_NAME . ",dbHost=" . Config::$DB_HOST . ",dbUser=" . Config::$DB_USER . "]",
       __FILE__, __LINE__);
   }
   
@@ -157,9 +157,9 @@ final class DbManager {
    * Raw query to the SQL, just check if the query finished successfuly and return the result
    */
   protected function rawQuery($sql) {
-    Utils::log(LOG_DEBUG, "Sql query: " .preg_replace('/\s+/', ' ', $sql), __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Sql query: " . preg_replace('/\s+/', ' ', $sql), __FILE__, __LINE__);
     if (!$res = $this->_dbLink->query($sql)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL query failed: " . $this->_dbLink->error);
     }
     

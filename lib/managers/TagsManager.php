@@ -79,7 +79,7 @@ class TagsManager extends DefaultManager {
    */
   public function assignTagToHost(Host &$host, Tag &$tag) {
     if ($host == null || $host->getId() == -1 || $tag == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
   
@@ -94,7 +94,7 @@ class TagsManager extends DefaultManager {
     } else {
       $tag->setId($tagId);
     }
-    Utils::log(LOG_DEBUG, "Assinging the tag to the host [hostId=".$host->getId().",tag=".$tag->getName()."]", __FILE__, __LINE__);
+    Utils::log(LOG_DEBUG, "Assinging the tag to the host [hostId=" . $host->getId() . ",tag=" . $tag->getName() . "]", __FILE__, __LINE__);
     
     # Check if the tag already exists
     $isAssigned =
@@ -118,7 +118,7 @@ class TagsManager extends DefaultManager {
   public function assignTagToCve(Cve &$cve, Tag &$tag)
   {
     if ($cve == null || $cve->getName() == "" || $tag == null) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Cve object is not valid or Cve.name is not set");
     }
 
@@ -163,10 +163,10 @@ class TagsManager extends DefaultManager {
    */
   public function removeHostTags(Host &$host) {
     if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-   
+
     Utils::log(LOG_DEBUG, "Removing all tags associated with the host [hostname='{$host->getHostname()}']", __FILE__, __LINE__);
     
     $this->getPakiti()->getDao("Tag")->deleteTagsByHostId($host->getId());
@@ -178,7 +178,7 @@ class TagsManager extends DefaultManager {
   public function removeCveTags(Cve &$cve)
   {
     if ($cve == null || $cve->getName() == "") {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Cve object is not valid or Cve.name is not set");
     }
 
@@ -192,7 +192,7 @@ class TagsManager extends DefaultManager {
      * Get all tags
      */
     public function getTags($orderBy, $pageSize = -1, $pageNum = -1) {
-        Utils::log(LOG_DEBUG, "Getting all tags", __FILE__, __LINE__);
+      Utils::log(LOG_DEBUG, "Getting all tags", __FILE__, __LINE__);
         $tagsIds =& $this->getPakiti()->getDao("Tag")->getTagsIds($orderBy, $pageSize, $pageNum);
     
         $tags = array();
@@ -212,7 +212,7 @@ class TagsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Getting tags by CVE name=" . $cveName, __FILE__, __LINE__);
 
     if ($cveName == "") {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Cve name is not valid");
     }
     return $this->getPakiti()->getManager("DbManager")->queryObjects("select id as _id, cveName as _cveName, name as _name,
@@ -229,12 +229,12 @@ class TagsManager extends DefaultManager {
   public function getCveTagByCveNameAndTagId($cveName, $tagId)
   {
     if ($cveName == "") {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Cve name is not valid");
     }
 
     if (!is_numeric($tagId)) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Tag id is not valid");
     }
 
@@ -248,12 +248,12 @@ class TagsManager extends DefaultManager {
   public function updateCveTag(Tag &$tag)
   {
     if ($tag->getCveName() == "") {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Tag CVE name is not valid");
     }
 
     if (!is_numeric($tag->getId())) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Tag id is not valid");
     }
 
@@ -268,12 +268,12 @@ class TagsManager extends DefaultManager {
   public function deleteCveTag(Tag &$tag)
   {
     if ($tag->getCveName() == "") {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Tag CVE name is not valid");
     }
 
     if (!is_numeric($tag->getId())) {
-      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Tag id is not valid");
     }
 
