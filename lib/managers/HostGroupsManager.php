@@ -139,7 +139,7 @@ class HostGroupsManager extends DefaultManager {
   public function removeHostFromHostGroups(Host &$host) {
      if (($host == null) || ($host->getId() == -1)) {
        Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
+       throw new Exception("Host object is not valid or Host.id is not set");
      }
     Utils::log(LOG_DEBUG, "Removing the host from all host groups [host=" . $host->getHostname() . "]", __FILE__, __LINE__);
     

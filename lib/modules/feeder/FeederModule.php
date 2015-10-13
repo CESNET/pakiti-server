@@ -381,11 +381,6 @@ class FeederModule extends DefaultModule
      */
     public function storeReportToFile()
     {
-
-//        if (!$this->isHostSentNewData()) {
-//            exit;
-//        }
-
         # Create temporary file, filename mask: pakiti-report-[host]-[reportHost] and also store the timestamp to the file
         $timestamp = microtime(true);
         # Maximal number of attempts to open the file
