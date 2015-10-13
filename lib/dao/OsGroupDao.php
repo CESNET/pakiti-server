@@ -37,7 +37,9 @@ class OsGroupDao {
   public function create(OsGroup &$osGroup) {
     $this->db->query(
       "insert into OsGroup set
-      	name='".$this->db->escape($osGroup->getName())."'");
+      	name='" . $this->db->escape($osGroup->getName()) . "',
+      	regex=" . $this->db->escape($osGroup->getRegex()) . "'
+      	");
     
     # Set the newly assigned id
     $osGroup->setId($this->db->getLastInsertedId());
@@ -99,7 +101,8 @@ class OsGroupDao {
   public function update(OsGroup &$osGroup) {
     $this->db->query(
       "update OsGroup set
-      	name='".$this->db->escape($osGroup->getName())."
+      	name='" . $this->db->escape($osGroup->getName()) . "',
+      	regex='" . $this->db->escape($osGroup->getRegex()) . "'
       where id=".$osGroup->getId());
   }
   

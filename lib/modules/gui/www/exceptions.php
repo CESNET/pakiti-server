@@ -52,7 +52,7 @@ $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
 
 if ($entries > 0) {
     for ($i = 0; $i < $entries; $i++) {
-        if (isset($_POST["exception$i"])) {
+        if (Utils::getHttpPostVar("exception$i") !== null) {
             $data = explode(' ', Utils::getHttpPostVar("exception$i"));
             # data[0] - pkgId
             # data[1] - osGroupId
@@ -117,7 +117,7 @@ $html->printHeader(); ?>
                     print "<td>" . $cveException->getReason() . "</td>";
                     print "<td>" . $cveException->getModifier() . "</td>";
                     print "<td>" . $cveException->getTimestamp() . "</td>";
-                print "<td><span style='color: #002BFF; font-weight: bold;' name=\"remove\" value=\"" . $cveException->getId() . "\" onclick=\"document.getElementById('exp_id').value=" . $cveException->getId() . "; exception_form.submit()\" ><a>[remove]</a></span> </td>";
+                print "<td><span style='color: #002BFF; font-weight: bold; cursor: pointer;' name=\"remove\" value=\"" . $cveException->getId() . "\" onclick=\"document.getElementById('exp_id').value=" . $cveException->getId() . "; exception_form.submit()\" ><a>[remove]</a></span> </td>";
                     print "</tr>";
                 }
             ?>

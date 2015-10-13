@@ -125,7 +125,7 @@ class ReportsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Getting last report hashes [hostId=".$host->getId()."]", __FILE__, __LINE__);
     
     $row = $this->getPakiti()->getManager("DbManager")->queryToSingleRow(
-  	"select lastReportHeaderHash, lastReportPkgsHash from host id=" . $this->getPakiti()->getManager("DbManager")->escape($host->getId()));
+        "select lastReportHeaderHash, lastReportPkgsHash from Host where id=" . $this->getPakiti()->getManager("DbManager")->escape($host->getId()));
 
     $ret = array (
       Constants::$REPORT_LAST_HEADER_HASH => $row[0],
@@ -146,7 +146,7 @@ class ReportsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Storing the report hashes [hostId=".$host->getId().",headerHash=$headerHash,pkgsHash=$pkgsHash]", __FILE__, __LINE__);
    
     $this->getPakiti()->getManager("DbManager")->query(
-    	"update host set lastReportHeaderHash='" . $this->getPakiti()->getManager("DbManager")->escape($headerHash) ."',
+        "update Host set lastReportHeaderHash='" . $this->getPakiti()->getManager("DbManager")->escape($headerHash) . "',
     		lastReportPkgsHash='" . $this->getPakiti()->getManager("DbManager")->escape($pkgsHash) . "' where id=" . $this->getPakiti()->getManager("DbManager")->escape($host->getId()));
   }
   

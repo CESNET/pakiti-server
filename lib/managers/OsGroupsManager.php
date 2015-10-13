@@ -64,7 +64,6 @@ class OsGroupsManager extends DefaultManager{
 
     }
 
-
     /**
      * Create association between Os and OsGroup
      */

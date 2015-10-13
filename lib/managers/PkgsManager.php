@@ -175,11 +175,27 @@ class PkgsManager extends DefaultManager {
     unset($pkgName);
   }
 
+  /**Return Packages by CveName and Os Group
+   * @param $cveName
+   * @param OsGroup $osGroup
+   * @return mixed
+   * @throws Exception
+   */
   public function getPkgsByCveNameAndOsGroup($cveName, OsGroup $osGroup)
   {
+    if (($osGroup == null) || ($osGroup->getId() == -1)) {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("OsGroup object is not valid or OsGroup.id is not set");
+    }
+
+    if ($cveName == "" || $cveName == null) {
+      Utils::log(LOG_DEBUG, "Exception", __FILE__, __LINE__);
+      throw new Exception("Cve name is not valid");
+    }
+
     $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch from PkgCveDef
         join Cve on PkgCveDef.cveDefId = Cve.cveDefId join Pkg on Pkg.id=PkgCveDef.pkgId where Cve.name='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'
-        and osGroupId={$osGroup->getId()} and (Pkg.id not in (select pkgId from CveException where osGroupId={$osGroup->getId()}))";
+        and osGroupId={$osGroup->getId()} and (Pkg.id not in (select pkgId from CveException where osGroupId={$osGroup->getId()} and cveName=Cve.name))";
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
   }
 

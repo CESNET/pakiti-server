@@ -45,11 +45,11 @@ try {
     #---------------------------------------------
     elseif (Config::$FEEDER_MODE ==Constants::$FEEDER_SYNCHRONOUS_MODE) {
         # Process incomming data
-        $feeder->processReport();
-
-        # Should we send the results back to the client?
-        if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
-            //TODO   $feeder->sendResultsBack();
+        if ($feeder->processReport()) {
+            # Should we send the results back to the client?
+            if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
+                //TODO   $feeder->sendResultsBack();
+            }
         }
     }
 

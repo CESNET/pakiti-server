@@ -71,7 +71,6 @@ class CveDefsManager extends DefaultManager
         $pkgsCves = $this->getCvesForHost($host);
         foreach ($pkgsCves as $pkgCves) {
             $cvesCount += count($pkgCves);
-
         }
         return $cvesCount;
     }
@@ -80,20 +79,15 @@ class CveDefsManager extends DefaultManager
      * Return Cves that have been associated with some Tags without duplicities.
      * @return array
      */
-    public function getCvesWithTags()
+    public function getCveNamesWithTags()
     {
-        $cves = $this->getAllCves();
-        $cvesWithTags = array();
-        foreach ($cves as $cve) {
-            if (!empty($cve->getTag())) {
-                if (!in_array($cve->getName(), array_map(function ($cve) {
-                    return $cve->getName();
-                }, $cvesWithTags))
-                )
-                array_push($cvesWithTags, $cve);
-            }
+
+        $cveNamesWithTags = array();
+        $cveNamesAssociatedWithSomeTags = $this->getPakiti()->getManager("DbManager")->queryToMultiRow("select DISTINCT cveName from CveTag");
+        foreach ($cveNamesAssociatedWithSomeTags as $cveNameAssociatedWithSomeTags) {
+            array_push($cveNamesWithTags, $cveNameAssociatedWithSomeTags['cveName']);
         }
-        return $cvesWithTags;
+        return $cveNamesWithTags;
     }
 
 
@@ -189,11 +183,15 @@ class CveDefsManager extends DefaultManager
         foreach ($pkgsCveDefs as $pkgId => $pkgCveDefs) {
             $cves = array();
             foreach ($pkgCveDefs as $pkgCveDef) {
+
                 foreach ($pkgCveDef->getCves() as $cve) {
                     array_push($cves, $cve);
                 }
             }
-            $pkgsCves[$pkgId] = $cves;
+            if (!empty($cves)) {
+                $pkgsCves[$pkgId] = $cves;
+            }
+
         }
         return $pkgsCves;
 

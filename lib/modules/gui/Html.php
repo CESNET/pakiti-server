@@ -241,7 +241,7 @@ class HTMLModule extends DefaultModule
         }
     }
 
-    public function printCveTags(&$cves)
+    public function printCveTags(&$cveNames)
     {
         print "
   	<table class=\"tableList\">
@@ -252,35 +252,36 @@ class HTMLModule extends DefaultModule
             <th>Reason</th>
             <th>Modifier</th>
             <th>Timestamp</th>
+            <th>Action</th>
             <th>&nbsp;</th>
         </tr>";
         $i = 0;
-        foreach ($cves as $cveId => $cve) {
-            foreach ($cve->getTag() as $tag) {
+        foreach ($cveNames as $cveName) {
+            $tags = $this->getPakiti()->getManager("TagsManager")->getTagsByCveName($cveName);
+            foreach ($tags as $tag) {
                 print "<tr class=\"a" . ($i & 1) . "\">";
-                if ($tag->getEnabled() == 1) {
-                    print "<td> <input type=" . "checkbox" . " checked> </td>";
-                } else {
-                    print "<td> <input type=" . "checkbox" . "> </td>";
-                }
-
-
+                print "<td> <input type=" . "checkbox" . " onClick=\"document.tags.cveName.value='" . $cveName . "';document.tags.isEnable.value=this.checked;
+                document.tags.tagId.value='" . $tag->getId() . "';document.tags.act.value='update'; document.tags.submit()\"";
+                if ($tag->getEnabled() == 1) print " checked";
+                print "> </td>\n";
                 print "<td>";
                 print "<span";
-                if ($tag->getName() == "Critical") {
+                if ($tag->getName() == "Critical" && $tag->getEnabled()) {
                     print " class=\"critical_cve\"";
                 }
 
-                if ($tag->getName() == "High") {
+                if ($tag->getName() == "High" && $tag->getEnabled()) {
                     print " class=\"high_cve\"";
                 }
 
-                print ">" . $cve->getName() . "</span>";
+                print ">" . $cveName . "</span>";
                 print "</td>";
                 print "<td>" . $tag->getName() . "</td>";
                 print "<td>" . $tag->getReason() . "</td>";
                 print "<td>" . $tag->getModifier() . "</td>";
                 print "<td>" . $tag->getTimestamp() . "</td>";
+                print "<td><span style='color: #002BFF; font-weight: bold; cursor: pointer;' onclick=\"document.tags.act.value='delete';document.tags.cveName.value='" . $cveName . "';
+                document.tags.tagId.value='" . $tag->getId() . "';document.tags.submit()\" ><a>[remove]</a></span> </td>";
                 print "</tr>";
             }
 
