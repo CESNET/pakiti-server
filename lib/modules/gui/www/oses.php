@@ -52,6 +52,7 @@ if ($entries > 0) {
             }
         }
     }
+    $html->setMessage(sprintf("The changes have been saved.", $tagName));
 }
 
 $pageNum = $html->getHttpGetVar("pageNum", 0);

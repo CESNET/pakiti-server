@@ -27,6 +27,7 @@ create table `Os` (
 create table `OsGroup` (
   `id` integer(10) not null auto_increment,
   `name` varchar(63) not null,
+  `regex` varchar(63) not null,
   primary key (`id`),
   unique key `name` (`name`)
 ) ENGINE=INNODB;
@@ -217,14 +218,14 @@ create table `CveException` (
 ) ENGINE=INNODB;
 
 create table `CveTag` (
-  `cveId` integer(10) not null,
+  `cveName` varchar(63) not null,
   `tagId` integer(10) not null,
   `reason` varchar(255),
   `timestamp` timestamp default CURRENT_TIMESTAMP,
   `enabled` int(1) default 1,
   `modifier` varchar(255),
-  unique key `unique` (`cveId`, `tagId`),
-  foreign key (`cveId`) references Cve(`id`) on delete cascade,
+  unique key `unique` (`cveName`, `tagId`),
+  foreign key (`cveName`) references Cve(`name`) on delete cascade,
   foreign key (`tagId`) references Tag(`id`)  on delete cascade
 ) ENGINE=INNODB;
 

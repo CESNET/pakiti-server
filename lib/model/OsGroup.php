@@ -6,6 +6,23 @@
 class OsGroup {
 	private $_id = -1;
 	private $_name;
+	private $_regex;
+
+	/**
+	 * @return mixed
+	 */
+	public function getRegex()
+	{
+		return $this->_regex;
+	}
+
+	/**
+	 * @param mixed $regex
+	 */
+	public function setRegex($regex)
+	{
+		$this->_regex = $regex;
+	}
 	
   public function OsGroup() {
   }

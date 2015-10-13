@@ -118,10 +118,11 @@ class TagDao {
     $this->db->query("delete from HostTag where hostId={$hostId}");
   }
 
-  public function deleteTagsByCveId($cveId)
+  public function deleteTagsByCveName($cveName)
   {
-    $this->db->query("delete from CveTag where cveId={$cveId}");
+    $this->db->query("delete from CveTag where cveName='" . $cveName . "'");
   }
+
 
 }
 ?>

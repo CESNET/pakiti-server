@@ -69,7 +69,6 @@ class VulnerabilitiesManager extends DefaultManager
 
         $pkgs = $this->getPakiti()->getDao("Vulnerability")->getVulnerablePkgs($host->getId(), $osGroup->getId(), $orderBy, $pageSize, $pageNum);
         $cves = $this->getPakiti()->getManager("CveDefsManager")->getCvesForHost($host);
-
         $pkgsWithCves = array();
         foreach ($cves as $pkgId => $pkgCves) {
             foreach ($pkgs as $pkg) {
@@ -124,7 +123,8 @@ class VulnerabilitiesManager extends DefaultManager
             $cvesWithTag = array();
             foreach ($pkgsWithCves as $pkgWithCves) {
                 foreach ($pkgWithCves["CVE"] as $cve) {
-                    if (!empty($cve->getTag())) {
+                    $tags = $cve->getTag();
+                    if (!empty($tags)) {
                         if ($cveName != "") {
                             if ($cveName == $cve->getName()) array_push($cvesWithTag, $cve);
                         } else {
