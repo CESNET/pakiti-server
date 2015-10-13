@@ -1,4 +1,4 @@
 # Ignore development files
 .idea/
-
+etc/Config.php
 
