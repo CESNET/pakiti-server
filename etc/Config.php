@@ -39,8 +39,8 @@ final class Config
 
     # MySQL database configuration
     public static $DB_HOST = "localhost";
-    public static $DB_USER = "pakiti3";
-    public static $DB_PASSWORD = "password";
+    public static $DB_USER = "root";
+    public static $DB_PASSWORD = "cuck00";
     public static $DB_NAME = "pakiti3";
 
     # Enable authorization?
@@ -65,7 +65,7 @@ final class Config
 
     # Allowed proxies. Depends on the authentication mode, it should be list of hostnames|ips|X509 Subjects
     public static $PROXY_ALLOWED_PROXIES = array(
-        "yourDomain.cz",
+        "pakiti.com",
     );
 
     # Enable - 1/Disable - 0 outgoing proxy for accessing remote repositories and OVAL definitions

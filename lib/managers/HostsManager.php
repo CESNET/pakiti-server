@@ -226,8 +226,24 @@ class HostsManager extends DefaultManager {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
+
     // Related data in the db is delete using delete on cascade
-    return $this->getPakiti()->getDao("Host")->delete($host);
+    $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
+
+    $return_value = $this->getPakiti()->getDao("Host")->delete($host);
+
+    # Find packages which are not connected with any other host and delete it
+    # Decide if needed, because it costs speed.
+    foreach ($installedPkgs as $installedPkg) {
+      # Check if package is still connected with some host, if not, remove it
+      $hostId = $this->getPakiti()->getManager("DbManager")->queryToSingleValue("select hostId from InstalledPkg where pkgId=" . $installedPkg->getId() . " limit 1");
+      if (empty($hostId)) {
+        $pkg = $this->getPakiti()->getManager("PkgsManager")->getPkgById($installedPkg->getId());
+        print_r($pkg);
+        $this->getPakiti()->getDao("Pkg")->delete($pkg);
+      }
+    }
+    return $return_value;
   }
 
   public function setLastReportId(Host &$host, Report &$report) {

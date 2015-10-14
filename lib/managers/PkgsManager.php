@@ -164,6 +164,14 @@ class PkgsManager extends DefaultManager {
 
         $sql = "update InstalledPkg set pkgId={$pkgId} where hostId={$host->getId()} and pkgId={$versionAndRelease['pkgIdThatShouldBeUpdate']}";
         $this->getPakiti()->getManager("DbManager")->query($sql);
+
+        # Check if old package is still connected with some host, if not, remove it
+        $this->getPakiti()->getManager("DbManager")->queryToSingleValue("select hostId from InstalledPkg where pkgId={$versionAndRelease['pkgIdThatShouldBeUpdate']} limit 1");
+        if (empty($hostId)) {
+          $pkg = $this->getPkgById($versionAndRelease['pkgIdThatShouldBeUpdate']);
+          $this->getPakiti()->getDao("Pkg")->delete($pkg);
+        }
+
       }
     }
     unset($pkgArchs);
@@ -182,11 +190,19 @@ class PkgsManager extends DefaultManager {
 
     foreach ($pkgs as $pkgName => &$pkgArchs) {
       foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+        $pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease['pkgVersion'], $versionAndRelease['pkgRelease'], $pkgArch);
         $sql = "delete from InstalledPkg where
       	hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and
-      	pkgId=" . $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease['pkgVersion'], $versionAndRelease['pkgRelease'], $pkgArch) . "";
+      	pkgId=" . $pkgId . "";
 
         $this->getPakiti()->getManager("DbManager")->query($sql);
+
+        # Check if package is still connected with some host, if not, remove it
+        $this->getPakiti()->getManager("DbManager")->queryToSingleValue("select hostId from InstalledPkg where pkgId=" . $pkgId . " limit 1");
+        if (empty($hostId)) {
+          $pkg = $this->getPkgById($pkgId);
+          $this->getPakiti()->getDao("Pkg")->delete($pkg);
+        }
       }
     }
     unset($pkgArchs);
