@@ -97,7 +97,8 @@ class FeederModule extends DefaultModule
         $pkgs =& $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($this->_host, "id", -1, -1);
         foreach ($pkgs as $pkg) {
             foreach ($pkg['CVE'] as $pkgCve) {
-                if (!empty($pkgCve->getTag())) {
+                $cveTag = $pkgCve->getTag();
+                if (!empty($cveTag)) {
                     $return_string = $return_string . str_pad($pkg["Pkg"]->getName(), 30) . str_pad($pkg["Pkg"]->getVersionRelease(), 30) . $pkg["Pkg"]->getArch() . "\n";
                 }
             }
