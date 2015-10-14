@@ -65,7 +65,7 @@ final class Config
 
     # Allowed proxies. Depends on the authentication mode, it should be list of hostnames|ips|X509 Subjects
     public static $PROXY_ALLOWED_PROXIES = array(
-        "pakiti.com",
+        "yourserver.yourdomain.com",
     );
 
     # Enable - 1/Disable - 0 outgoing proxy for accessing remote repositories and OVAL definitions
