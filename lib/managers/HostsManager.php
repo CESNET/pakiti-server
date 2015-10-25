@@ -239,7 +239,6 @@ class HostsManager extends DefaultManager {
       $hostId = $this->getPakiti()->getManager("DbManager")->queryToSingleValue("select hostId from InstalledPkg where pkgId=" . $installedPkg->getId() . " limit 1");
       if (empty($hostId)) {
         $pkg = $this->getPakiti()->getManager("PkgsManager")->getPkgById($installedPkg->getId());
-        print_r($pkg);
         $this->getPakiti()->getDao("Pkg")->delete($pkg);
       }
     }
