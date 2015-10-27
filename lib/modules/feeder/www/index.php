@@ -49,11 +49,6 @@ try {
         }
         # Process incomming data
         $feeder->processReport();
-
-        # Should we send the results back to the client?
-        if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
-            print $feeder->sendResultsBack();
-        }
     }
 
     # Something is wrong here
@@ -68,6 +63,10 @@ try {
     Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost().
         "] in ".Utils::getTimer($time)."s\n");
     print Constants::$RETURN_OK;
+    # Should we send the results back to the client?
+    if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
+        print $feeder->sendResultsBack();
+    }
     exit;
 } catch (Exception $e) {
     Utils::log(LOG_ERR, $e->getMessage());
