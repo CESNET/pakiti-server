@@ -198,7 +198,7 @@ class OvalRedHat extends SubSource implements ISubSource {
         if ($criterions->length > 0) {
             // We have found criterions, so parse them. Try to find redhat version and packages names/versions
             foreach ($criterions as $criterion) {
-                $comment = $criterion->attributes->item(1)->value;
+                $comment = $criterion->attributes->item(0)->value;
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
@@ -262,11 +262,10 @@ class OvalRedHat extends SubSource implements ISubSource {
 
         $criterias = $xpath->query($criterias_query, $criteriaElement);
         $criterions = $xpath->query($criterions_query, $criteriaElement);
-
         if ($criterions->length > 0) {
             // We have found criterions, so parse them. Try to find redhat version and packages names/versions
             foreach ($criterions as $criterion) {
-                $comment = $criterion->attributes->item(1)->value;
+                $comment = $criterion->attributes->item(0)->value;
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];

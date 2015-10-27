@@ -118,7 +118,6 @@ class CveSource extends Source implements ISource
             #        )
             #
             #)
-
             # Store them into the list of Vulnerabilities
             if ($defs) {
                 # Reformat data into
@@ -148,39 +147,42 @@ class CveSource extends Source implements ISource
                         $cveDef->setId($cveDefId);
                     }
 
-                    foreach ($def['osGroup'] as $osGroupName => $defsPkg) {
-                        foreach ($defsPkg as $defPkg) {
+                    //if osGroup not set, than it is unfixed in DSA
+                    if(isset($def['osGroup'])){
+                        foreach ($def['osGroup'] as $osGroupName => $defsPkg) {
+                            foreach ($defsPkg as $defPkg) {
 
-                            $vuln = new Vulnerability();
+                                $vuln = new Vulnerability();
 
-                            $vuln->setCveDefId($cveDef->getId());
+                                $vuln->setCveDefId($cveDef->getId());
 
-                            # OVAL from RH and DSA doesn't contain arch, so use all
-                            $archName = 'all';
-                            $arch = $this->_pakiti->getManager("HostsManager")->getArch($archName);
+                                # OVAL from RH and DSA doesn't contain arch, so use all
+                                $archName = 'all';
+                                $arch = $this->_pakiti->getManager("HostsManager")->getArch($archName);
 
-                            if ($arch == null) {
-                                # Arch is not defined in the DB, so created it  e);
-                                $arch = $this->_pakiti->getManager('HostsManager')->createArch($archName);
+                                if ($arch == null) {
+                                    # Arch is not defined in the DB, so created it  e);
+                                    $arch = $this->_pakiti->getManager('HostsManager')->createArch($archName);
+                                }
+
+                                $vuln->setName($defPkg['name']);
+                                $vuln->setRelease($defPkg['release']);
+                                $vuln->setVersion($defPkg['version']);
+                                $vuln->setArch($arch->getName());
+
+                                # Get osGroup Id
+                                $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByName($osGroupName);
+                                if ($osGroup == null) {
+                                    $osGroup = new OsGroup();
+                                    $osGroup->setName($osGroupName);
+                                    # osGropu is not defined in the DB, so created it
+                                    $osGroup = $this->_pakiti->getManager('OsGroupsManager')->createOsGroup($osGroupName);
+                                }
+                                $vuln->setOsGroupId($osGroup->getId());
+                                $vuln->setOperator($defPkg['operator']);
+
+                                array_push($vulnerabilities, $vuln);
                             }
-
-                            $vuln->setName($defPkg['name']);
-                            $vuln->setRelease($defPkg['release']);
-                            $vuln->setVersion($defPkg['version']);
-                            $vuln->setArch($arch->getName());
-
-                            # Get osGroup Id
-                            $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByName($osGroupName);
-                            if ($osGroup == null) {
-                                $osGroup = new OsGroup();
-                                $osGroup->setName($osGroupName);
-                                # osGropu is not defined in the DB, so created it
-                                $osGroup = $this->_pakiti->getManager('OsGroupsManager')->createOsGroup($osGroupName);
-                            }
-                            $vuln->setOsGroupId($osGroup->getId());
-                            $vuln->setOperator($defPkg['operator']);
-
-                            array_push($vulnerabilities, $vuln);
                         }
                     }
                 }
