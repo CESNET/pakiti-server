@@ -1,0 +1,4 @@
+AuthType Basic
+  AuthName "Secure"
+  AuthUserFile /home/franta/pakiti3-access/.htpasswd
+  require valid-user
