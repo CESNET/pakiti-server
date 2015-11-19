@@ -149,7 +149,6 @@ class PkgsManager extends DefaultManager {
 
     foreach ($pkgs as $pkgName => &$pkgArchs) {
       foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
-
         # We must check if the package is already stored in the table Pkg, if not => store it
         if ($pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease["pkgVersion"], $versionAndRelease["pkgRelease"], $pkgArch) == -1) {
           $tmpPkg = new Pkg();
@@ -160,8 +159,6 @@ class PkgsManager extends DefaultManager {
           $this->getPakiti()->getDao("Pkg")->create($tmpPkg);
           $pkgId = $tmpPkg->getId();
         }
-
-
         $sql = "update InstalledPkg set pkgId={$pkgId} where hostId={$host->getId()} and pkgId={$versionAndRelease['pkgIdThatShouldBeUpdate']}";
         $this->getPakiti()->getManager("DbManager")->query($sql);
       }
@@ -177,15 +174,13 @@ class PkgsManager extends DefaultManager {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     }
-
     Utils::log(LOG_DEBUG, "Removing packages [hostId=" . $host->getId() . ", pkgsCount=" . sizeof($pkgs) . "]", __FILE__, __LINE__);
-
     foreach ($pkgs as $pkgName => &$pkgArchs) {
       foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
+        $pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease['pkgVersion'], $versionAndRelease['pkgRelease'], $pkgArch);
         $sql = "delete from InstalledPkg where
       	hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and
-      	pkgId=" . $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease['pkgVersion'], $versionAndRelease['pkgRelease'], $pkgArch) . "";
-
+      	pkgId=" . $pkgId . "";
         $this->getPakiti()->getManager("DbManager")->query($sql);
       }
     }
@@ -213,6 +208,16 @@ class PkgsManager extends DefaultManager {
     $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch from PkgCveDef
         join Cve on PkgCveDef.cveDefId = Cve.cveDefId join Pkg on Pkg.id=PkgCveDef.pkgId where Cve.name='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'
         and osGroupId={$osGroup->getId()} and (Pkg.id not in (select pkgId from CveException where osGroupId={$osGroup->getId()} and cveName=Cve.name))";
+    return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
+  }
+
+  /**
+   * @return mixed
+   * Find packages which are not connected with any host
+   */
+  public function getUnusedPkgs(){
+    Utils::log(LOG_DEBUG, "Getting unused packages from DB", __FILE__, __LINE__);
+    $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch from Pkg where Pkg.id not in (select pkgId from InstalledPkg)";
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
   }
 
@@ -266,6 +271,18 @@ class PkgsManager extends DefaultManager {
 
     return $this->getPakiti()->getManager("DbManager")->getLastInsertedId();
   }
+
+  /*
+   * Delete the pkg from the DB
+   */
+  public function deletePkg(&$pkg){
+    if (($pkg == null) || ($pkg->getId() == -1)) {
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+      throw new Exception("Pkg object is not valid or Pkg.id is not set");
+    }
+    $this->getPakiti()->getDao("Pkg")->delete($pkg);
+  }
+
 
    /*
    * Adds the package name into the DB and returns the ID of the newly created record.

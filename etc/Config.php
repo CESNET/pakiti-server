@@ -39,8 +39,8 @@ final class Config
 
     # MySQL database configuration
     public static $DB_HOST = "localhost";
-    public static $DB_USER = "pakiti3";
-    public static $DB_PASSWORD = "password";
+    public static $DB_USER = "pakiti";
+    public static $DB_PASSWORD = "pakiti_password";
     public static $DB_NAME = "pakiti3";
 
     # Enable authorization?
