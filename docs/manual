@@ -16,19 +16,14 @@ cd etc/apache2/sites-available
 a2ensite pakiti3.apache2.conf
 service apache2 reload
 
-5, Go to var/www/pakiti3/etc and edit Config.php
+5, Go to /var/www/pakiti3/etc and edit Config.php
 cd var/www/pakiti3/etc
-nano Config.php
+edit Config.php
 
 public static $DB_USER = "set your mysql username";
 public static $DB_PASSWORD = "set your mysql password";
 
-
-public static $PROXY_ALLOWED_PROXIES = array(
-        "pakiti.com",
-    );
-
-6, Go to var/www/pakiti3/bin and run php script
+6, Go to /var/www/pakiti3/bin and run php script
 php initDB.php --useConfig
 
 7, Create a Pakiti user
@@ -44,16 +39,12 @@ mysql -u root -p********* -e"GRANT ALL PRIVILEGES ON pakiti3.* TO your_username@
 apt-get install curl
 apt-get install subversion
 
-10, Go to /bin and run vds_synchronize.php 
-php vds_synchronize.php
+10, Go to /var/www/pakiti3/bin and config pakiti-client for sending to localhost
+run pakiti-client for test
 
-11, Run pakiti-client from /bin for test
+11, Open your browser and go to http://pakiti.com/pakiti3/
 
-12, Run these scripts, set rights if necessary
-chmod +x pakiti2-client-meta.sh 
-./pakiti2-client-meta.sh > output
 
-13, Open your browser and go to http://pakiti.com/pakiti3/
 
 
 
