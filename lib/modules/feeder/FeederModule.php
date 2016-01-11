@@ -154,7 +154,7 @@ class FeederModule extends DefaultModule
                 # Map onto the variables
 
                 # Decrypt the report
-                $data = Utils::getHttpVar('data');
+                $data = file_get_contents("php://input");
                 $tmpFileIn = tempnam("/dev/shm/", "cern_IN_");
                 $tmpFileOut = tempnam("/dev/shm/", "cern_OUT_");
                 # Store encrypted report into the file and the use openssl smime to decode it
