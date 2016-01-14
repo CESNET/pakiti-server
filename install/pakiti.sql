@@ -330,9 +330,11 @@ ADD FOREIGN KEY (groupID) REFERENCES `Group`(ID)
 ON UPDATE CASCADE
 ON DELETE CASCADE;
 
-CREATE TABLE `UserAccess` (
+CREATE TABLE `UserIdentity` (
 	ID integer(10) NOT NULL AUTO_INCREMENT,
-	userID integer(10) NOT NULL,	 
+	userID integer(10) NOT NULL,
+	type varchar(30) NOT NULL,
+	source varchar(30) NOT NULL;	 
 	createdAt DATETIME NOT NULL, 
 	createdBy VARCHAR(30) NOT NULL, 
 	modifiedAt DATETIME NOT NULL,
@@ -340,7 +342,7 @@ CREATE TABLE `UserAccess` (
 	primary key (`id`)
 )ENGINE=INNODB;
 
-ALTER TABLE `UserAccess`
+ALTER TABLE `UserIdentity`
 ADD FOREIGN KEY (userID) REFERENCES `User`(ID) 
 ON UPDATE CASCADE
 ON DELETE CASCADE;
