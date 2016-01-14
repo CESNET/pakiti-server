@@ -1,0 +1,52 @@
+1, Download repository from github and place it to /var/www
+cd /var/www
+git clone https://github.com/CESNET/pakiti3
+
+2, Install apache2, mysql and php5 
+apt-get update
+apt-get install apache2
+apt-get install mysql-server
+apt-get install php5 libapache2-mod-php5 php5-mysql
+
+3, Copy file pakiti3.apache2.conf to /etc/apache2/sites available
+cp /var/www/install/pakiti3.apache2.conf /etc/apache2/sites-available
+cd etc/apache2/sites-available
+
+4, Enable sites in pakiti3.apache2.conf
+a2ensite pakiti3.apache2.conf
+service apache2 reload
+
+5, Go to /var/www/pakiti3/etc and edit Config.php
+cd var/www/pakiti3/etc
+edit Config.php
+
+public static $DB_USER = "set your mysql username";
+public static $DB_PASSWORD = "set your mysql password";
+
+6, Go to /var/www/pakiti3/bin and run php script
+php initDB.php --useConfig
+
+7, Create a Pakiti user
+/usr/bin/mysql -u root -p mysql
+GRANT LOCK TABLES, SELECT,INSERT,UPDATE,DELETE ON pakiti3.* TO  'mysql_user'@'localhost' IDENTIFIED BY 'mysql_password';
+flush privileges;
+quit;
+
+8, Run command bellow with your mysql username and password
+mysql -u root -p********* -e"GRANT ALL PRIVILEGES ON pakiti3.* TO your_username@localhost IDENTIFIED BY 'your_password'"
+
+9, Install curl and subversion
+apt-get install curl
+apt-get install subversion
+
+10, Go to /var/www/pakiti3/bin and config pakiti-client for sending to localhost
+run pakiti-client for test
+
+11, Open your browser and go to http://pakiti.com/pakiti3/
+
+
+
+
+
+
+
