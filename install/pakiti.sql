@@ -239,3 +239,108 @@ create table `Vulnerability` (
   foreign key (`cveDefId`) references CveDef(`id`) on delete cascade,
   foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 ) ENGINE=INNODB;
+
+CREATE TABLE `User` (
+	ID integer(10) NOT NULL AUTO_INCREMENT, 
+	name VARCHAR(30) NOT NULL, 
+	createdAt DATETIME NOT NULL, 
+	createdBy VARCHAR(30) NOT NULL, 
+	modifiedAt DATETIME NOT NULL,
+	modifiedBy VARCHAR(30) NOT NULL,
+	primary key (`id`)
+)ENGINE=INNODB;
+
+CREATE TABLE `Group` (
+	ID integer(10) NOT NULL AUTO_INCREMENT, 
+	name VARCHAR(30) NOT NULL, 
+	description VARCHAR(100) NOT NULL,
+	createdAt DATETIME NOT NULL, 
+	createdBy VARCHAR(30) NOT NULL, 
+	modifiedAt DATETIME NOT NULL, 
+	modifiedBy VARCHAR(30) NOT NULL,
+	primary key (`id`)
+)ENGINE=INNODB;
+
+CREATE TABLE `Object` (
+	ID integer(10) NOT NULL AUTO_INCREMENT, 
+	name VARCHAR(30) NOT NULL, 
+	createdAt DATETIME NOT NULL, 
+	createdBy VARCHAR(30) NOT NULL, 
+	modifiedAt DATETIME NOT NULL,
+	modifiedBy VARCHAR(30) NOT NULL,
+	primary key (`id`)
+)ENGINE=INNODB;
+
+CREATE TABLE `Permission` (
+	ID integer(10) NOT NULL AUTO_INCREMENT, 
+	objectID integer(10) NOT NULL,
+	name VARCHAR(30) NOT NULL, 
+	description VARCHAR(100) NOT NULL,
+	createdAt DATETIME NOT NULL, 
+	createdBy VARCHAR(30) NOT NULL, 
+	modifiedAt DATETIME NOT NULL, 
+	modifiedBy VARCHAR(30) NOT NULL,
+	primary key (`id`)
+)ENGINE=INNODB;
+
+ALTER TABLE `Permission`
+ADD FOREIGN KEY (objectID) REFERENCES `Object`(ID) 
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+CREATE TABLE `GroupPermission` (
+	ID integer(10) NOT NULL AUTO_INCREMENT,
+	groupID integer(10) NOT NULL, 
+	permissionID integer(10) NOT NULL, 
+	createdAt DATETIME NOT NULL, 
+	createdBy VARCHAR(30) NOT NULL, 
+	modifiedAt DATETIME NOT NULL, 
+	modifiedBy VARCHAR(30) NOT NULL,
+	primary key (`id`)
+)ENGINE=INNODB;
+
+ALTER TABLE `GroupPermission`
+ADD FOREIGN KEY (groupID) REFERENCES `Group`(ID) 
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+ALTER TABLE `GroupPermission`
+ADD FOREIGN KEY (permissionID) REFERENCES `Permission`(ID) 
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+CREATE TABLE `UserGroup` (
+	ID integer(10) NOT NULL AUTO_INCREMENT,
+	userID integer(10) NOT NULL,	
+	groupID integer(10) NOT NULL,  
+	createdAt DATETIME NOT NULL, 
+	createdBy VARCHAR(30) NOT NULL, 
+	modifiedAt DATETIME NOT NULL, 
+	modifiedBy VARCHAR(30) NOT NULL,
+	primary key (`id`)
+)ENGINE=INNODB;
+
+ALTER TABLE `UserGroup`
+ADD FOREIGN KEY (userID) REFERENCES `User`(ID) 
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+ALTER TABLE `UserGroup`
+ADD FOREIGN KEY (groupID) REFERENCES `Group`(ID) 
+ON UPDATE CASCADE
+ON DELETE CASCADE;
+
+CREATE TABLE `UserAccess` (
+	ID integer(10) NOT NULL AUTO_INCREMENT,
+	userID integer(10) NOT NULL,	 
+	createdAt DATETIME NOT NULL, 
+	createdBy VARCHAR(30) NOT NULL, 
+	modifiedAt DATETIME NOT NULL,
+	modifiedBy VARCHAR(30) NOT NULL,
+	primary key (`id`)
+)ENGINE=INNODB;
+
+ALTER TABLE `UserAccess`
+ADD FOREIGN KEY (userID) REFERENCES `User`(ID) 
+ON UPDATE CASCADE
+ON DELETE CASCADE;
