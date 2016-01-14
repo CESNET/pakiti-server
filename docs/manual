@@ -2,10 +2,10 @@
 cd /var/www
 git clone https://github.com/CESNET/pakiti3
 
-2, Instal apache2, mysql and php5 
+2, Install apache2, mysql and php5 
 apt-get update
 apt-get install apache2
-apt-get install mysql-server libapache2-mod-auth-mysql php5-mysql
+apt-get install mysql-server
 apt-get install php5 libapache2-mod-php5 php5-mysql
 
 3, Copy file pakiti3.apache2.conf to /etc/apache2/sites available
