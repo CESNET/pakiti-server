@@ -9,7 +9,7 @@ apt-get install mysql-server
 apt-get install php5 libapache2-mod-php5 php5-mysql
 
 3, Copy file pakiti3.apache2.conf to /etc/apache2/sites available
-cp /var/www/docs/pakiti3.apache2.conf /etc/apache2/sites-available
+cp /var/www/install/pakiti3.apache2.conf /etc/apache2/sites-available
 cd etc/apache2/sites-available
 
 4, Enable sites in pakiti3.apache2.conf
