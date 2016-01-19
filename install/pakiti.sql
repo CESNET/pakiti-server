@@ -240,109 +240,85 @@ create table `Vulnerability` (
   foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 ) ENGINE=INNODB;
 
-CREATE TABLE `User` (
-	ID integer(10) NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(30) NOT NULL, 
-	createdAt DATETIME NOT NULL, 
-	createdBy VARCHAR(30) NOT NULL, 
-	modifiedAt DATETIME NOT NULL,
-	modifiedBy VARCHAR(30) NOT NULL,
+create table `User` (
+	`ID` integer(10) not null auto_increment, 
+	`name` VARCHAR(30) not null, 
+	`createdAt` DATETIME not null, 
+	`createdBy` VARCHAR(30) not null, 
+	`modifiedAt` DATETIME not null,
+	`modifiedBy` VARCHAR(30) not null,
 	primary key (`id`)
 )ENGINE=INNODB;
 
-CREATE TABLE `Group` (
-	ID integer(10) NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(30) NOT NULL, 
-	description VARCHAR(100) NOT NULL,
-	createdAt DATETIME NOT NULL, 
-	createdBy VARCHAR(30) NOT NULL, 
-	modifiedAt DATETIME NOT NULL, 
-	modifiedBy VARCHAR(30) NOT NULL,
+create table `Group` (
+	`ID` integer(10) not null auto_increment, 
+	`name` VARCHAR(30) not null, 
+	`description` VARCHAR(100) not null,
+	`createdAt` DATETIME not null, 
+	`createdBy` VARCHAR(30) not null, 
+	`modifiedAt` DATETIME not null, 
+	`modifiedBy` VARCHAR(30) not null,
 	primary key (`id`)
 )ENGINE=INNODB;
 
-CREATE TABLE `Object` (
-	ID integer(10) NOT NULL AUTO_INCREMENT, 
-	name VARCHAR(30) NOT NULL, 
-	createdAt DATETIME NOT NULL, 
-	createdBy VARCHAR(30) NOT NULL, 
-	modifiedAt DATETIME NOT NULL,
-	modifiedBy VARCHAR(30) NOT NULL,
+create table `Object` (
+	`ID` integer(10) not null auto_increment, 
+	`name` VARCHAR(30) not null, 
+	`createdAt` DATETIME not null, 
+	`createdBy` VARCHAR(30) not null, 
+	`modifiedAt` DATETIME not null,
+	`modifiedBy` VARCHAR(30) not null,
 	primary key (`id`)
 )ENGINE=INNODB;
 
-CREATE TABLE `Permission` (
-	ID integer(10) NOT NULL AUTO_INCREMENT, 
-	objectID integer(10) NOT NULL,
-	name VARCHAR(30) NOT NULL, 
-	description VARCHAR(100) NOT NULL,
-	createdAt DATETIME NOT NULL, 
-	createdBy VARCHAR(30) NOT NULL, 
-	modifiedAt DATETIME NOT NULL, 
-	modifiedBy VARCHAR(30) NOT NULL,
-	primary key (`id`)
+create table `Permission` (
+	`ID` integer(10) not null auto_increment, 
+	`objectID` integer(10) not null,
+	`name` VARCHAR(30) not null, 
+	`description` VARCHAR(100) not null,
+	`createdAt` DATETIME not null, 
+	`createdBy` VARCHAR(30) not null, 
+	`modifiedAt` DATETIME not null, 
+	`modifiedBy` VARCHAR(30) not null,
+	primary key (`id`),
+	foreign key (`objectID`) references `Object`(`ID`) on delete cascade
 )ENGINE=INNODB;
 
-ALTER TABLE `Permission`
-ADD FOREIGN KEY (objectID) REFERENCES `Object`(ID) 
-ON UPDATE CASCADE
-ON DELETE CASCADE;
-
-CREATE TABLE `GroupPermission` (
-	ID integer(10) NOT NULL AUTO_INCREMENT,
-	groupID integer(10) NOT NULL, 
-	permissionID integer(10) NOT NULL, 
-	createdAt DATETIME NOT NULL, 
-	createdBy VARCHAR(30) NOT NULL, 
-	modifiedAt DATETIME NOT NULL, 
-	modifiedBy VARCHAR(30) NOT NULL,
-	primary key (`id`)
+create table `GroupPermission` (
+	`ID` integer(10) not null auto_increment,
+	`groupID` integer(10) not null, 
+	`permissionID` integer(10) not null, 
+	`createdAt` DATETIME not null, 
+	`createdBy` VARCHAR(30) not null, 
+	`modifiedAt` DATETIME not null, 
+	`modifiedBy` VARCHAR(30) not null,
+	primary key (`id`),
+	foreign key (`groupID`) references `Group`(`ID`) on delete cascade,
+	foreign key (`permissionID`) references `Permission`(`ID`) on delete cascade
 )ENGINE=INNODB;
 
-ALTER TABLE `GroupPermission`
-ADD FOREIGN KEY (groupID) REFERENCES `Group`(ID) 
-ON UPDATE CASCADE
-ON DELETE CASCADE;
-
-ALTER TABLE `GroupPermission`
-ADD FOREIGN KEY (permissionID) REFERENCES `Permission`(ID) 
-ON UPDATE CASCADE
-ON DELETE CASCADE;
-
-CREATE TABLE `UserGroup` (
-	ID integer(10) NOT NULL AUTO_INCREMENT,
-	userID integer(10) NOT NULL,	
-	groupID integer(10) NOT NULL,  
-	createdAt DATETIME NOT NULL, 
-	createdBy VARCHAR(30) NOT NULL, 
-	modifiedAt DATETIME NOT NULL, 
-	modifiedBy VARCHAR(30) NOT NULL,
-	primary key (`id`)
+create table `UserGroup` (
+	`ID` integer(10) not null auto_increment,
+	`userID` integer(10) not null,	
+	`groupID` integer(10) not null,  
+	`createdAt` DATETIME not null, 
+	`createdBy` VARCHAR(30) not null, 
+	`modifiedAt` DATETIME not null, 
+	`modifiedBy` VARCHAR(30) not null,
+	primary key (`id`),
+	foreign key (`userID`) references `User`(`ID`) on delete cascade,
+	foreign key (`groupID`) references `Group`(`ID`) on delete cascade
 )ENGINE=INNODB;
 
-ALTER TABLE `UserGroup`
-ADD FOREIGN KEY (userID) REFERENCES `User`(ID) 
-ON UPDATE CASCADE
-ON DELETE CASCADE;
-
-ALTER TABLE `UserGroup`
-ADD FOREIGN KEY (groupID) REFERENCES `Group`(ID) 
-ON UPDATE CASCADE
-ON DELETE CASCADE;
-
-CREATE TABLE `UserIdentity` (
-	ID integer(10) NOT NULL AUTO_INCREMENT,
-	userID integer(10) NOT NULL,
-	type varchar(30) NOT NULL,
-	source varchar(30) NOT NULL;	 
-	createdAt DATETIME NOT NULL, 
-	createdBy VARCHAR(30) NOT NULL, 
-	modifiedAt DATETIME NOT NULL,
-	modifiedBy VARCHAR(30) NOT NULL,
-	primary key (`id`)
+create table `UserIdentity` (
+	`ID` integer(10) not null auto_increment,
+	`userID` integer(10) not null,
+	`type` varchar(30) not null,
+	`source` varchar(30) not null,	 
+	`createdAt` DATETIME not null, 
+	`createdBy` VARCHAR(30) not null, 
+	`modifiedAt` DATETIME not null,
+	`modifiedBy` VARCHAR(30) not null,
+	primary key (`id`),
+	foreign key (`userID`) references `User`(`ID`) on delete cascade
 )ENGINE=INNODB;
-
-ALTER TABLE `UserIdentity`
-ADD FOREIGN KEY (userID) REFERENCES `User`(ID) 
-ON UPDATE CASCADE
-ON DELETE CASCADE;
