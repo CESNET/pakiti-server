@@ -208,7 +208,7 @@ class FeederModule extends DefaultModule
                     }
 
                     while (($line = fgets($handle)) !== false) {
-                        if ($line == "#" || empty($line)) continue;
+                        if (trim($line) == "#" || empty($line)) continue;
                         # Store packages into the internal variable
                         $this->_report_pkgs .= $line;
                     }
@@ -343,7 +343,7 @@ class FeederModule extends DefaultModule
             $currentReportPkgsHash = $this->computeReportPkgsHash();
 
             # Check if the hashes are equals
-            if (($lastReportHashes != null) && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $currentReportPkgsHash) ||
+            if (($lastReportHashes != null) && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $currentReportHeaderHash) &&
                     ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $currentReportPkgsHash))
             ) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
@@ -609,21 +609,17 @@ class FeederModule extends DefaultModule
     protected function computeReportHeaderHash()
     {
         Utils::log(LOG_DEBUG, "Computing the hash of the report header", __FILE__, __LINE__);
-        switch ($this->_version) {
-            case "4":
-                $header = Utils::getHttpVar(Constants::$REPORT_TYPE) .
-                    Utils::getHttpVar(Constants::$REPORT_HOSTNAME) .
-                    Utils::getHttpVar(Constants::$REPORT_OS) .
-                    Utils::getHttpVar(Constants::$REPORT_TAG) .
-                    Utils::getHttpVar(Constants::$REPORT_KERNEL) .
-                    Utils::getHttpVar(Constants::$REPORT_ARCH) .
-                    Utils::getHttpVar(Constants::$REPORT_SITE) .
-                    Utils::getHttpVar(Constants::$REPORT_VERSION) .
-                    Utils::getHttpVar(Constants::$REPORT_REPORT);
-
-                return $this->computeHash($header);
-                break;
-        }
+        $header = 
+            $this->_report_type .
+            $this->_report_hostname .
+            $this->_report_os .
+            $this->_report_tag .
+            $this->_report_kernel .
+            $this->_report_arch .
+            $this->_report_site .
+            $this->_version .
+            $this->_report_report;
+        return $this->computeHash($header);
     }
 
     /*
@@ -632,7 +628,7 @@ class FeederModule extends DefaultModule
     protected function computeReportPkgsHash()
     {
         Utils::log(LOG_DEBUG, "Computing the hash of the list of the packages", __FILE__, __LINE__);
-        return $this->computeHash(Utils::getHttpVar(Constants::$REPORT_PKGS));
+        return $this->computeHash($this->_report_pkgs);
     }
 
     /*
