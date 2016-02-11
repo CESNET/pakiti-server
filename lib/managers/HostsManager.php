@@ -53,7 +53,7 @@ class HostsManager extends DefaultManager {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     } 
-    
+        
     # Get the osId
     $host->setOsName($this->guessOs($host, $pkgs));
     $osDao = $this->getPakiti()->getDao("Os");
@@ -344,8 +344,10 @@ class HostsManager extends DefaultManager {
     # Find the package which represents the OS name/release
     foreach (Constants::$OS_NAMES_DEFINITIONS as $pkgName => &$osName) {
       if (array_key_exists($pkgName, $pkgs)) {
-        // Remove epoch if there is one
-        $osFullName = $osName . " " . Utils::removeEpoch($pkgs[$pkgName]["pkgVersion"]);
+        foreach ($pkgs[$pkgName] as $pkg){
+          // Remove epoch if there is one
+          $osFullName = $osName . " " . Utils::removeEpoch($pkg["pkgVersion"]);
+        }
       }
     }
     unset($osName);  
