@@ -57,7 +57,7 @@ final class Config
     public static $CERN_REPORT_DECRYPTION_KEY = "/etc/ssl/cert.pem";
 
     # Do we want backup the reports
-    public static $BACKUP = TRUE;
+    public static $BACKUP = FALSE;
     public static $BACKUP_DIR = "/var/log/pakitiv3-reports/";
 
     # Proxy authentication mode (hostname | ip | x509)
