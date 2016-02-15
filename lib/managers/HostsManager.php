@@ -53,7 +53,7 @@ class HostsManager extends DefaultManager {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
     } 
-        
+    
     # Get the osId
     $host->setOsName($this->guessOs($host, $pkgs));
     $osDao = $this->getPakiti()->getDao("Os");
