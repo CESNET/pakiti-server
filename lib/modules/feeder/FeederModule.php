@@ -388,7 +388,15 @@ class FeederModule extends DefaultModule
         $count = 3;
 
         $filename = "pakiti-report-" . $this->_host->getHostname() . "-" . $this->_host->getReporterHostname();
-        $file = Config::$BACKUP_DIR . "/" . $filename;
+        $file = Config::$BACKUP_DIR . $filename;
+
+        if (!file_exists(Config::$BACKUP_DIR)) {
+            if (!mkdir(Config::$BACKUP_DIR, 0775)) {
+                Utils::log(LOG_ERR, "Failed to create " . Config::$BACKUP_DIR.  " folder, probably wrong permissions", __FILE__, __LINE__);
+                exit;
+            }
+        }
+
         Utils::log(LOG_DEBUG, "Storing report [file=" . $file . "]", __FILE__, __LINE__);
         while (($reportFile = fopen($file, "w")) === FALSE) {
             $count--;

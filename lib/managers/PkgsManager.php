@@ -114,7 +114,8 @@ class PkgsManager extends DefaultManager {
             $this->getPakiti()->getDao("Arch")->create($arch);
           }
           # We must check if the package is already stored in the table Pkg, if not => store it
-          if ($pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease["pkgVersion"], $versionAndRelease["pkgRelease"], $pkgArch) == -1) {
+          $pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease["pkgVersion"], $versionAndRelease["pkgRelease"], $pkgArch);
+          if ($pkgId == -1) {
             $tmpPkg = new Pkg();
             $tmpPkg->setName($pkgName);
             $tmpPkg->setVersion($versionAndRelease['pkgVersion']);
@@ -150,7 +151,8 @@ class PkgsManager extends DefaultManager {
     foreach ($pkgs as $pkgName => &$pkgArchs) {
       foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
         # We must check if the package is already stored in the table Pkg, if not => store it
-        if ($pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease["pkgVersion"], $versionAndRelease["pkgRelease"], $pkgArch) == -1) {
+        $pkgId = $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArch($pkgName, $versionAndRelease["pkgVersion"], $versionAndRelease["pkgRelease"], $pkgArch);
+        if ($pkgId == -1) {
           $tmpPkg = new Pkg();
           $tmpPkg->setName($pkgName);
           $tmpPkg->setVersion($versionAndRelease['pkgVersion']);
