@@ -344,8 +344,10 @@ class HostsManager extends DefaultManager {
     # Find the package which represents the OS name/release
     foreach (Constants::$OS_NAMES_DEFINITIONS as $pkgName => &$osName) {
       if (array_key_exists($pkgName, $pkgs)) {
-        // Remove epoch if there is one
-        $osFullName = $osName . " " . Utils::removeEpoch($pkgs[$pkgName]["pkgVersion"]);
+        foreach ($pkgs[$pkgName] as $pkg){
+          // Remove epoch if there is one
+          $osFullName = $osName . " " . Utils::removeEpoch($pkg["pkgVersion"]);
+        }
       }
     }
     unset($osName);  
