@@ -68,7 +68,7 @@ class OvalRedHat extends SubSource implements ISubSource {
 
                 $def['subSourceDefId'] = $subSourceDef->getId();
 
-                $def['definition_id'] = $xDefinition->attributes->item(0)->value;
+                $def['definition_id'] = $xDefinition->attributes->getNamedItem('id')->nodeValue;
 
                 $el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
                 if (!empty($el_severity)) {
@@ -171,7 +171,7 @@ class OvalRedHat extends SubSource implements ISubSource {
 
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference
     protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$os, &$package){
-        $operator = $criteriaElement->attributes->item(0)->value;
+        $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 
         if (!array_key_exists('osGroup', $res)) {
             $res['osGroup'] = array();
@@ -198,7 +198,7 @@ class OvalRedHat extends SubSource implements ISubSource {
         if ($criterions->length > 0) {
             // We have found criterions, so parse them. Try to find redhat version and packages names/versions
             foreach ($criterions as $criterion) {
-                $comment = $criterion->attributes->item(0)->value;
+                $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
@@ -239,7 +239,7 @@ class OvalRedHat extends SubSource implements ISubSource {
     }
 
     protected function processCriterias(&$xpath, $criteriaElement, &$res, $os, $package) {
-        $operator = $criteriaElement->attributes->item(0)->value;
+        $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 
         if (!array_key_exists('osGroup', $res)) {
             $res['osGroup'] = array();
@@ -265,7 +265,7 @@ class OvalRedHat extends SubSource implements ISubSource {
         if ($criterions->length > 0) {
             // We have found criterions, so parse them. Try to find redhat version and packages names/versions
             foreach ($criterions as $criterion) {
-                $comment = $criterion->attributes->item(0)->value;
+                $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
