@@ -531,7 +531,10 @@ information about the submitting machine:
 =back
 
 If a certificate (see the B<--encrypt> option) is given then the report will be
-S/MIME encrypted before transmission.
+S/MIME encrypted before transmission. For reference, the exact command used to
+encrypt the report is:
+
+  $ openssl smime -encrypt -binary -aes-256-cbc -outform DER 
 
 The recommended way to use this program is daily via C<cron>, for instance
 with (using bash):
@@ -660,13 +663,46 @@ instance:
 The options specified on the command line have precedence over the ones found
 in the configuration file.
 
+=head1 REPORT FORMAT
+
+The generated report is made of a header (containing information about the
+submitting machine) and a body (containing the list of installed packages).
+
+The report is in text format and is made of lines, all ending with the newline
+character (0x0A). The report contains in order:
+
+=over
+
+=item * a first separator line indicating the beginning of the header
+
+=item * one or more header lines
+
+=item * a second separator line indicating the end of the header
+
+=item * one or more package lines
+
+=item * a third separator line indicating the end of the report
+
+=back
+
+A I<separator line> only contains the hash character (0x23), followed by the
+newline character (just like any other line).
+
+A I<header line> contains the header name (such as C<host>), a colon character
+(0x3A), a space character (0x20) and the header value. See the L</"DESCRIPTION">
+section for the list of all possible header names.
+
+A I<package line> contains the package name, a tab character (0x09), the package
+full version, another tab and the package architecture. For C<rpm> based systems,
+the full version is in fact I<EPOCH>:I<VERSION>:I<RELEASE>.
+
 =head1 AUTHOR
 
 Lionel Cons L<http://cern.ch/lionel.cons>
 
 =head1 COPYRIGHT
 
-Copyright (C) CERN 2014-2015
+Copyright (C) CERN 2014-2016
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
