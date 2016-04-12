@@ -232,12 +232,13 @@ class FeederModule extends DefaultModule
         $this->getPakiti()->getManager("DbManager")->begin();
 
         try {
-            # Parse the data
-            $this->prepareReport();
-
+          
             if (!$this->isHostSentNewData()) {
                 return false;
             }
+            
+            # Parse the data
+            $this->prepareReport();
 
             # Process the list of package, synchronize received list of installed packages with one in the DB
             $this->storePkgs();
@@ -303,6 +304,9 @@ class FeederModule extends DefaultModule
         # Get the host object from the DB, if the host doesn't exist in the DB, this routine will create it
         $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostFromReport($this->_host, $this->_pkgs);
 
+        # Store the hashes into the DB, but only for hosts already stored in the DB
+        $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $this->computeReportHeaderHash(), $this->computeReportPkgsHash());
+            
         # Get the host group
         $hostGroup = new HostGroup();
         $hostGroup->setName($this->_report_site);
@@ -365,11 +369,6 @@ class FeederModule extends DefaultModule
                 $this->getPakiti()->getManager("DbManager")->commit();
                 return false;
             }
-        }
-
-        # Store the hashes into the DB, but only for hosts already stored in the DB
-        if ($id != -1) {
-            $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $currentReportHeaderHash, $currentReportPkgsHash);
         }
 
         return true;
