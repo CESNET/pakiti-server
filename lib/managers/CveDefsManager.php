@@ -100,6 +100,9 @@ class CveDefsManager extends DefaultManager
         //Get installed PkgsIds on Host
         $installedPkgIds = $this->getPakiti()->getDao("InstalledPkg")->getIdsByHostId($host->getId());
         
+        //If host haven't installed any pkgs then also havn't any cveDefs
+        if($installedPkgIds == null) return array();
+        
         $sql = "select * from CveDef inner join PkgCveDef on CveDef.id = PkgCveDef.cveDefId where
                 PkgCveDef.pkgId in
                 (" . implode(",", array_map("intval", $installedPkgIds)) . ")
