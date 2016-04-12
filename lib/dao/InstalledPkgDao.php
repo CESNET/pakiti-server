@@ -70,7 +70,7 @@ class InstalledPkgDao
     */
     public function getIdsByHostId($hostId)
     {
-        return $this->db->queryToMultiRow("select
+        return $this->db->queryToSingleValueMultiRow("select
 	pkgId
       from
 	InstalledPkg
