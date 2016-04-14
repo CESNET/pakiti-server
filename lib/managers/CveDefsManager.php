@@ -126,6 +126,8 @@ class CveDefsManager extends DefaultManager
                     foreach ($cve->getCveExceptions() as $cveException) {
                         if ($cveException->getPkgId() == $cveDefDb["pkgId"] && $cveException->getOsGroupId() == $cveDefDb["osGroupId"]) {
                             unset($cves[$key]);
+                            //If we found exception, we can skip the others
+                            break;
                         }
                     }
                 }
