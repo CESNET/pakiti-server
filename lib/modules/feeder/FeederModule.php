@@ -60,18 +60,18 @@ class FeederModule extends DefaultModule
             $this->_version = "cern_1";
         }
 
+        # Get the hostname and ip of the reporting machine (could be a NAT machine)
+        $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
+        $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
+        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
+            __FILE__, __LINE__);
+
         # Map variables in the report to the internal variables
         $this->doReportMapping($this->_version);
 
         # Get the hostname and ip
         $this->_host->setHostname($this->_report_hostname);
         $this->_host->setIp($this->_report_ip);
-
-        # Get the hostname and ip of the reporting machine (could be a NAT machine)
-        $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
-        $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
-        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
-            __FILE__, __LINE__);
 
         # Is the host proxy?
         if ($this->_report_proxy == Constants::$HOST_IS_PROXY) {
@@ -155,6 +155,12 @@ class FeederModule extends DefaultModule
 
                 # Decrypt the report
                 $data = file_get_contents("php://input");
+                
+                // Throw Exception if input stream are empty
+                if($data == ""){
+                    throw new Exception("Feeder doesn't send any data!");
+                }
+                
                 $tmpFileIn = tempnam("/dev/shm/", "cern_IN_");
                 $tmpFileOut = tempnam("/dev/shm/", "cern_OUT_");
                 # Store encrypted report into the file and the use openssl smime to decode it
