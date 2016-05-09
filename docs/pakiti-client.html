@@ -1,0 +1,279 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:root@localhost" />
+</head>
+
+<body style="background-color: white">
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#OPTIONS">OPTIONS</a></li>
+  <li><a href="#CONFIGURATION-FILE">CONFIGURATION FILE</a></li>
+  <li><a href="#REPORT-FORMAT">REPORT FORMAT</a></li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+  <li><a href="#COPYRIGHT">COPYRIGHT</a></li>
+</ul>
+
+<h1 id="NAME">NAME</h1>
+
+<p>pakiti-client - report the list of installed packages to a collecting server</p>
+
+<h1 id="SYNOPSIS">SYNOPSIS</h1>
+
+<p><b>pakiti-client</b> [<i>OPTIONS</i>]</p>
+
+<h1 id="DESCRIPTION">DESCRIPTION</h1>
+
+<p><b>pakiti-client</b> finds the list of installed packages (i.e. <code>rpm -qa</code> on an RPM-based system) and formats it in a report that it sends (using a POST request) to a collecting server (see the <b>--url</b> option) and/or writes to a file (see the <b>--output</b> option).</p>
+
+<p>In addition to the list of installed packages, the report also contains information about the submitting machine:</p>
+
+<ul>
+
+<li><p><code>arch</code>: the current architecture</p>
+
+</li>
+<li><p><code>host</code>: the host name (see the <b>--host</b> option)</p>
+
+</li>
+<li><p><code>kernel</code>: the current kernel</p>
+
+</li>
+<li><p><code>packager</code>: the packager (<code>rpm</code> or <code>dpkg</code>)</p>
+
+</li>
+<li><p><code>site</code>: the site name (see the <b>--site</b> option)</p>
+
+</li>
+<li><p><code>system</code>: the operating system full name</p>
+
+</li>
+<li><p><code>tag</code>: a tag used by the collecting server (see the <b>--tag</b> option)</p>
+
+</li>
+<li><p><code>version</code>: the report format version (<code>1</code>)</p>
+
+</li>
+</ul>
+
+<p>If a certificate (see the <b>--encrypt</b> option) is given then the report will be S/MIME encrypted before transmission. For reference, the exact command used to encrypt the report is:</p>
+
+<pre><code>  $ openssl smime -encrypt -binary -aes-256-cbc -outform DER </code></pre>
+
+<p>The recommended way to use this program is daily via <code>cron</code>, for instance with (using bash):</p>
+
+<pre><code>  # echo &quot;MAILTO=somebody@some.where&quot; &gt; /etc/cron.d/pakiti-client
+  # echo &quot;$((RANDOM % 60)) $((RANDOM % 24)) * * * nobody pakiti-client \
+    --config /etc/pakiti-client.cfg&quot; &gt;&gt; /etc/cron.d/pakiti-client</code></pre>
+
+<h1 id="OPTIONS">OPTIONS</h1>
+
+<dl>
+
+<dt id="config---conf-PATH"><b>--config</b>, <b>--conf</b> <i>PATH</i></dt>
+<dd>
+
+<p>use this configuration file before processing the command line parameters</p>
+
+</dd>
+<dt id="curl-PATH"><b>--curl</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>curl</code> command to use</p>
+
+</dd>
+<dt id="dpkg-query-PATH"><b>--dpkg-query</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>dpkg-query</code> command to use</p>
+
+</dd>
+<dt id="encrypt-PATH-STRING"><b>--encrypt</b> <i>PATH</i>|<i>STRING</i></dt>
+<dd>
+
+<p>use this certificate to encrypt the report; the value can either be the path of the file containing the certificate or the certificate itself as multi-line ASCII armored contents</p>
+
+</dd>
+<dt id="expect-STRING"><b>--expect</b> <i>STRING</i></dt>
+<dd>
+
+<p>set the response string to expect from the server in case of success (default: <code>OK</code>)</p>
+
+</dd>
+<dt id="help--h"><b>--help</b>, <b>-h</b>, <b>-?</b></dt>
+<dd>
+
+<p>show some help</p>
+
+</dd>
+<dt id="host-STRING"><b>--host</b> <i>STRING</i></dt>
+<dd>
+
+<p>set the host name to use in the report</p>
+
+</dd>
+<dt id="hostname-PATH"><b>--hostname</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>hostname</code> command to use</p>
+
+</dd>
+<dt id="input--i-PATH"><b>--input</b>, <b>-i</b> <i>PATH</i></dt>
+<dd>
+
+<p>do not prepare a new report but, instead, read the report from the given file</p>
+
+</dd>
+<dt id="lsb_release-PATH"><b>--lsb_release</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>lsb_release</code> command to use</p>
+
+</dd>
+<dt id="manual--m"><b>--manual</b>, <b>-m</b></dt>
+<dd>
+
+<p>show this manual</p>
+
+</dd>
+<dt id="openssl-PATH"><b>--openssl</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>openssl</code> command to use</p>
+
+</dd>
+<dt id="output--o-PATH"><b>--output</b>, <b>-o</b> <i>PATH</i></dt>
+<dd>
+
+<p>write the prepared report to the given file</p>
+
+</dd>
+<dt id="pkg-PATH"><b>--pkg</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>pkg</code> command to use</p>
+
+</dd>
+<dt id="rndsleep--r-NUMBER"><b>--rndsleep</b>, <b>-r</b> <i>NUMBER</i></dt>
+<dd>
+
+<p>sleep for a random amount of seconds, up to the given number (useful when <b>pakiti-client</b> is invoked by <code>cron</code>)</p>
+
+</dd>
+<dt id="rpm-PATH"><b>--rpm</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>rpm</code> command to use</p>
+
+</dd>
+<dt id="site-NAME"><b>--site</b> <i>NAME</i></dt>
+<dd>
+
+<p>set the site name to use in the report</p>
+
+</dd>
+<dt id="tag-STRING"><b>--tag</b> <i>STRING</i></dt>
+<dd>
+
+<p>set the tag used by the collecting server to group reports</p>
+
+</dd>
+<dt id="uname-PATH"><b>--uname</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>uname</code> command to use</p>
+
+</dd>
+<dt id="url-URL"><b>--url</b> <i>URL</i></dt>
+<dd>
+
+<p>send the prepared report to the collecting server at the given URL</p>
+
+</dd>
+<dt id="wget-PATH"><b>--wget</b> <i>PATH</i></dt>
+<dd>
+
+<p>set the path of the <code>wget</code> command to use</p>
+
+</dd>
+</dl>
+
+<h1 id="CONFIGURATION-FILE">CONFIGURATION FILE</h1>
+
+<p><b>pakiti-client</b> can read its options from a configuration file (see the <b>--config</b> option).</p>
+
+<p>The file can contain empty lines, comments (lines starting with <code>#</code>) or option settings either on one line or using the &quot;heredoc&quot; syntax. For instance:</p>
+
+<pre><code>  #
+  # this is my pakiti-client configuration
+  #
+  url = http://some.where.org:8080/some/path
+  encrypt = &lt;&lt;EOT
+  -----BEGIN CERTIFICATE-----
+  VR0gBF0wWzBZBgorBgEEAWAKBAsBMEswSQYIKwYBBQUHAgEWPWh0dHA6Ly9jYWZp
+  U2VydmljZXMsQ049U22ydmljZXMsQ049Q29uZmlndXJhdGlvbixEQz1jZXJuLERD
+  ...
+  CREUmgapD+aWdxEfeb6qA0OqAFCeHYOWMeeqqtMUE1JPGPoWNkyzqaObr05jm0zd
+  YwYIKwYBBQUHMAKGV2h0dHA6Ly6jYWZpbGVzLmNlcm4uY2gvY2FmaWxlcy9jZXJ=
+  -----END CERTIFICATE-----
+  EOT</code></pre>
+
+<p>The options specified on the command line have precedence over the ones found in the configuration file.</p>
+
+<h1 id="REPORT-FORMAT">REPORT FORMAT</h1>
+
+<p>The generated report is made of a header (containing information about the submitting machine) and a body (containing the list of installed packages).</p>
+
+<p>The report is in text format and is made of lines, all ending with the newline character (0x0A). The report contains in order:</p>
+
+<ul>
+
+<li><p>a first separator line indicating the beginning of the header</p>
+
+</li>
+<li><p>one or more header lines</p>
+
+</li>
+<li><p>a second separator line indicating the end of the header</p>
+
+</li>
+<li><p>one or more package lines</p>
+
+</li>
+<li><p>a third separator line indicating the end of the report</p>
+
+</li>
+</ul>
+
+<p>A <i>separator line</i> only contains the hash character (0x23), followed by the newline character (just like any other line).</p>
+
+<p>A <i>header line</i> contains the header name (such as <code>host</code>), a colon character (0x3A), a space character (0x20) and the header value. See the <a href="#DESCRIPTION">&quot;DESCRIPTION&quot;</a> section for the list of all possible header names.</p>
+
+<p>A <i>package line</i> contains the package name, a tab character (0x09), the package full version, another tab and the package architecture. For <code>rpm</code> based systems, the full version is in fact <i>EPOCH</i>:<i>VERSION</i>:<i>RELEASE</i>.</p>
+
+<h1 id="AUTHOR">AUTHOR</h1>
+
+<p>Lionel Cons <a href="http://cern.ch/lionel.cons">http://cern.ch/lionel.cons</a></p>
+
+<h1 id="COPYRIGHT">COPYRIGHT</h1>
+
+<p>Copyright (C) CERN 2014-2016</p>
+
+<p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License. You may obtain a copy of the License at: <a href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a>.</p>
+
+<p>Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.</p>
+
+
+</body>
+
+</html>
+
+
