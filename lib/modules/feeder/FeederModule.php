@@ -541,11 +541,19 @@ class FeederModule extends DefaultModule
                     }
                     break;
                 case "cern_1":
-                    preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries);
-                    $pkgName = $entries[1];
-                    $pkgVersion = $entries[2];
-                    $pkgRelease = $entries[3];
-                    $pkgArch = $entries[4];
+                    if(preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries) == 1){
+                        $pkgName = $entries[1];
+                        $pkgVersion = $entries[2];
+                        $pkgRelease = $entries[3];
+                        $pkgArch = $entries[4];
+                    } elseif(preg_match("/(.*)[ \t](.*)[ \t](.*)/", $tok, $entries) == 1){
+                        $pkgName = $entries[1];
+                        $pkgVersion = $entries[2];
+                        $pkgRelease = "";
+                        $pkgArch = $entries[3];
+                    } else {
+                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot parse (omitted)!" , __FILE__, __LINE__);
+                    }
                     break;
             }
 
@@ -555,6 +563,7 @@ class FeederModule extends DefaultModule
                 $tok = strtok("\n");
                 continue;
             }
+            
             # Guess which package represents running kernel
             if (in_array($pkgName, Config::$KERNEL_PACKAGES_NAMES)) {
                 # Remove epoch from the version
