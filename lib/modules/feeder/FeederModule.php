@@ -158,7 +158,7 @@ class FeederModule extends DefaultModule
                 
                 // Throw Exception if input stream are empty
                 if($data == ""){
-                    throw new Exception("Feeder doesn't send any data!");
+                    throw new Exception("Feeder [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "] doesn't send any data!");
                 }
                 
                 $tmpFileIn = tempnam("/dev/shm/", "cern_IN_");
