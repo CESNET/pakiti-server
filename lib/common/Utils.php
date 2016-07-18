@@ -25,10 +25,13 @@ final class Utils {
    * messages will be logged
    */
   public static function log($priority, $msg, $file = "", $line = "") {
-    $date = date(DATE_RFC822);
     if ($priority == LOG_DEBUG) {
-      if (Config::$DEBUG) syslog(LOG_DEBUG, "$date [$file:$line]: $msg");
+      if (Config::$DEBUG) {
+        $date = date(DATE_RFC822);
+        syslog(LOG_DEBUG, "$date [$file:$line]: $msg");
+      }
     } else {
+      $date = date(DATE_RFC822);
       syslog($priority, "$date: $msg");
     }
   }

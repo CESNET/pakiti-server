@@ -192,10 +192,14 @@ class VulnerabilitiesManager extends DefaultManager
 
         //Get installed Pkgs on Host
         $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
+        
+        //Get VulnerabilityDao
+        $vulnerabilityDao = $this->getPakiti()->getDao("Vulnerability");
+        
         //For each vulnerable package get Cvedef
         foreach ($installedPkgs as $installedPkg) {
             $confirmedVulnerabilities = array();
-            $potentialVulnerabilities = $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByPkgNameOsGroupIdArch($installedPkg->getName(), $osGroupsIds, $installedPkg->getArch());
+            $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByPkgNameOsGroupIdArch($installedPkg->getName(), $osGroupsIds, $installedPkg->getArch());
             if (!empty($potentialVulnerabilities)) {
                 foreach ($potentialVulnerabilities as $potentialVulnerability) {
                     switch ($potentialVulnerability->getOperator()) {

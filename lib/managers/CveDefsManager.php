@@ -97,46 +97,42 @@ class CveDefsManager extends DefaultManager
         //Get OS groups
         $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
 
-        //Get installed Pkgs on Host
-        $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
+        //Get installed PkgsIds on Host
+        $installedPkgIds = $this->getPakiti()->getDao("InstalledPkg")->getIdsByHostId($host->getId());
+        
+        //If host haven't installed any pkgs then also havn't any cveDefs
+        if($installedPkgIds == null) return array();
+        
+        $sql = "select * from CveDef inner join PkgCveDef on CveDef.id = PkgCveDef.cveDefId where
+                PkgCveDef.pkgId in
+                (" . implode(",", array_map("intval", $installedPkgIds)) . ")
+                and PkgCveDef.osGroupId in
+                (" . implode(",", array_map("intval", array_map(function ($osGroup) { return $osGroup->getId(); }, $osGroups))) . ")";
 
-        //Get CveDefs for Vulnerable packages
-        foreach ($installedPkgs as $installedPkg) {
-            $sql = "select * from CveDef inner join PkgCveDef on CveDef.id = PkgCveDef.cveDefId
-                    where PkgCveDef.pkgId={$installedPkg->getId()}
-                    and PkgCveDef.osGroupId in
-                    (" . implode(",", array_map("intval", array_map(function ($osGroup) {
-                    return $osGroup->getId();
-                }, $osGroups))) . ")";
+        $cveDefsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
+        
+        if ($cveDefsDb != null) {
+            foreach ($cveDefsDb as $cveDefDb) {
+                $cveDef = new CveDef();
+                $cveDef->setId($cveDefDb["id"]);
+                $cveDef->setDefinitionId($cveDefDb["definitionId"]);
+                $cveDef->setTitle($cveDefDb["title"]);
+                $cveDef->setRefUrl($cveDefDb["refUrl"]);
+                $cveDef->setVdsSubSourceDefId($cveDefDb["vdsSubSourceDefId"]);
 
-            $cveDefsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
-
-            # Create objects
-            $cveDefs = array();
-            if ($cveDefsDb != null) {
-                foreach ($cveDefsDb as $cveDefDb) {
-                    $cveDef = new CveDef();
-                    $cveDef->setId($cveDefDb["id"]);
-                    $cveDef->setDefinitionId($cveDefDb["definitionId"]);
-                    $cveDef->setTitle($cveDefDb["title"]);
-                    $cveDef->setRefUrl($cveDefDb["refUrl"]);
-                    $cveDef->setVdsSubSourceDefId($cveDefDb["vdsSubSourceDefId"]);
-
-                    # Exclude CVEs with exceptions
-                    $cves = $this->getCvesByCveDef($cveDef);
-                    foreach ($cves as $cve) {
-                        foreach ($cve->getCveExceptions() as $cveException) {
-                            if ($cveException->getPkgId() === $installedPkg->getId() && $osGroup->getId() === $cveException->getOsGroupId()) {
-                                if (($key = array_search($cve, $cves)) !== false) {
-                                    unset($cves[$key]);
-                                }
-                            }
+                # Exclude CVEs with exceptions
+                $cves = $this->getCvesByCveDef($cveDef);
+                foreach ($cves as $key => $cve) {
+                    foreach ($cve->getCveExceptions() as $cveException) {
+                        if ($cveException->getPkgId() == $cveDefDb["pkgId"] && $cveException->getOsGroupId() == $cveDefDb["osGroupId"]) {
+                            unset($cves[$key]);
+                            //If we found exception, we can skip the others
+                            break;
                         }
                     }
-                    $cveDef->setCves($cves);
-                    array_push($cveDefs, $cveDef);
                 }
-                $pkgsCveDefs[$installedPkg->getId()] = $cveDefs;
+                $cveDef->setCves($cves);
+                $pkgsCveDefs[$cveDefDb["pkgId"]][] = $cveDef;
             }
         }
         return $pkgsCveDefs;

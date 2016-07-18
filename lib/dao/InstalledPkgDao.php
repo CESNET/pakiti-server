@@ -70,7 +70,7 @@ class InstalledPkgDao
     */
     public function getIdsByHostId($hostId)
     {
-        return $this->db->queryToMultiRow("select
+        return $this->db->queryToSingleValueMultiRow("select
 	pkgId
       from
 	InstalledPkg
@@ -82,7 +82,7 @@ class InstalledPkgDao
      */
     public function getInstalledPkgs(Host &$host, $orderBy, $pageSize, $pageNum)
     {
-        $sql = "select pkg.id, pkg.name, pkg.version, pkg.release, pkg.arch
+        $sql = "select pkg.id as _id, pkg.name as _name, pkg.version as _version, pkg.release as _release, pkg.arch as _arch
         from InstalledPkg inst inner join Pkg pkg on inst.pkgId=pkg.id";
 
         $where = " where inst.hostId={$host->getId()}";
@@ -102,25 +102,8 @@ class InstalledPkgDao
             $offset = $pageSize * $pageNum;
             $sql .= " limit $offset,$pageSize";
         }
-
-        $installedPkgsDb =& $this->db->queryToMultiRow($sql);
-
-        # Create objects
-        $installedPkgs = array();
-        if ($installedPkgsDb != null) {
-            foreach ($installedPkgsDb as $installedPkgDb) {
-                $pkg = new Pkg();
-                $pkg->setId($installedPkgDb["id"]);
-                $pkg->setName($installedPkgDb["name"]);
-                $pkg->setVersion($installedPkgDb["version"]);
-                $pkg->setRelease($installedPkgDb["release"]);
-                $pkg->setArch($installedPkgDb["arch"]);
-
-                array_push($installedPkgs, $pkg);
-            }
-        }
-
-        return $installedPkgs;
+        
+        return $this->db->queryObjects($sql,"Pkg");
     }
 
     /*

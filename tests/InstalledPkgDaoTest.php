@@ -21,8 +21,8 @@ class InstalledPkgDaoTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testGetIdsByHostId(){
-        $row1 = array("pkgId" => self::$_testData->getInstalledPkg1()->getPkgId());
-        $row2 = array("pkgId" => self::$_testData->getInstalledPkg2()->getPkgId());
+        $row1 = self::$_testData->getInstalledPkg1()->getPkgId();
+        $row2 = self::$_testData->getInstalledPkg2()->getPkgId();
         $installedPkgs1 = array($row1, $row2);
 
         self::$_testData->getPakiti()->getManager("DbManager")->begin();

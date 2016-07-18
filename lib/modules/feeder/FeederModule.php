@@ -60,18 +60,18 @@ class FeederModule extends DefaultModule
             $this->_version = "cern_1";
         }
 
+        # Get the hostname and ip of the reporting machine (could be a NAT machine)
+        $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
+        $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
+        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
+            __FILE__, __LINE__);
+
         # Map variables in the report to the internal variables
         $this->doReportMapping($this->_version);
 
         # Get the hostname and ip
         $this->_host->setHostname($this->_report_hostname);
         $this->_host->setIp($this->_report_ip);
-
-        # Get the hostname and ip of the reporting machine (could be a NAT machine)
-        $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
-        $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
-        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
-            __FILE__, __LINE__);
 
         # Is the host proxy?
         if ($this->_report_proxy == Constants::$HOST_IS_PROXY) {
@@ -155,6 +155,12 @@ class FeederModule extends DefaultModule
 
                 # Decrypt the report
                 $data = file_get_contents("php://input");
+                
+                // Throw Exception if input stream are empty
+                if($data == ""){
+                    throw new Exception("Feeder [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "] doesn't send any data!");
+                }
+                
                 $tmpFileIn = tempnam("/dev/shm/", "cern_IN_");
                 $tmpFileOut = tempnam("/dev/shm/", "cern_OUT_");
                 # Store encrypted report into the file and the use openssl smime to decode it
@@ -232,12 +238,13 @@ class FeederModule extends DefaultModule
         $this->getPakiti()->getManager("DbManager")->begin();
 
         try {
-            # Parse the data
-            $this->prepareReport();
-
+          
             if (!$this->isHostSentNewData()) {
                 return false;
             }
+            
+            # Parse the data
+            $this->prepareReport();
 
             # Process the list of package, synchronize received list of installed packages with one in the DB
             $this->storePkgs();
@@ -303,6 +310,9 @@ class FeederModule extends DefaultModule
         # Get the host object from the DB, if the host doesn't exist in the DB, this routine will create it
         $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostFromReport($this->_host, $this->_pkgs);
 
+        # Store the hashes into the DB, but only for hosts already stored in the DB
+        $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $this->computeReportHeaderHash(), $this->computeReportPkgsHash());
+            
         # Get the host group
         $hostGroup = new HostGroup();
         $hostGroup->setName($this->_report_site);
@@ -365,11 +375,6 @@ class FeederModule extends DefaultModule
                 $this->getPakiti()->getManager("DbManager")->commit();
                 return false;
             }
-        }
-
-        # Store the hashes into the DB, but only for hosts already stored in the DB
-        if ($id != -1) {
-            $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $currentReportHeaderHash, $currentReportPkgsHash);
         }
 
         return true;
@@ -536,11 +541,19 @@ class FeederModule extends DefaultModule
                     }
                     break;
                 case "cern_1":
-                    preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries);
-                    $pkgName = $entries[1];
-                    $pkgVersion = $entries[2];
-                    $pkgRelease = $entries[3];
-                    $pkgArch = $entries[4];
+                    if(preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries) == 1){
+                        $pkgName = $entries[1];
+                        $pkgVersion = $entries[2];
+                        $pkgRelease = $entries[3];
+                        $pkgArch = $entries[4];
+                    } elseif(preg_match("/(.*)[ \t](.*)[ \t](.*)/", $tok, $entries) == 1){
+                        $pkgName = $entries[1];
+                        $pkgVersion = $entries[2];
+                        $pkgRelease = "";
+                        $pkgArch = $entries[3];
+                    } else {
+                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot parse (omitted)!" , __FILE__, __LINE__);
+                    }
                     break;
             }
 
@@ -550,6 +563,7 @@ class FeederModule extends DefaultModule
                 $tok = strtok("\n");
                 continue;
             }
+            
             # Guess which package represents running kernel
             if (in_array($pkgName, Config::$KERNEL_PACKAGES_NAMES)) {
                 # Remove epoch from the version
