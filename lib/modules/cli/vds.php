@@ -153,11 +153,10 @@ switch ($cmd) {
     }
 
     $sourceId = $opt["sourceId"];
-
     $source =& $vds->getSourceById($sourceId);
-	
-    $source->retrieveDefinitions();
-
+    foreach($source->getSubSources() as $subSource){
+        $subSource->retrieveDefinitions();
+    }
     break;
 
  # Synchronize all sources
