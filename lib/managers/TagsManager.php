@@ -67,9 +67,10 @@ class TagsManager extends DefaultManager {
 
   public function getCvesTags()
   {
-    $sql = "select Tag.id as _id, Tag.name as _name, Tag.description
-            as _description, CveTag.reason as _reason, CveTag.modifier as _modifier, CveTag.timestamp as _timestamp,
-            CveTag.enabled as _enabled from CveTag join Tag on CveTag.tagId=Tag.id";
+    $sql = "select 
+            Tag.id as _id, Tag.name as _name, Tag.description as _description,
+            CveTag.reason as _reason, CveTag.cveName as _cveName, CveTag.modifier as _modifier, CveTag.timestamp as _timestamp, CveTag.enabled as _enabled 
+            from CveTag join Tag on CveTag.tagId=Tag.id";
 
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Tag");
   }
@@ -191,7 +192,7 @@ class TagsManager extends DefaultManager {
     /*
      * Get all tags
      */
-    public function getTags($orderBy, $pageSize = -1, $pageNum = -1) {
+    public function getTags($orderBy = "name", $pageSize = -1, $pageNum = -1) {
       Utils::log(LOG_DEBUG, "Getting all tags", __FILE__, __LINE__);
         $tagsIds =& $this->getPakiti()->getDao("Tag")->getTagsIds($orderBy, $pageSize, $pageNum);
     
