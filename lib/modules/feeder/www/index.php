@@ -35,20 +35,42 @@ try {
     # Initialize
     $feeder = new FeederModule($pakiti);
 
+    $report = Utils::getHttpVar(Constants::$REPORT_REPORT);
+
     # Asynchronous mode - only store the results and exit
     #----------------------------------------------------
     if (Config::$FEEDER_MODE == Constants::$FEEDER_ASYNCHRONOUS_MODE) {
-        $feeder->storeReportToFile();
+        if ($report == Constants::$SAVE_REPORT || $report == NULL) {
+            # Store incomming report
+            $feeder->storeReportToFile();
+        } else {
+            # Pakiti-server in asynchronous mode can't send result back
+            print Constants::$RETURN_ERROR;
+            exit;
+        }
     }
-
     # Synchronous mode - process data immediatelly
     #---------------------------------------------
-    elseif (Config::$FEEDER_MODE ==Constants::$FEEDER_SYNCHRONOUS_MODE) {
-        if (Config::$BACKUP == TRUE) {
-            $feeder->storeReportToFile();
+    elseif (Config::$FEEDER_MODE == Constants::$FEEDER_SYNCHRONOUS_MODE) {
+        if ($report == Constants::$SAVE_REPORT || $report == Constants::$SAVE_AND_SEND_REPORT || $report == NULL) {
+            if (Config::$BACKUP === TRUE) {
+                # Store incomming report
+                $feeder->storeReportToFile();
+            }
+            # Process incomming data
+            $feeder->processReport();
         }
-        # Process incomming data
-        $feeder->processReport();
+
+        if($report == Constants::$SEND_REPORT) {
+            # Prepare incomming data without saving and send result back
+            $feeder->prepareReport();
+            print $feeder->showReportResult();
+        }
+        
+        if ($report == Constants::$SAVE_AND_SEND_REPORT) {
+            # Send result back
+            print $feeder->sendResultsBack();
+        }
     }
 
     # Something is wrong here
@@ -60,13 +82,8 @@ try {
     }
 
     # End
-    Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost().
-        "] in ".Utils::getTimer($time)."s\n");
+    Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost()."] in ".Utils::getTimer($time)."s\n");
     print Constants::$RETURN_OK;
-    # Should we send the results back to the client?
-    if (Utils::getHttpVar(Constants::$REPORT_REPORT) == Constants::$SEND_REPORT) {
-        print $feeder->sendResultsBack();
-    }
     exit;
 } catch (Exception $e) {
     Utils::log(LOG_ERR, $e->getMessage());
