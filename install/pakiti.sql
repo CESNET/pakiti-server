@@ -4,6 +4,13 @@ create table `PakitiAttributes` (
 	unique key `unique` (`attrName`, `attrValue`)
 )ENGINE=INNODB;
 
+create table `Stat` (
+	`name` varchar(254) not null,
+	`value` integer(10) not null,
+	primary key (`name`),
+	unique key (`name`)
+)ENGINE=INNODB;
+
 create table `Report` (
 	`id` integer(10) not null auto_increment,
 	`receivedOn` datetime not null,
