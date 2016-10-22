@@ -57,12 +57,17 @@ class CveDao
         );
     }
 
-    public function getCvesByCveDef(CveDef &$cveDef)
+    public function getCvesByCveDefId($cveDefId)
     {
         return $this->db->queryObjects("select id
         as _id, name as _name, cveDefId
         as _cveDefId from Cve where
-        Cve.cveDefId={$cveDef->getId()}", "Cve");
+        Cve.cveDefId={$cveDefId}", "Cve");
+    }
+
+    public function getCvesByCveDef(CveDef $cveDef)
+    {
+        return $this->getCvesByCveDefId($cveDef->getId());
     }
 
     public function getCveNames()

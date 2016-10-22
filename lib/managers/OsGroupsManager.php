@@ -79,6 +79,16 @@ class OsGroupsManager extends DefaultManager{
         return $osGroups;
     }
 
+    public function getOsGroupsIdsByOsName($osName){
+        $os = new Os();
+        $os->setName($osName);
+        $osGroups = $this->getOsGroupsByOs($os);
+        $osGroupsIds = array_map(function ($osGroup) {
+            return $osGroup->getId();
+        }, $osGroups);
+        return $osGroupsIds;
+    }
+
     public function createOsGroup($name)
     {
         if ($name == "") {
