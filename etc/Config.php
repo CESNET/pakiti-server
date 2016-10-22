@@ -54,7 +54,7 @@ final class Config
     public static $COMPRESS_REPORTS = 1;
 
     # If CERN reports are used, path to the private key must be defined, in order to decrypt incomming report
-    public static $CERN_REPORT_DECRYPTION_KEY = "/etc/ssl/cert.pem";
+    public static $CERN_REPORT_DECRYPTION_KEY = "/etc/ssl/localcerts/pakiti3.key";
 
     # Do we want backup the reports
     public static $BACKUP = FALSE;
