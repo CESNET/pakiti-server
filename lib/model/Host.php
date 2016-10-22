@@ -19,9 +19,13 @@ class Host {
   private $_archName;
   private $_archId = -1;
   private $_domain;
+  private $_domainName;
   private $_domainId = -1;
   private $_lastReportId = -1;
-	
+  private $_hostGroup;
+  private $_hostGroupName;
+  private $_hostGroupId;
+
   public function Host() {
   }
 	
@@ -77,6 +81,10 @@ class Host {
 	  return $this->_domain;
 	}
 	
+  public function getDomainName() {
+	  return $this->_domainName;
+	}
+
   public function getDomainId() {
 	  return $this->_domainId;
 	}
@@ -91,6 +99,18 @@ class Host {
 	
   public function getOwnRepositoriesDef() {
 	  return $this->_ownRepositoriesDef;
+	}
+
+  public function getHostGroup() {
+	  return $this->_hostGroup;
+	}
+
+  public function getHostGroupName() {
+	  return $this->_hostGroupName;
+	}
+
+  public function getHostGroupId() {
+	  return $this->_hostGroupId;
 	}
 	
   public function setId($val) {
@@ -145,6 +165,10 @@ class Host {
 	  $this->_domain = $val;
 	}
 	
+  public function setDomainName($val) {
+	  $this->_domainName = $val;
+	}
+
   public function setDomainId($val) {
 	  return $this->_domainId = $val;
 	}
@@ -159,6 +183,18 @@ class Host {
 	
   public function setOwnRepositoriesDef($val) {
 	  return $this->_ownRepositoriesDef = $val;
+	}
+
+  public function setHostGroup($val) {
+	  return $this->_hostGroup = $val;
+	}
+
+  public function setHostGroupName($val) {
+	  return $this->_hostGroupName = $val;
+	}
+
+  public function setHostGroupId($val) {
+	  return $this->_hostGroupId = $val;
 	}
 }
 ?>

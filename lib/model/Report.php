@@ -13,6 +13,8 @@ class Report {
 	private $_numOfVulnerablePkgsSec = 0;
 	private $_numOfVulnerablePkgsNorm = 0;
 	private $_numOfCves = 0;
+	private $_headerHash;
+	private $_pkgsHash;
 	
 	public function Report() {
 	}
@@ -51,7 +53,16 @@ class Report {
 
   public function getProxyHostname() {
 	  return $this->_proxyHostname;
-	}	
+	}
+
+  public function getHeaderHash() {
+	  return $this->_headerHash;
+	}
+
+  public function getPkgsHash() {
+	  return $this->_pkgsHash;
+	}
+
   public function setId($val) {
 	  $this->_id = $val;
 	}
@@ -86,6 +97,14 @@ class Report {
 
   public function setProxyHostname($val) {
 	  $this->_proxyHostname = $val;
+	}
+
+  public function setHeaderHash($val) {
+	  return $this->_headerHash = $val;
+	}
+
+  public function setPkgsHash($val) {
+	  return $this->_pkgsHash = $val;
 	}
 }
 ?>
