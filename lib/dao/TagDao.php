@@ -122,6 +122,17 @@ class TagDao {
   {
     $this->db->query("delete from CveTag where cveName='" . $cveName . "'");
   }
+  
+  public function deleteCveTags()
+  {
+    $this->db->query("delete from CveTag");
+  }
+  
+  public function deleteTags()
+  {
+    $this->db->query("delete from CveTag");
+    $this->db->query("delete from Tag");
+  }
 
 
 }

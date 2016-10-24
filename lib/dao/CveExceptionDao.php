@@ -54,6 +54,13 @@ class CveExceptionDao
         $exception->setTimestamp($timestamp->format('Y-m-d H:i:s'));
     }
 
+    public function getCvesExceptions()
+    {
+        return $this->db->queryObjects("select
+            id as _id, cveName as _cveName, pkgId as _pkgId, osGroupId as _osGroupId, `reason` as _reason, modifier as _modifier,  `timestamp` as _timestamp
+            from CveException", "CveException");
+    }
+
     public function getCveExceptionsByPkgId($pkgId)
     {
         return $this->db->queryObjects(
@@ -101,6 +108,13 @@ class CveExceptionDao
     {
         $this->db->query(
             "delete from CveException where id=" . $this->db->escape($exception->getId()));
+    }
+
+    public function deleteCvesExceptions()
+    {
+        $this->db->query(
+            "delete from CveException"
+        );
     }
 
     public function getBy($value, $type)
