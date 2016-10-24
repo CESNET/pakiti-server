@@ -93,8 +93,9 @@ final class Constants {
   public static $REPORT_LAST_PKGS_HASH = "lastReportPkgsHash";
   
   # If the server will send the report back to the client
-  public static $SEND_REPORT = 1;
-  public static $DO_NOT_SEND_REPORT = 0;
+  public static $SAVE_REPORT = 0;
+  public static $SAVE_AND_SEND_REPORT = 1;
+  public static $SEND_REPORT = 2;
   
   # Is the reporting host a proxy?
   public static $HOST_IS_PROXY = 1;

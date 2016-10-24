@@ -39,23 +39,7 @@ class HostsManager extends DefaultManager {
       throw new Exception("Host object is not valid or Host.id is not set");
     } 
     
-    $this->getPakiti()->getDao("Host")->create($host);
-    
-    return $host;
-  }
-  
-  /*
-   * Try to find host from the report in the DB
-   */
-  public function getHostFromReport(Host &$host, &$pkgs) {
-    Utils::log(LOG_DEBUG, "Getting the host from the report", __FILE__, __LINE__);
-    if ($host == null) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
-    } 
-    
     # Get the osId
-    $host->setOsName($this->guessOs($host, $pkgs));
     $osDao = $this->getPakiti()->getDao("Os");
     $osId = $osDao->getIdByName($host->getOsName());
     if ($osId == -1) {
@@ -86,14 +70,12 @@ class HostsManager extends DefaultManager {
     $host->setArch($arch);
     
     # Get the domainId
-      # Guess the domain name from the reporterHostname
-    $domainName = $this->guessDomain($host->getHostname());
     $domainDao = $this->getPakiti()->getDao("Domain");
-    $domainId = $domainDao->getIdByName($domainName);
+    $domainId = $domainDao->getIdByName($host->getDomainName());
     if ($domainId == -1) {
       # Domain is missing, so store it
       $domain = new Domain();
-      $domain->setName($domainName);
+      $domain->setName($host->getDomainName());
       $domainDao->create($domain);
       $domainId = $domain->getId();
     } else {
@@ -102,15 +84,30 @@ class HostsManager extends DefaultManager {
     $host->setDomainId($domainId);
     $host->setDomain($domain);
     
+    # Get the hostGroupId
+    $hostGroupDao = $this->getPakiti()->getDao("HostGroup");
+    $hostGroupId = $hostGroupDao->getIdByName($host->getHostGroupName());
+    if ($hostGroupId == -1) {
+      # HostGroup is missing, so store it
+      $hostGroup = new HostGroup();
+      $hostGroup->setName($host->getHostGroupName());
+      $hostGroupDao->create($hostGroup);
+    } else {
+      $hostGroup = $hostGroupDao->getById($hostGroupId);
+    }
+    
     # Try to find the host in the DB
     $host->setId($this->getHostId($host));
     if ($host->getId() != -1) {
       # Update entries
       $this->getPakiti()->getDao("Host")->update($host);
-      return $host;
     } else {
-      return $this->storeHostFromReport($host);
+      $this->getPakiti()->getDao("Host")->create($host);
     }
+    
+    $this->getPakiti()->getManager("HostGroupsManager")->assignHostToHostGroup($host,$hostGroup);
+    
+    return $host;
   }
   
 	/*
@@ -306,83 +303,6 @@ class HostsManager extends DefaultManager {
   }
 
 
-  /*
-   * Separates the domain name from the hostname
-   */
-  protected function guessDomain($hostname) {
-    Utils::log(LOG_DEBUG, "Guessing the domain name [hostname=$hostname]", __FILE__, __LINE__);
-    # Check if $remote_host is really hostname and not only ip
-    $ipv4_regex = '/^((?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])$/m';    
-    if (preg_match($ipv4_regex, $hostname) > 0) {
-      // We have an IPv4, so we cannot do anything more
-      return Constants::$NA;
-    }
-    $ipv6_regex = '/^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/'; 
-    if (preg_match($ipv6_regex, $hostname) > 0) {
-      // We have an IPv6, so we cannot do anything more
-      return Constants::$NA;
-    } 
 
-    # Separate hostname from domain name
-    $domain = preg_replace('/^[\w-_]+\.(.*)$/', '\1', $hostname);
-    
-    # Check if domain ends with .local or .localdomain, these are not valid domains
-    if (preg_match('/\.(local|localdomain)$/', $hostname) > 0) {
-      return Constants::$NA;
-    } else {
-      return $domain;
-    }
-  }
-  
-  /*
-   * Guesses the OS.
-   */
-  protected function guessOs(Host &$host, &$pkgs) {
-    Utils::log(LOG_DEBUG, "Guessing the OS", __FILE__, __LINE__);
-    
-    $osFullName = "unknown";
-    # Find the package which represents the OS name/release
-    foreach (Constants::$OS_NAMES_DEFINITIONS as $pkgName => &$osName) {
-      if (array_key_exists($pkgName, $pkgs)) {
-        // Iterate over all archs
-        foreach ($pkgs[$pkgName] as $pkg){
-          // Remove epoch if there is one
-          $osFullName = $osName . " " . Utils::removeEpoch($pkg["pkgVersion"]);
-          // we have found OS Name, we can skip the others
-          break;
-        }
-      }
-    }
-    unset($osName);  
-
-    if ($osFullName == "unknown") {
-      # Try to guess the OS name from the data sent by the clent itself?    
-      if ($host->getOsName() != "" || $host->getOsName() != "unknown") {
-
-	# The Pakiti client has sent the OS name, so canonize it
-	foreach (Constants::$OS_NAMES_MAPPING as $pattern => $replacement) {
-	  # Apply regex rules on the Os name sent by the client
-	  $tmpOsName = preg_replace("/".$pattern."/i", $replacement, $host->getOsName(), 1, $count);
-
-	  if ($tmpOsName == null) {
-	    # Error occured, set the Os name to unknown
-	    $osFullName = "unknown";
-	  } elseif ($count > 0) {
-	    # If there was any replacement $count will contain number of replacements
-	    $osFullName = $tmpOsName;
-	    break;
-	  } 
-	}
-
-	# We do not have a rule, so log this OS
-	if ($osFullName == "unknown") {
-	  $fh = fopen(Constants::$UNKNOWN_OS_NAMES_FILE, 'a');
-	  fwrite($fh, date(DATE_RFC822) . ": " . $host->getOsName() . "\n");
-	  fclose($fh);
-	}
-      }
-    }
-    return $osFullName; 
-  }
 }
 ?>

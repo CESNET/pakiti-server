@@ -184,46 +184,58 @@ class VulnerabilitiesManager extends DefaultManager
 
         Utils::log(LOG_DEBUG, "Searching for vulnerable packages for specific host ", __FILE__, __LINE__);
 
-        // If not in Os Group
-        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
-        $osGroupsIds = array_map(function ($osGroup) {
-            return $osGroup->getId();
-        }, $osGroups);
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOsName());
 
         //Get installed Pkgs on Host
-        $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
-        
+        $pkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
+
+        $vulnerablePkgsWithVulnerabilities = $this->getVulnerablePkgsWithVulnerabilitiesForPkgs($pkgs, $osGroupsIds, $host->getType());
+
+        foreach($vulnerablePkgsWithVulnerabilities as $vulnerablePkgWithVulnerabilities){
+            $pkg = $vulnerablePkgWithVulnerabilities['Pkg'];
+            $confirmedVulnerabilities = $vulnerablePkgWithVulnerabilities['Vulnerabilities'];
+            //For each confirmed Vulnerability get CveDefs
+            if (!empty($confirmedVulnerabilities)) {
+                $cveDefs = array();
+                foreach ($confirmedVulnerabilities as $confirmedVulnerability) {
+                    # Assign the Cvedef to the Package
+                    foreach ($osGroupsIds as $osGroupId) {
+                        $this->getPakiti()->getManager("CveDefsManager")->assignPkgToCveDef($pkg->getId(), $confirmedVulnerability->getCveDefId(), $osGroupId);
+                    }
+                }
+            }
+        }
+    }
+
+
+    public function getVulnerablePkgsWithVulnerabilitiesForPkgs($pkgs, $osGroupsIds, $type)
+    {
         //Get VulnerabilityDao
         $vulnerabilityDao = $this->getPakiti()->getDao("Vulnerability");
         
+        $vulnerablePkgs = array();
         //For each vulnerable package get Cvedef
-        foreach ($installedPkgs as $installedPkg) {
+        foreach ($pkgs as $pkg) {
             $confirmedVulnerabilities = array();
-            $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByPkgNameOsGroupIdArch($installedPkg->getName(), $osGroupsIds, $installedPkg->getArch());
+            $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByPkgNameOsGroupIdArch($pkg->getName(), $osGroupsIds, $pkg->getArch());
             if (!empty($potentialVulnerabilities)) {
                 foreach ($potentialVulnerabilities as $potentialVulnerability) {
                     switch ($potentialVulnerability->getOperator()) {
                         //TODO: Add more operator cases
                         case "<":
-                            $value = $this->vercmp($host->getType(), $installedPkg->getVersion(), $installedPkg->getRelease(), $potentialVulnerability->getVersion(), $potentialVulnerability->getRelease());
-                            if ($this->vercmp($host->getType(), $installedPkg->getVersion(), $installedPkg->getRelease(), $potentialVulnerability->getVersion(), $potentialVulnerability->getRelease()) < 0) {
+                            $value = $this->vercmp($type, $pkg->getVersion(), $pkg->getRelease(), $potentialVulnerability->getVersion(), $potentialVulnerability->getRelease());
+                            if ($value < 0) {
                                 array_push($confirmedVulnerabilities, $potentialVulnerability);
                             }
                     }
                 }
-                //For each confirmed Vulnerability get CveDefs
-                if (!empty($confirmedVulnerabilities)) {
-                    $cveDefs = array();
-                    foreach ($confirmedVulnerabilities as $confirmedVulnerability) {
-                        # Assign the Cvedef to the Package
-                        foreach ($osGroups as $osGroup) {
-                            $this->getPakiti()->getManager("CveDefsManager")->assignPkgToCveDef($installedPkg->getId(),
-                                $this->getPakiti()->getDao("CveDef")->getCveDefForVulnerability($confirmedVulnerability)->getId(), $osGroup->getId());
-                        }
-                    }
+                if(!empty($confirmedVulnerabilities)){
+                    $vulnerablePkgs[] = array( 'Pkg' => $pkg, 'Vulnerabilities' => $confirmedVulnerabilities);
                 }
             }
         }
+
+        return $vulnerablePkgs;
     }
 
     /**

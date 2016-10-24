@@ -63,11 +63,18 @@ class FeederModule extends DefaultModule
         # Get the hostname and ip of the reporting machine (could be a NAT machine)
         $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
         $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
-        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "]",
+        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ", reporterIp=" . $this->_host->getReporterIp() . ", clientVersion=" . $this->_version . "]",
             __FILE__, __LINE__);
 
         # Map variables in the report to the internal variables
         $this->doReportMapping($this->_version);
+
+        # Set Received time
+        $this->_report->setReceivedOn(time());
+
+        # Compute hashes
+        $this->_report->setHeaderHash($this->computeReportHeaderHash());
+        $this->_report->setPkgsHash($this->computeReportPkgsHash());
 
         # Get the hostname and ip
         $this->_host->setHostname($this->_report_hostname);
@@ -91,6 +98,34 @@ class FeederModule extends DefaultModule
         }
     }
 
+    public function showReportResult()
+    {
+        $return_string = "";
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($this->_host->getOsName());
+        $pkgs = $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithVulnerabilitiesForPkgs($this->_pkgs, $osGroupsIds, $this->_host->getType());
+        $tagManager = $this->getPakiti()->getManager("TagsManager");
+        foreach ($pkgs as $pkg) {
+            foreach ($pkg['Vulnerabilities'] as $vulnerability) {
+                $cves = $this->getPakiti()->getDao("Cve")->getCvesByCveDefId($vulnerability->getCveDefId());
+                foreach($cves as $cve){
+                    $tags = $tagManager->getTagsByCveName($cve->getname());
+                    $tagsString = "";
+                    foreach($tags as $tag){
+                         $tagsString = $tagsString . $tag->getName() . ", ";
+                    }
+                    
+                    $return_string = $return_string 
+                    . str_pad($pkg["Pkg"]->getName(), 30) 
+                    . str_pad($pkg["Pkg"]->getVersionRelease() . " (" . $pkg["Pkg"]->getArch() . ")" , 30)
+                    . str_pad($cve->getName(), 30) 
+                    . str_pad($tagsString , 30) 
+                    . "\n";
+                }
+            }
+        }
+        return $return_string;
+    }
+
     public function sendResultsBack()
     {
         $return_string = "";
@@ -103,7 +138,7 @@ class FeederModule extends DefaultModule
                 }
             }
         }
-        print($return_string);
+        return $return_string;
     }
 
     /*
@@ -207,6 +242,9 @@ class FeederModule extends DefaultModule
                             case "site":
                                 $this->_report_site = trim($fields[1]);
                                 break;
+                            case "tag":
+                                $this->_report_tag = trim($fields[1]);
+                                break;
                             case "system":
                                 $this->_report_os = trim($fields[1]);
                                 break;
@@ -239,15 +277,32 @@ class FeederModule extends DefaultModule
 
         try {
           
-            if (!$this->isHostSentNewData()) {
-                return false;
+            # Get Host
+            $id = $this->getPakiti()->getManager("HostsManager")->getHostId($this->_host);
+            if($id != -1){
+                $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostById($id);
             }
-            
-            # Parse the data
-            $this->prepareReport();
 
-            # Process the list of package, synchronize received list of installed packages with one in the DB
-            $this->storePkgs();
+            if ($this->isHostSentNewData()) {
+                # Parse the data
+                $this->prepareReport();
+                
+                # Store Host
+                $this->storeHost();
+
+                # Process the list of package, synchronize received list of installed packages with one in the DB
+                $this->storePkgs();
+                
+            } else {
+                # Get Report
+                $this->_report = $this->getPakiti()->getManager("ReportsManager")->getReportById($this->_host->getLastReportId());
+                $this->_report->setReceivedOn(microtime(true));
+            }
+
+            # Find vulnerabilities
+            $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
+            $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
+            $this->_report->setNumOfCves($cveCount);
 
             # Store the report
             $this->storeReport();
@@ -260,13 +315,6 @@ class FeederModule extends DefaultModule
         # Commit the transaction
         $this->getPakiti()->getManager("DbManager")->commit();
 
-        # Find vulnerabilities
-        $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
-
-        $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
-        $this->_report->setNumOfCves($cveCount);
-        $this->getPakiti()->getManager("ReportsManager")->updateReport($this->_report);
-
         return true;
 
     }
@@ -276,56 +324,46 @@ class FeederModule extends DefaultModule
      */
     public function prepareReport()
     {
-        Utils::log(LOG_DEBUG, "Preparing the report", __FILE__, __LINE__);
-        $tag = null;
-        $hostGroup = null;
-
-        switch ($this->_version) {
-            case "4":
-                Utils::log(LOG_DEBUG, "Client in version 4", __FILE__, __LINE__);
-                # Get the rest of HTTP variables
-                # host, os, arch, kernel, site, version, type, pkgs
-                $this->_host->setOsName($this->_report_os);
-                $this->_host->setArchName($this->_report_arch);
-                $this->_host->setKernel($this->_report_kernel);
-                $this->_host->setType($this->_report_type);
-                break;
-            case "cern_1":
-                Utils::log(LOG_DEBUG, "Client in version CERN 1", __FILE__, __LINE__);
-                # Get the rest of HTTP variables
-                # host, os, arch, kernel, site, version, type, pkgs
-                $this->_host->setOsName($this->_report_os);
-                $this->_host->setArchName($this->_report_arch);
-                $this->_host->setKernel($this->_report_kernel);
-                $this->_host->setType($this->_report_type);
-                break;
-        }
-
-        # Parse the packages list
+        Utils::log(LOG_DEBUG, "Preparing the report", __FILE__, __LINE__);        
+        
+        # Set host variables Kernel, Type
+        $this->_host->setKernel($this->_report_kernel);
+        $this->_host->setType($this->_report_type);
+        
+        # Parse the packages list (using _host->getKernel(), _host->getType())
         $this->_pkgs = $this->parsePkgs($this->_report_pkgs);
 
-        # Set the initial information about the report
-        $this->_report->setReceivedOn(time());
+        # Guess DomainName
+        $this->_host->setDomainName($this->guessDomain($this->_host->getHostname()));
 
-        # Get the host object from the DB, if the host doesn't exist in the DB, this routine will create it
-        $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostFromReport($this->_host, $this->_pkgs);
+        # Guess OsName (using _pkgs)
+        $this->_host->setOsName($this->guessOs($this->_report_os));
 
-        # Store the hashes into the DB, but only for hosts already stored in the DB
-        $this->getPakiti()->getManager("ReportsManager")->storeReportHashes($this->_host, $this->computeReportHeaderHash(), $this->computeReportPkgsHash());
-            
-        # Get the host group
-        $hostGroup = new HostGroup();
-        $hostGroup->setName($this->_report_site);
-        # If the host is already member of the host group, no operation is done
-        $this->getPakiti()->getManager("HostGroupsManager")->assignHostToHostGroup($this->_host, $hostGroup);
+        # Set ArchName
+        $this->_host->setArchName($this->_report_arch);
 
-        # Get the host tag and assign it to the host
-        $tag = new Tag();
-        $tag->setName($this->_report_tag);
-        # If the tag is already assigned, no operation is done
-        $this->getPakiti()->getManager("TagsManager")->assignTagToHost($this->_host, $tag);
-
+        # Set the initial information about the report (using _pkgs)
         $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
+
+        # Set HostGroup (prefer _report_tag against _report_site)
+        if($this->_report_tag != null){
+            $this->_host->setHostGroupName($this->_report_tag);
+        } else if($this->_report_site != null){
+            $this->_host->setHostGroupName($this->_report_site);
+        } else {
+            $this->_host->setHostGroupName(Constants::$NA);
+        }
+
+    }
+
+    /*
+     * Store Host
+     */
+    public function storeHost()
+    {
+        Utils::log(LOG_DEBUG, "Storing host to the DB", __FILE__, __LINE__);
+
+        $this->_host = $this->getPakiti()->getManager("HostsManager")->storeHostFromReport($this->_host);
     }
 
     /*
@@ -342,37 +380,20 @@ class FeederModule extends DefaultModule
 
     public function isHostSentNewData()
     {
-        # Get the host id from the DB
-        $id = $this->getPakiti()->getManager("HostsManager")->getHostId($this->_host);
+        return true;
 
         # Get the hashes of the previous report, but only for hosts already stored in the DB
-        if ($id != -1) {
-            $host = $this->getPakiti()->getManager("HostsManager")->getHostById($id);
-            $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($host);
+        if ($this->_host->getId() != -1) {
+            $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($this->_host);
             $currentReportHeaderHash = $this->computeReportHeaderHash();
             $currentReportPkgsHash = $this->computeReportPkgsHash();
 
             # Check if the hashes are equals
-            if (($lastReportHashes != null) && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $currentReportHeaderHash) &&
-                    ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $currentReportPkgsHash))
-            ) {
+            if (($lastReportHashes != null) 
+                && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $currentReportHeaderHash) 
+                    && ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $currentReportPkgsHash))) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
                 Utils::log(LOG_INFO, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
-
-                // Recalculate vulnerable pkgs for a host in case a new definitions are appeared
-                $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($host);
-
-                //Update Last Host Report
-                $lastReport = $this->getPakiti()->getManager("ReportsManager")->getReportById($host->getLastReportId());
-                $timestamp = microtime(true);
-                $lastReport->setReceivedOn($timestamp);
-                $lastReport->setProcessedOn($timestamp);
-                $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
-                $lastReport->setNumOfCves($cveCount);
-                $lastReport->setId(-1);
-                // Create new Report from Last Report
-                $this->getPakiti()->getManager("ReportsManager")->createReport($lastReport, $host);
-                $this->getPakiti()->getManager("DbManager")->commit();
                 return false;
             }
         }
@@ -451,6 +472,39 @@ class FeederModule extends DefaultModule
     {
         Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
         # Load the actually stored packages from the DB, the array is already sorted by the pkgName
+        $pkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsAsArray($this->_host);
+        $pkgsToAdd = array();
+
+        // Find packages which should be added or updated
+        foreach ($this->_pkgs as $pkg) {
+            if (!array_key_exists($pkg->getName(), $pkgs)
+                || !array_key_exists($pkg->getArch(), $pkgs[$pkg->getName()])
+                || $pkg->getVersion() != $pkgs[$pkg->getName()][$pkg->getArch()]['pkgVersion']
+                || $pkg->getRelease() != $pkgs[$pkg->getName()][$pkg->getArch()]['pkgRelease']) {
+
+                $pkgsToAdd[$pkg->getName()][$pkg->getArch()] = array('pkgVersion' => $pkg->getVersion(),'pkgRelease' => $pkg->getRelease());
+
+            } else {
+                if(count($pkgs[$pkg->getName()]) == 1){
+                    unset($pkgs[$pkg->getName()]);
+                } else {
+                    unset($pkgs[$pkg->getName()][$pkg->getArch()]);
+                }
+            }
+        }
+
+        if (sizeof($pkgsToAdd) > 0) $this->getPakiti()->getManager("PkgsManager")->addPkgs($this->_host, $pkgsToAdd);
+        if (sizeof($pkgs) > 0) $this->getPakiti()->getManager("PkgsManager")->removePkgs($this->_host, $pkgs);
+    }
+
+     /*
+     * Process packages.
+     */
+     /*
+    public function storePkgs()
+    {
+        Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
+        # Load the actually stored packages from the DB, the array is already sorted by the pkgName
         $pkgs =& $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsAsArray($this->_host);
         $pkgsToAdd = array();
         $pkgsToUpdate = array();
@@ -512,6 +566,7 @@ class FeederModule extends DefaultModule
         if (sizeof($pkgsToUpdate) > 0) $this->getPakiti()->getManager("PkgsManager")->updatePkgs($this->_host, $pkgsToUpdate);
         if (sizeof($pkgsToRemove) > 0) $this->getPakiti()->getManager("PkgsManager")->removePkgs($this->_host, $pkgsToRemove);
     }
+    */
 
     /*
      * Parse the long string containing list of installed packages.
@@ -587,7 +642,15 @@ class FeederModule extends DefaultModule
             unset($pkgNamePattern);
 
             # $parsedPkgs['pkgName'] = array ( pkgVersion, pkgRelease, pkgArch );
-            $parsedPkgs[$pkgName][$pkgArch] = array('pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease);
+            //$parsedPkgs[$pkgName][$pkgArch] = array('pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease);
+            
+            $pkg = new Pkg();
+            $pkg->setName($pkgName);
+            $pkg->setArch($pkgArch);
+            $pkg->setRelease($pkgRelease);
+            $pkg->setVersion($pkgVersion);
+            $parsedPkgs[] = $pkg;
+
             $tok = strtok("\n");
         }
 
@@ -623,6 +686,85 @@ class FeederModule extends DefaultModule
                 }
                 break;
         }
+    }
+
+    /*
+    * Separates the domain name from the hostname
+    */
+    protected function guessDomain($hostname) {
+        Utils::log(LOG_DEBUG, "Guessing the domain name [hostname=$hostname]", __FILE__, __LINE__);
+        # Check if $remote_host is really hostname and not only ip
+        $ipv4_regex = '/^((?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])$/m';    
+        if (preg_match($ipv4_regex, $hostname) > 0) {
+            // We have an IPv4, so we cannot do anything more
+            return Constants::$NA;
+        }
+        $ipv6_regex = '/^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/';         
+        if (preg_match($ipv6_regex, $hostname) > 0) {
+            // We have an IPv6, so we cannot do anything more
+            return Constants::$NA;
+        } 
+
+        # Separate hostname from domain name
+        $domain = preg_replace('/^[\w-_]+\.(.*)$/', '\1', $hostname);
+        
+        # Check if domain ends with .local or .localdomain, these are not valid domains
+        if (preg_match('/\.(local|localdomain)$/', $hostname) > 0) {
+            return Constants::$NA;
+        } else {
+            return $domain;
+        }
+    }
+    
+    /*
+    * Guesses the OS.
+    */
+    protected function guessOs($osName) {
+        Utils::log(LOG_DEBUG, "Guessing the OS", __FILE__, __LINE__);
+        
+        $osFullName = "unknown";
+        # Find the package which represents the OS name/release
+        foreach (Constants::$OS_NAMES_DEFINITIONS as $pkgName => &$osTmpName) {
+        if (array_key_exists($pkgName, $this->_pkgs)) {
+            // Iterate over all archs
+            foreach ($this->_pkgs[$pkgName] as $pkg){
+                // Remove epoch if there is one
+                $osFullName = $osTmpName . " " . Utils::removeEpoch($pkg["pkgVersion"]);
+                // we have found OS Name, we can skip the others
+                break;
+            }
+        }
+        }
+        unset($osTmpName);  
+
+        if ($osFullName == "unknown") {
+            # Try to guess the OS name from the data sent by the clent itself?    
+            if ($osName != "" || $osName != "unknown") {
+
+                # The Pakiti client has sent the OS name, so canonize it
+                foreach (Constants::$OS_NAMES_MAPPING as $pattern => $replacement) {
+                    # Apply regex rules on the Os name sent by the client
+                    $tmpOsName = preg_replace("/".$pattern."/i", $replacement, $osName, 1, $count);
+
+                    if ($tmpOsName == null) {
+                        # Error occured, set the Os name to unknown
+                        $osFullName = "unknown";
+                    } elseif ($count > 0) {
+                        # If there was any replacement $count will contain number of replacements
+                        $osFullName = $tmpOsName;
+                        break;
+                    } 
+                }
+
+                # We do not have a rule, so log this OS
+                if ($osFullName == "unknown") {
+                    $fh = fopen(Constants::$UNKNOWN_OS_NAMES_FILE, 'a');
+                    fwrite($fh, date(DATE_RFC822) . ": " . $osName . "\n");
+                    fclose($fh);
+                }
+            }
+        }
+        return $osFullName; 
     }
 
     /*
