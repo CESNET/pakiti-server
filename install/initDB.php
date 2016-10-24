@@ -37,63 +37,64 @@ print "\n#########################\n";
 print "# Pakiti DB Initializer #\n";
 print "#########################\n\n";
 
-if (sizeof($argv) == 1) {
-  print "Usage: " . $argv[0] . " --dbHostname=[database server] --dbUsername=[username] " .
-  " --dbPassword=[password] --dbName=[database name] [--reInitialize] [--useConfig]\n\n" .
-  "--reInitialize - drop existing database\n" .
-  "--useConfig - use connection settings from the etc/Config.php file\n\n";
-  exit(0);
-}
 
-$dbHostname = "";
+$dbHostname = Config::$DB_HOST;
 $dbUsername = "";
 $dbPassword = "";
-$dbName = "";
+$dbName = Config::$DB_NAME;
 $reInitialize = FALSE;
-$useConfig = FALSE;
 
-foreach ($argv as $value) {
-  $attrs = explode('=',$value);
-  
-  $attrName = trim($attrs[0]);
-  if (array_key_exists(1, $attrs)) {
-    $attrValue = trim($attrs[1]);
-  } else {
-    $attrValue = "";
-  }
-  
-  switch ($attrName) {
-    case "--dbHostname":
-       $dbHostname = $attrValue;
-       break;
-    case "--dbUsername":
-       $dbUsername = $attrValue;
-       break;
-    case "--dbPassword":
-       $dbPassword = $attrValue;
-       break;
-    case "--dbName":
-       $dbName = $attrValue;
-       break;
-    case "--reInitialize":
-       $reInitialize = TRUE;
-       break;
-    case "--useConfig":
-       $useConfig = TRUE;
-       break;
-  }
-}
 
-# If reInitialize was enabled, drop the database
-if ($useConfig) {
-  print "Loading database connection settings from etc/Config.php ... ";
-  
-  $dbHostname = Config::$DB_HOST;
-  $dbUsername = Config::$DB_USER;
-  $dbPassword = Config::$DB_PASSWORD;
-  $dbName = Config::$DB_NAME;
-  
-  print "OK\n"; 
+if (sizeof($argv) == 1) {
+  $fh = fopen('php://stdin','r')  or die($php_errormsg);
+  print "Login: ";
+  $dbUsername = trim(fgets($fh,64)) or die($php_errormsg);
+  print 'Password: ';
+  `/bin/stty -echo`;
+  $dbPassword = trim(fgets($fh,64)) or die($php_errormsg);
+  `/bin/stty echo`;
+  print "\n";
+  while(TRUE){
+    print "ReInitialize[Y/n]: ";
+    $temp = trim(fgets($fh,64)) or die($php_errormsg);
+    if ($temp == "Y" || $temp == "y"){
+      $reInitialize = TRUE;
+      break;
+    } elseif ($temp == "N" || $temp == "n") {
+      $reInitialize = FALSE;
+      break;
+    } else {
+      print "Please type Y or N! \n";
+    }
+  };
+  fclose($fh);
+} else {
+  foreach ($argv as $value) {
+    $attrs = explode('=',$value);
+    
+    $attrName = trim($attrs[0]);
+    if (array_key_exists(1, $attrs)) {
+      $attrValue = trim($attrs[1]);
+    } else {
+      $attrValue = "";
+    }
+    
+    switch ($attrName) {
+      case "--dbUsername":
+        $dbUsername = $attrValue;
+        break;
+      case "--dbPassword":
+        $dbPassword = $attrValue;
+        break;
+      case "--reInitialize":
+        $reInitialize = TRUE;
+        break;
+      default:
+        print "Usage: ". $argv[0] . " (--dbUsername=<username>) (--dbPassword=<password>) [--reInitialize]\n\n" .
+        "--reInitialize - drop existing database\n";
+        exit(0);
+    }
+  }
 }
 
 # Connect to the database
