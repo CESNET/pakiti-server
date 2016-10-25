@@ -235,6 +235,9 @@ class VulnerabilitiesManager extends DefaultManager
             }
         }
 
+        $this->getPakiti()->getManager("StatsManager")->add("checkedPkgs", sizeof($pkgs));
+        $this->getPakiti()->getManager("StatsManager")->add("vulnerablePkgs", sizeof($vulnerablePkgs));
+
         return $vulnerablePkgs;
     }
 
