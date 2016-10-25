@@ -292,15 +292,17 @@ class FeederModule extends DefaultModule
 
                 # Process the list of package, synchronize received list of installed packages with one in the DB
                 $this->storePkgs();
-                
+
+                # Find vulnerabilities
+                $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
+
             } else {
                 # Get Report
                 $this->_report = $this->getPakiti()->getManager("ReportsManager")->getReportById($this->_host->getLastReportId());
                 $this->_report->setReceivedOn(microtime(true));
             }
 
-            # Find vulnerabilities
-            $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
+            # Get number of CVEs
             $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
             $this->_report->setNumOfCves($cveCount);
 
