@@ -298,8 +298,12 @@ class FeederModule extends DefaultModule
 
             } else {
                 # Get Report
+                $headerHash = $this->_report->getHeaderHash();
+                $pkgsHash = $this->_report->getPkgsHash();
                 $this->_report = $this->getPakiti()->getManager("ReportsManager")->getReportById($this->_host->getLastReportId());
                 $this->_report->setReceivedOn(microtime(true));
+                $this->_report->setHeaderHash($headerHash);
+                $this->_report->setPkgsHash($pkgsHash);
             }
 
             # Get number of CVEs
