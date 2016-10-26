@@ -378,6 +378,7 @@ class HTMLModule extends DefaultModule
     	<a href=\"tags.php\">Tags</a>
     	<a href=\"cve_tags.php\">CVE Tags</a>
     	<a href=\"exceptions.php\">Exceptions</a>
+    	<a href=\"stats.php\">Statistics</a>
     </div>";
     }
 
