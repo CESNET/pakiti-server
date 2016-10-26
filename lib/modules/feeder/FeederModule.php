@@ -292,15 +292,21 @@ class FeederModule extends DefaultModule
 
                 # Process the list of package, synchronize received list of installed packages with one in the DB
                 $this->storePkgs();
-                
+
+                # Find vulnerabilities
+                $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
+
             } else {
                 # Get Report
+                $headerHash = $this->_report->getHeaderHash();
+                $pkgsHash = $this->_report->getPkgsHash();
                 $this->_report = $this->getPakiti()->getManager("ReportsManager")->getReportById($this->_host->getLastReportId());
                 $this->_report->setReceivedOn(microtime(true));
+                $this->_report->setHeaderHash($headerHash);
+                $this->_report->setPkgsHash($pkgsHash);
             }
 
-            # Find vulnerabilities
-            $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
+            # Get number of CVEs
             $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
             $this->_report->setNumOfCves($cveCount);
 
@@ -380,18 +386,15 @@ class FeederModule extends DefaultModule
 
     public function isHostSentNewData()
     {
-        return true;
 
         # Get the hashes of the previous report, but only for hosts already stored in the DB
         if ($this->_host->getId() != -1) {
             $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($this->_host);
-            $currentReportHeaderHash = $this->computeReportHeaderHash();
-            $currentReportPkgsHash = $this->computeReportPkgsHash();
 
             # Check if the hashes are equals
             if (($lastReportHashes != null) 
-                && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $currentReportHeaderHash) 
-                    && ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $currentReportPkgsHash))) {
+                && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $this->_report->getHeaderHash()) 
+                    && ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $this->_report->getPkgsHash()))) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
                 Utils::log(LOG_INFO, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
                 return false;
