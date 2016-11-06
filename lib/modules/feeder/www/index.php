@@ -53,7 +53,6 @@ try {
     #---------------------------------------------
     elseif (Config::$FEEDER_MODE == Constants::$FEEDER_SYNCHRONOUS_MODE) {
         if ($report == Constants::$SAVE_REPORT || $report == Constants::$SAVE_AND_SEND_REPORT || $report == NULL) {
-            $pakiti->getManager("StatsManager")->add("savedReports", 1);
             if (Config::$BACKUP === TRUE) {
                 # Store incomming report
                 $feeder->storeReportToFile();
@@ -63,15 +62,14 @@ try {
         }
 
         if($report == Constants::$SEND_REPORT) {
-            $pakiti->getManager("StatsManager")->add("unsavedReports", 1);
             # Prepare incomming data without saving and send result back
-            $feeder->prepareReport();
-            print $feeder->showReportResult();
+            $feeder->processReportWithoutSaving();
+            print $feeder->getResultsWithoutSaving();
         }
         
         if ($report == Constants::$SAVE_AND_SEND_REPORT) {
             # Send result back
-            print $feeder->sendResultsBack();
+            print $feeder->getResults();
         }
     }
 

@@ -66,7 +66,7 @@ if($url == null){
       $cveException = new CveException();
       $cveException->setCveName($cveExceptionNode->cveName);
       $cveException->setReason($cveExceptionNode->reason);
-      $pkgId = $pakiti->getManager("PkgsManager")->getPkgId($cveExceptionNode->pkg->name,$cveExceptionNode->pkg->version,$cveExceptionNode->pkg->release,$cveExceptionNode->pkg->arch);
+      $pkgId = $pakiti->getManager("PkgsManager")->getPkgId($cveExceptionNode->pkg->name,$cveExceptionNode->pkg->version,$cveExceptionNode->pkg->release,$cveExceptionNode->pkg->arch,$cveExceptionNode->pkg->type);
       $osGroupId = $pakiti->getManager("OsGroupsManager")->getOsGroupIdByName($cveExceptionNode->osGroup->name);
       if($pkgId != -1 && $osGroupId != -1){
         $cveException->setPkgId($pkgId );

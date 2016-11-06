@@ -57,7 +57,7 @@ class VulnerabilitiesManager extends DefaultManager
      * @throws Exception
      */
 
-    public function getVulnerablePkgsWithCve(Host &$host, $orderBy = "id", $pageSize = -1, $pageNum = -1)
+    public function getVulnerablePkgsWithCve(Host &$host, $orderBy = "name", $pageSize = -1, $pageNum = -1)
     {
         if (($host == null) || ($host->getId() == -1)) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
@@ -65,24 +65,20 @@ class VulnerabilitiesManager extends DefaultManager
         }
         Utils::log(LOG_DEBUG, "Getting the vulnerable packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
 
-        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
-        $osGroupsIds = array_map(function ($osGroup) {
-            return $osGroup->getId();
-        }, $osGroups);
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOs()->getName());
+        $pkgsIds = $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsIdsByHostId($host->getId());
+        return $this->getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds);
+    }
 
-        $pkgs = $this->getPakiti()->getDao("Vulnerability")->getVulnerablePkgs($host->getId(), $osGroupsIds, $orderBy, $pageSize, $pageNum);
-
-        $cves = $this->getPakiti()->getManager("CveDefsManager")->getCvesForHost($host);
+    public function getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds)
+    {
         $pkgsWithCves = array();
-        foreach ($cves as $pkgId => $pkgCves) {
-            foreach ($pkgs as $pkg) {
-                if ($pkgId == $pkg->getId()) {
-                    $pkgWithCve = array();
-                    $pkgWithCve["Pkg"] = $pkg;
-                    $pkgWithCve["CVE"] = $pkgCves;
-                    $pkgsWithCves[$pkgId] = $pkgWithCve;
-                }
-            }
+        $cves = $this->getPakiti()->getManager("CveDefsManager")->getCvesForPkgs($pkgsIds, $osGroupsIds);
+        $pkgs = $this->getPakiti()->getDao("Pkg")->getPkgsByPkgsIds(array_keys($cves));
+        
+        foreach ($pkgs as $pkg) {
+            $pkgsWithCves[$pkg->getId()]["Pkg"] = $pkg;
+            $pkgsWithCves[$pkg->getId()]["CVE"] = $cves[$pkg->getId()];
         }
 
         return $pkgsWithCves;
@@ -169,93 +165,53 @@ class VulnerabilitiesManager extends DefaultManager
 
 
     /**
-     * Find vulnerable packages for a specific host
+     * Find vulnerabilities for pkgs
      * Save vulnerable pkgId and corresponding cveDefId and osGroupId to PkgCveDef table
      * @throws Exception
-     * @param Host $host
+     * @param Array of Pkgs
      *
      */
-    public function calculateVulnerablePkgsForSpecificHost(Host $host)
+    public function calculateVulnerabilitiesForPkgs($pkgs)
     {
-        if ($host == null || $host->getId() == -1) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Host object is not valid or Host.id is not set");
-        }
+        Utils::log(LOG_DEBUG, "Calculate Vulnerabilities for Pkgs", __FILE__, __LINE__);
 
-        Utils::log(LOG_DEBUG, "Searching for vulnerable packages for specific host ", __FILE__, __LINE__);
-
-        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOsName());
-
-        //Get installed Pkgs on Host
-        $pkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
-
-        $vulnerablePkgsWithVulnerabilities = $this->getVulnerablePkgsWithVulnerabilitiesForPkgs($pkgs, $osGroupsIds, $host->getType());
-
-        foreach($vulnerablePkgsWithVulnerabilities as $vulnerablePkgWithVulnerabilities){
-            $pkg = $vulnerablePkgWithVulnerabilities['Pkg'];
-            $confirmedVulnerabilities = $vulnerablePkgWithVulnerabilities['Vulnerabilities'];
-            //For each confirmed Vulnerability get CveDefs
-            if (!empty($confirmedVulnerabilities)) {
-                $cveDefs = array();
-                foreach ($confirmedVulnerabilities as $confirmedVulnerability) {
-                    # Assign the Cvedef to the Package
-                    foreach ($osGroupsIds as $osGroupId) {
-                        $this->getPakiti()->getManager("CveDefsManager")->assignPkgToCveDef($pkg->getId(), $confirmedVulnerability->getCveDefId(), $osGroupId);
-                    }
-                }
-            }
-        }
-    }
-
-
-    public function getVulnerablePkgsWithVulnerabilitiesForPkgs($pkgs, $osGroupsIds, $type)
-    {
-        //Get VulnerabilityDao
         $vulnerabilityDao = $this->getPakiti()->getDao("Vulnerability");
-        
-        $vulnerablePkgs = array();
-        //For each vulnerable package get Cvedef
-        foreach ($pkgs as $pkg) {
-            $confirmedVulnerabilities = array();
-            $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByPkgNameOsGroupIdArch($pkg->getName(), $osGroupsIds, $pkg->getArch());
-            if (!empty($potentialVulnerabilities)) {
-                foreach ($potentialVulnerabilities as $potentialVulnerability) {
-                    switch ($potentialVulnerability->getOperator()) {
-                        //TODO: Add more operator cases
-                        case "<":
-                            $value = $this->vercmp($type, $pkg->getVersion(), $pkg->getRelease(), $potentialVulnerability->getVersion(), $potentialVulnerability->getRelease());
-                            if ($value < 0) {
-                                array_push($confirmedVulnerabilities, $potentialVulnerability);
-                            }
-                    }
+        $cveDefsManager = $this->getPakiti()->getManager("CveDefsManager");
+        foreach($pkgs as $pkg){
+            $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByPkgNameArch($pkg->getName(), $pkg->getArch());
+            foreach ($potentialVulnerabilities as $vulnerability) {
+                $confirmed = false;
+                switch ($vulnerability->getOperator()) {
+                    //TODO: Add more operator cases
+                    case "<":
+                        $value = $this->vercmp($pkg->getType(), $pkg->getVersion(), $pkg->getRelease(), $vulnerability->getVersion(), $vulnerability->getRelease());
+                        if ($value < 0) {
+                            $confirmed = true;
+                        }
+                        break;
                 }
-                if(!empty($confirmedVulnerabilities)){
-                    $vulnerablePkgs[] = array( 'Pkg' => $pkg, 'Vulnerabilities' => $confirmedVulnerabilities);
+                if($confirmed) {
+                    $cveDefsManager->assignPkgToCveDef($pkg->getId(), $vulnerability->getCveDefId(), $vulnerability->getOsGroupId());
                 }
             }
         }
-
-        $this->getPakiti()->getManager("StatsManager")->add("checkedPkgs", sizeof($pkgs));
-        $this->getPakiti()->getManager("StatsManager")->add("vulnerablePkgs", sizeof($vulnerablePkgs));
-
-        return $vulnerablePkgs;
     }
+
 
     /**
-     * Find vulnerable packages for all hosts
+     * Find vulnerabilities for all pkgs
      * Save vulnerable pkgId and corresponding cveDefId and osGroupId to PkgCveDef table
      * @throws Exception
+     *
      */
-
-    public function calculateVulnerablePkgsForEachHost()
+    public function calculateVulnerabilitiesForEachPkg()
     {
-        Utils::log(LOG_DEBUG, "Searching for vulnerable packages for all hosts", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Calculate Vulnerabilities for each pkg", __FILE__, __LINE__);
 
-        $hosts = $this->getPakiti()->getManager("HostsManager")->getHosts("os");
-        foreach ($hosts as $host) {
-            $this->calculateVulnerablePkgsForSpecificHost($host);
-        }
+        $pkgs = $this->getPakiti()->getManager("PkgsManager")->getAllPkgs();
+        $this->calculateVulnerabilitiesForPkgs($pkgs);
     }
+
 
     /**
      * Return array of Vulnerabilities by Cve name and Os name

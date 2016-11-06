@@ -50,6 +50,7 @@ class PkgDao
           name='" . $this->db->escape($pkg->getName()) . "',
           version='" . $this->db->escape($pkg->getVersion()) . "',
           arch='" . $this->db->escape($pkg->getArch()) . "',
+          type='" . $this->db->escape($pkg->getType()) . "',
           `release`='" . $this->db->escape($pkg->getRelease()) . "'");
 
         # Set the newly assigned id
@@ -59,16 +60,17 @@ class PkgDao
     /*
      * Get the pkg by name, version, release and arch
      */
-    public function getPkg($name, $version, $release, $arch)
+    public function getPkg($name, $version, $release, $arch, $type)
     {
         return $this->db->queryObject(
             "select
-    		id as _id, name as _name, version as _version, `release` as _release, arch as _arch
+    		id as _id, name as _name, version as _version, `release` as _release, arch as _arch, type as _type
       from
       	Pkg
       where
       	binary name='" . $this->db->escape($name) . "' AND
         version='" . $this->db->escape($version) . "' AND
+        type='" . $this->db->escape($type) . "' AND
         `release`='" . $this->db->escape($release) . "' AND
         arch='" . $this->db->escape($arch) . "'", "Pkg");
     }
@@ -83,19 +85,32 @@ class PkgDao
     }
 
     /*
+     * Get all pkgs
+     * returns array of pkgs
+     */
+    public function getAllPkgs()
+    {
+        return $this->db->queryObjects(
+            "select id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release from Pkg"
+            , "Pkg");
+    }
+
+    /*
      * Get the pkgs by their IDs
      * $ids is array of IDs
      * returns array of pkgs
      */
-    public function getPkgsByPkgIds($ids)
+    public function getPkgsByPkgsIds($pkgsIds)
     {
-        return $this->db->queryObjects(
-            "select
-    		id as _id, name as _name, version as _version, arch as _arch, `release` as _release
-      from
-      	Pkg
-      where
-        id IN (" . implode(",", array_map("intval", $ids)) . ")", "Pkg");
+        if(empty($pkgsIds)){
+            return array();
+        }
+
+        $sql = "select id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release
+            from Pkg
+            where id IN (" . implode(",", array_map("intval", $pkgsIds)) . ")";
+
+        return $this->db->queryObjects($sql, "Pkg");
     }
 
     /*
@@ -106,12 +121,13 @@ class PkgDao
         return $this->getBy($name, "name");
     }
 
-    public function getPkgIdByNameVersionReleaseArch($pkgName, $pkgVersion, $pkgRelease, $pkgArch)
+    public function getPkgIdByNameVersionReleaseArchType($pkgName, $pkgVersion, $pkgRelease, $pkgArch, $pkgType)
     {
         $sql = "select id from Pkg where binary
         name='" . $this->db->escape($pkgName) . "' and
         version='" . $this->db->escape($pkgVersion) . "' and
       	arch='" . $this->db->escape($pkgArch) . "' and
+        type='" . $this->db->escape($pkgType) . "' and
       	`release`='" . $this->db->escape($pkgRelease) . "'";
         $id = $this->db->queryToSingleValue($sql);
 
@@ -131,6 +147,7 @@ class PkgDao
       	name='" . $this->db->escape($pkg->getName()) . "',
       	version='" . $this->db->escape($pkg->getVersion()) . "',
       	arch='" . $this->db->escape($pkg->getArch()) . "',
+      	type='" . $this->db->escape($pkg->getType()) . "',
       	`release`='" . $this->db->escape($pkg->getRelease()) . "'
       where id=" . $this->db->escape($pkg->getId()));
     }
@@ -163,7 +180,7 @@ class PkgDao
         }
         return $this->db->queryObject(
             "select
-    		id as _id, name as _name, version as _version, arch as _arch, `release` as _release
+    		id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release
       from 
       	Pkg 
       where

@@ -122,6 +122,7 @@ create table `Pkg` (
 	`version` varchar(63) not null,
 	`release` varchar(63) not null,
 	`arch` varchar(10) not null,
+	`type` varchar(10) not null,
 	primary key (`id`),
 	foreign key (`arch`) references Arch(`name`) on delete cascade,
 	unique key (`name`, `version`, `release`, `arch`)

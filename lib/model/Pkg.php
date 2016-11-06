@@ -5,11 +5,12 @@
  * @author Michal Prochazka
  */
 class Pkg {
-    private $_id;
+    private $_id = -1;
     private $_name;
     private $_version;
     private $_release;
     private $_arch;
+    private $_type;
 
     public function getVersionRelease() {
         if (!empty($this->_release)) {
@@ -98,6 +99,22 @@ class Pkg {
     public function setArch($arch)
     {
         $this->_arch = $arch;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getType()
+    {
+        return $this->_type;
+    }
+
+    /**
+     * @param mixed $type
+     */
+    public function setType($type)
+    {
+        $this->_type = $type;
     }
 
 

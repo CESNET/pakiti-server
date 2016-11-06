@@ -22,6 +22,7 @@ foreach($cveExceptions as $cveException){
     $pkgNode->addChild("version", $pkg->getVersion());
     $pkgNode->addChild("release", $pkg->getRelease());
     $pkgNode->addChild("arch", $pkg->getArch());
+    $pkgNode->addChild("type", $pkg->getType());
     $osGroup = $osGroupDao->getById($cveException->getOsGroupId());
     $osGroupNode = $cveExceptionNode->addChild("osGroup");
     $osGroupNode->addChild("name",$osGroup->getName());

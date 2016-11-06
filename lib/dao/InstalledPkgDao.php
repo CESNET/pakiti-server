@@ -50,6 +50,17 @@ class InstalledPkgDao
             pkgId='" . $this->db->escape($installedPkg->getPkgId()) . "',
             hostId='" . $this->db->escape($installedPkg->getHostId()) . "'");
     }
+    
+    /*
+     * Stores the installedPkg in the DB
+     */
+    public function createByHostIdAndPkgId($hostId, $pkgId)
+    {
+        $this->db->query(
+            "insert into InstalledPkg set
+            pkgId='" . $this->db->escape($pkgId) . "',
+            hostId='" . $this->db->escape($hostId) . "'");
+    }
 
     /*
      * Get the installedPkg by its pkgId, hostId
@@ -80,9 +91,9 @@ class InstalledPkgDao
     /*
      * Gets all packages for defined host
      */
-    public function getInstalledPkgs(Host &$host, $orderBy, $pageSize, $pageNum)
+    public function getInstalledPkgs(Host &$host, $orderBy = "name", $pageSize = -1, $pageNum = -1)
     {
-        $sql = "select pkg.id as _id, pkg.name as _name, pkg.version as _version, pkg.release as _release, pkg.arch as _arch
+        $sql = "select pkg.id as _id, pkg.name as _name, pkg.version as _version, pkg.release as _release, pkg.arch as _arch, pkg.type as _type
         from InstalledPkg inst inner join Pkg pkg on inst.pkgId=pkg.id";
 
         $where = " where inst.hostId={$host->getId()}";
@@ -104,6 +115,19 @@ class InstalledPkgDao
         }
         
         return $this->db->queryObjects($sql,"Pkg");
+    }
+
+    /*
+     * Gets all packages ids for defined hostId
+     */
+    public function getInstalledPkgsIdsByHostId($hostId)
+    {
+        $sql = "select pkgId from InstalledPkg where hostId=" . $this->db->escape($hostId);
+        $pkgsIds = $this->db->queryToSingleValueMultiRow($sql);
+        if($pkgsIds == null){
+            $pkgsIds = array();
+        }
+        return $pkgsIds;
     }
 
     /*
@@ -137,20 +161,6 @@ class InstalledPkgDao
     }
 
     /*
-     * Update the installedPkg in the DB
-     */
-    public function update(InstalledPkg &$installedPkg)
-    {
-        $this->db->query(
-            "update InstalledPkg set
-            version='" . $this->db->escape($installedPkg->getVersion()) . "
-            release='" . $this->db->escape($installedPkg->getRelease()) . "
-          where pkgId=" . $this->db->escape($installedPkg->getPkgId()) . " and
-        hostId=" . $this->db->escape($installedPkg->getHostId()) . " and
-        archId=" . $this->db->escape($installedPkg->getArchId()));
-    }
-
-    /*
      * Delete the installedPkg from the DB
      */
     public function delete(InstalledPkg &$installedPkg)
@@ -159,6 +169,17 @@ class InstalledPkgDao
             "delete from InstalledPkg where
               pkgId=" . $this->db->escape($installedPkg->getPkgId()) . " and
               hostId=". $this->db->escape($installedPkg->getHostId()));
+    }
+
+    /*
+     * Remove the installedPkg from the DB
+     */
+    public function removeByHostIdAndPkgId($hostId, $pkgId)
+    {
+        $this->db->query(
+            "delete from InstalledPkg where
+            pkgId='" . $this->db->escape($pkgId) . "' and
+            hostId='" . $this->db->escape($hostId) . "'");
     }
 }
 ?>
