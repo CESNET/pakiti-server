@@ -98,39 +98,24 @@ class FeederModule extends DefaultModule
         }
     }
 
-    public function showReportResult()
+    public function getResults()
     {
-        $return_string = "";
-        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($this->_host->getOsName());
-        $pkgs = $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithVulnerabilitiesForPkgs($this->_pkgs, $osGroupsIds, $this->_host->getType());
-        $tagManager = $this->getPakiti()->getManager("TagsManager");
-        foreach ($pkgs as $pkg) {
-            foreach ($pkg['Vulnerabilities'] as $vulnerability) {
-                $cves = $this->getPakiti()->getDao("Cve")->getCvesByCveDefId($vulnerability->getCveDefId());
-                foreach($cves as $cve){
-                    $tags = $tagManager->getTagsByCveName($cve->getname());
-                    $tagsString = "";
-                    foreach($tags as $tag){
-                         $tagsString = $tagsString . $tag->getName() . ", ";
-                    }
-                    
-                    $return_string = $return_string 
-                    . str_pad($pkg["Pkg"]->getName(), 30) 
-                    . str_pad($pkg["Pkg"]->getVersionRelease() . " (" . $pkg["Pkg"]->getArch() . ")" , 30)
-                    . str_pad($cve->getName(), 30) 
-                    . str_pad($tagsString , 30) 
-                    . "\n";
-                }
-            }
-        }
-        return $return_string;
+        $pkgsWithCve =& $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($this->_host, "id", -1, -1);
+        return $this->prepareResult($pkgsWithCve);
     }
 
-    public function sendResultsBack()
+    public function getResultsWithoutSaving()
+    {
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($this->_host->getOsName());
+        $pkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $this->_pkgs);
+        $pkgsWithCve = $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds);
+        return $this->prepareResult($pkgsWithCve);
+    }
+
+    public function prepareResult($pkgsWithCve)
     {
         $return_string = "";
-        $pkgs =& $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($this->_host, "id", -1, -1);
-        foreach ($pkgs as $pkg) {
+        foreach ($pkgsWithCve as $pkg) {
             foreach ($pkg['CVE'] as $pkgCve) {
                 $cveTag = $pkgCve->getTag();
                 if (!empty($cveTag)) {
@@ -291,10 +276,9 @@ class FeederModule extends DefaultModule
                 $this->storeHost();
 
                 # Process the list of package, synchronize received list of installed packages with one in the DB
-                $this->storePkgs();
-
-                # Find vulnerabilities
-                $this->getPakiti()->getManager("VulnerabilitiesManager")->calculateVulnerablePkgsForSpecificHost($this->_host);
+                $installedPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($this->_host);
+                $this->storePkgs($this->_pkgs, $installedPkgs);
+                $this->assignPkgsWithHost($this->_pkgs, $this->_host->getId(), $installedPkgs);
 
             } else {
                 # Get Report
@@ -312,6 +296,44 @@ class FeederModule extends DefaultModule
 
             # Store the report
             $this->storeReport();
+
+            # Add savedReport +1 to stats
+            $this->getPakiti()->getManager("StatsManager")->add("savedReports", 1);
+
+        } catch (Exception $e) {
+            # Rollback the transaction
+            $this->getPakiti()->getManager("DbManager")->rollback();
+            throw $e;
+        }
+
+        # Commit the transaction
+        $this->getPakiti()->getManager("DbManager")->commit();
+
+        return true;
+
+    }
+
+
+    /*
+     * Process the report, stores the data about the host, installed packages and report itself.
+     */
+    public function processReportWithoutSaving()
+    {
+
+        # Start the transaction
+        $this->getPakiti()->getManager("DbManager")->begin();
+
+        try {
+
+            # Parse the data
+            $this->prepareReport();
+
+            # Store pkgs to database and calculate vulnerability
+            $this->storePkgs($this->_pkgs);
+
+            # Add unsavedReport +1 to stats
+            $this->getPakiti()->getManager("StatsManager")->add("unsavedReports", 1);
+
         } catch (Exception $e) {
             # Rollback the transaction
             $this->getPakiti()->getManager("DbManager")->rollback();
@@ -468,108 +490,74 @@ class FeederModule extends DefaultModule
         fclose($reportFile);
     }
 
-    /*
-     * Process packages.
+     /*
+     * Store packages
      */
-    public function storePkgs()
+    public function storePkgs(&$pkgs, $installedPkgs = array())
     {
         Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
-        # Load the actually stored packages from the DB, the array is already sorted by the pkgName
-        $pkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsAsArray($this->_host);
-        $pkgsToAdd = array();
 
-        // Find packages which should be added or updated
-        foreach ($this->_pkgs as $pkg) {
-            if (!array_key_exists($pkg->getName(), $pkgs)
-                || !array_key_exists($pkg->getArch(), $pkgs[$pkg->getName()])
-                || $pkg->getVersion() != $pkgs[$pkg->getName()][$pkg->getArch()]['pkgVersion']
-                || $pkg->getRelease() != $pkgs[$pkg->getName()][$pkg->getArch()]['pkgRelease']) {
-
-                $pkgsToAdd[$pkg->getName()][$pkg->getArch()] = array('pkgVersion' => $pkg->getVersion(),'pkgRelease' => $pkg->getRelease());
-
-            } else {
-                if(count($pkgs[$pkg->getName()]) == 1){
-                    unset($pkgs[$pkg->getName()]);
-                } else {
-                    unset($pkgs[$pkg->getName()][$pkg->getArch()]);
-                }
-            }
+        $installedPkgsArray = array();
+        foreach($installedPkgs as $installedPkg){
+            $installedPkgsArray[$installedPkg->getName()][] = $installedPkg;
         }
 
-        if (sizeof($pkgsToAdd) > 0) $this->getPakiti()->getManager("PkgsManager")->addPkgs($this->_host, $pkgsToAdd);
-        if (sizeof($pkgs) > 0) $this->getPakiti()->getManager("PkgsManager")->removePkgs($this->_host, $pkgs);
-    }
-
-     /*
-     * Process packages.
-     */
-     /*
-    public function storePkgs()
-    {
-        Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
-        # Load the actually stored packages from the DB, the array is already sorted by the pkgName
-        $pkgs =& $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsAsArray($this->_host);
-        $pkgsToAdd = array();
-        $pkgsToUpdate = array();
-        $pkgsToRemove = array();
-
-        // Find packages which should be added or updated
-        foreach ($this->_pkgs as $pkgName => $pkgArchs) {
-            if (!array_key_exists($pkgName, $pkgs)) {
-                # Package is missing in the DB
-                $pkgsToAdd[$pkgName] = $pkgArchs;
-
-            } else {
-                foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
-
-                    if (!array_key_exists($pkgArch, $pkgs[$pkgName])) {
-                        $pkgsToAdd[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
-                            'pkgRelease' => $versionAndRelease["pkgRelease"]);
-
-                    } elseif ($versionAndRelease['pkgVersion'] != $pkgs[$pkgName][$pkgArch]['pkgVersion']) {
-                        $pkgIdThatShouldBeUpdate = $this->getPakiti()->getManager("PkgsManager")->getPkgId($pkgName,
-                            $pkgs[$pkgName][$pkgArch]['pkgVersion'], $pkgs[$pkgName][$pkgArch]['pkgRelease'], $pkgArch);
-
-                        $pkgsToUpdate[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
-                            'pkgRelease' => $versionAndRelease["pkgRelease"], 'pkgIdThatShouldBeUpdate' => $pkgIdThatShouldBeUpdate);
-
-                    } elseif ($versionAndRelease['pkgRelease'] != $pkgs[$pkgName][$pkgArch]['pkgRelease']) {
-                        $pkgIdThatShouldBeUpdate = $this->getPakiti()->getManager("PkgsManager")->getPkgId($pkgName,
-                            $pkgs[$pkgName][$pkgArch]['pkgVersion'], $pkgs[$pkgName][$pkgArch]['pkgRelease'], $pkgArch);
-
-                        $pkgsToUpdate[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
-                            'pkgRelease' => $versionAndRelease["pkgRelease"], 'pkgIdThatShouldBeUpdate' => $pkgIdThatShouldBeUpdate);
-                    }
-                }
-
-            }
-        }
-
-        // Find packages which should be deleted
-        foreach ($pkgs as $pkgName => $pkgArchs) {
-
-            # Check what architecture we should remove
-            if (!array_key_exists($pkgName, $this->_pkgs)) {
-                foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
-                    $pkgsToRemove[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
-                        'pkgRelease' => $versionAndRelease["pkgRelease"]);
-                }
-            } else {
-
-                foreach ($pkgArchs as $pkgArch => $versionAndRelease) {
-                    if (!array_key_exists($pkgArch, $this->_pkgs[$pkgName])) {
-                        $pkgsToRemove[$pkgName][$pkgArch] = array('pkgVersion' => $versionAndRelease["pkgVersion"],
-                            'pkgRelease' => $versionAndRelease["pkgRelease"]);
+        $pkgDao = $this->getPakiti()->getDao("Pkg");
+        $newPkgs = array();
+        foreach($pkgs as &$pkg){
+            # Check if pkg is already in installed pkgs
+            if(array_key_exists($pkg->getName(), $installedPkgsArray)){
+                foreach($installedPkgsArray[$pkg->getName()] as $key => $installedPkg){
+                    if($pkg->getRelease() == $installedPkg->getRelease() 
+                    && $pkg->getVersion() == $installedPkg->getVersion() 
+                    && $pkg->getArch() == $installedPkg->getArch() 
+                    && $pkg->getType() == $installedPkg->getType()){
+                        $pkg->setId($installedPkg->getId());
+                        # Found same pkg as installed, skip the others
+                         if(count($installedPkgsArray[$pkg->getName()]) == 1){
+                            unset($installedPkgsArray[$pkg->getName()]);
+                        } else {
+                            unset($installedPkgsArray[$pkg->getName()][$key]);
+                        }
+                        break;
                     }
                 }
             }
+            # If pkg isn't in installed pkgs yet
+            if($pkg->getId() == -1){
+                $pkg->setId($pkgDao->getPkgIdByNameVersionReleaseArchType($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArch(), $pkg->getType()));
+                if($pkg->getId() == -1){
+                    # If pkg isn't in all pkgs
+                    $pkgDao->create($pkg);
+                    array_push($newPkgs, $pkg);
+                }
+            }
         }
-
-        if (sizeof($pkgsToAdd) > 0) $this->getPakiti()->getManager("PkgsManager")->addPkgs($this->_host, $pkgsToAdd);
-        if (sizeof($pkgsToUpdate) > 0) $this->getPakiti()->getManager("PkgsManager")->updatePkgs($this->_host, $pkgsToUpdate);
-        if (sizeof($pkgsToRemove) > 0) $this->getPakiti()->getManager("PkgsManager")->removePkgs($this->_host, $pkgsToRemove);
+        # Calculate Vulnerabilities for new packages
+        $vulnerabilitiesManager = $this->getPakiti()->getManager("VulnerabilitiesManager");
+        $vulnerabilitiesManager->calculateVulnerabilitiesForPkgs($newPkgs);
     }
-    */
+
+     /*
+     * Assign Pkgs with Host
+     */
+    public function assignPkgsWithHost($pkgs, $hostId, $installedPkgs = array())
+    {
+        Utils::log(LOG_DEBUG, "Assign Host with Pkgs", __FILE__, __LINE__);
+
+        $installedPkgDao = $this->getPakiti()->getDao("InstalledPkg");
+        $pkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $pkgs);
+        $installedPkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $installedPkgs);
+
+        $pkgsIdsToAdd = array_diff($pkgsIds, $installedPkgsIds);
+        $pkgsIdsToRemove = array_diff($installedPkgsIds, $pkgsIds);
+        foreach($pkgsIdsToAdd as $pkgId){
+            $installedPkgDao->createByHostIdAndPkgId($hostId, $pkgId);
+        }
+        foreach($pkgsIdsToRemove as $pkgId){
+            $installedPkgDao->removeByHostIdAndPkgId($hostId, $pkgId);
+        }
+    }
 
     /*
      * Parse the long string containing list of installed packages.
@@ -644,14 +632,12 @@ class FeederModule extends DefaultModule
             }
             unset($pkgNamePattern);
 
-            # $parsedPkgs['pkgName'] = array ( pkgVersion, pkgRelease, pkgArch );
-            //$parsedPkgs[$pkgName][$pkgArch] = array('pkgVersion' => $pkgVersion, 'pkgRelease' => $pkgRelease);
-            
             $pkg = new Pkg();
             $pkg->setName($pkgName);
             $pkg->setArch($pkgArch);
             $pkg->setRelease($pkgRelease);
             $pkg->setVersion($pkgVersion);
+            $pkg->setType($this->_host->getType());
             $parsedPkgs[] = $pkg;
 
             $tok = strtok("\n");

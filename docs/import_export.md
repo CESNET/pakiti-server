@@ -27,6 +27,7 @@
             <version>...</version>
             <release>...</release>
             <arch>...</arch>
+            <type>...</type>
         </pkg>
         <osGroup>
             <name>...</name>

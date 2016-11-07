@@ -67,10 +67,28 @@ class CveDefsManager extends DefaultManager
      * @return int
      */
     public function getCvesCount(Host $host){
-        $cvesCount = 0;
-        $pkgsCves = $this->getCvesForHost($host);
-        foreach ($pkgsCves as $pkgCves) {
-            $cvesCount += count($pkgCves);
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOs()->getName());
+        $hostId = $host->getId();
+        return $this->getCvesCountByHostIdAndOsGroupsIds($hostId, $osGroupsIds);
+    }
+
+    public function getCvesCountByHostIdAndOsGroupsIds($hostId, $osGroupsIds){
+
+        if(empty($osGroupsIds)){
+            return 0;
+        }
+        $sql = "select COUNT(Cve.name)
+            from InstalledPkg
+            inner join PkgCveDef on InstalledPkg.pkgId = PkgCveDef.pkgId
+            inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId
+            left join CveException on (PkgCveDef.pkgId = CveException.pkgId and Cve.name = CveException.cveName)
+            where InstalledPkg.hostId = '". $hostId ."'
+            and CveException.id IS NULL
+            and PkgCveDef.osGroupId in (" . implode(",", array_map("intval", $osGroupsIds)) . ")";
+
+        $cvesCount = $this->getPakiti()->getManager("DbManager")->queryToSingleValue($sql);
+        if($cvesCount == NULL){
+            $cvesCount = 0;
         }
         return $cvesCount;
     }
@@ -90,27 +108,26 @@ class CveDefsManager extends DefaultManager
         return $cveNamesWithTags;
     }
 
+    public function getCveDefsForHost(Host $host)
+    {
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOs()->getName());
+        $pkgsIds = $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsIdsByHostId($host->getId());
+        return $this->getCveDefsForPkgs($pkgsIds, $osGroupsIds);
+    }
 
-    public function getCveDefsForHost(Host $host){
-        $pkgsCveDefs = array();
+    public function getCveDefsForPkgs($pkgsIds, $osGroupsIds){
 
-        //Get OS groups
-        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($host->getOs());
-
-        //Get installed PkgsIds on Host
-        $installedPkgIds = $this->getPakiti()->getDao("InstalledPkg")->getIdsByHostId($host->getId());
-        
-        //If host haven't installed any pkgs then also havn't any cveDefs
-        if($installedPkgIds == null) return array();
-        
-        $sql = "select * from CveDef inner join PkgCveDef on CveDef.id = PkgCveDef.cveDefId where
-                PkgCveDef.pkgId in
-                (" . implode(",", array_map("intval", $installedPkgIds)) . ")
-                and PkgCveDef.osGroupId in
-                (" . implode(",", array_map("intval", array_map(function ($osGroup) { return $osGroup->getId(); }, $osGroups))) . ")";
+        if(empty($pkgsIds) || empty($osGroupsIds)){
+            return array();
+        }
+        $sql = "select *
+            from PkgCveDef
+            inner join CveDef on PkgCveDef.cveDefId = CveDef.id
+            where PkgCveDef.pkgId in (" . implode(",", array_map("intval", $pkgsIds)) . ")
+            and PkgCveDef.osGroupId in (" . implode(",", array_map("intval", $osGroupsIds)) . ")";
 
         $cveDefsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
-        
+        $pkgsCveDefs = array();
         if ($cveDefsDb != null) {
             foreach ($cveDefsDb as $cveDefDb) {
                 $cveDef = new CveDef();
@@ -179,23 +196,36 @@ class CveDefsManager extends DefaultManager
 
     public function getCvesForHost(Host $host)
     {
-        $pkgsCveDefs = $this->getCveDefsForHost($host);
-        $pkgsCves = array();
-        foreach ($pkgsCveDefs as $pkgId => $pkgCveDefs) {
-            $cves = array();
-            foreach ($pkgCveDefs as $pkgCveDef) {
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOs()->getName());
+        $pkgsIds = $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsIdsByHostId($host->getId());
+        return $this->getCvesForPkgs($pkgsIds, $osGroupsIds);
+    }
 
-                foreach ($pkgCveDef->getCves() as $cve) {
-                    array_push($cves, $cve);
-                }
-            }
-            if (!empty($cves)) {
-                $pkgsCves[$pkgId] = $cves;
-            }
-
+    public function getCvesForPkgs($pkgsIds, $osGroupsIds)
+    {
+        if(empty($pkgsIds) || empty($osGroupsIds)){
+            return array();
         }
-        return $pkgsCves;
+        $sql = "select PkgCveDef.pkgId as pkgId, Cve.id as id, Cve.name as name, Cve.cveDefId as cveDefId
+            from PkgCveDef
+            inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId
+            left join CveException on (PkgCveDef.pkgId = CveException.pkgId and Cve.name = CveException.cveName)
+            where PkgCveDef.pkgId in (" . implode(",", array_map("intval", $pkgsIds)) . ")
+            and CveException.id IS NULL
+            and PkgCveDef.osGroupId in (" . implode(",", array_map("intval", $osGroupsIds)) . ")";
 
+        $cvesDb = $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
+
+        $cves = array();
+        foreach ($cvesDb as $cveDb) {
+            $cve = new Cve();
+            $cve->setId($cveDb["id"]);
+            $cve->setName($cveDb["name"]);
+            $cve->setCveDefId($cveDb["cveDefId"]);
+            $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+            $cves[$cveDb["pkgId"]][] = $cve;
+        }
+        return $cves;
     }
 
 
