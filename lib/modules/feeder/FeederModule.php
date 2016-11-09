@@ -503,6 +503,8 @@ class FeederModule extends DefaultModule
         }
 
         $pkgDao = $this->getPakiti()->getDao("Pkg");
+        $archDao = $this->getPakiti()->getDao("Arch");
+        $archsNames = $archDao->getArchsNames();
         $newPkgs = array();
         foreach($pkgs as &$pkg){
             # Check if pkg is already in installed pkgs
@@ -528,6 +530,12 @@ class FeederModule extends DefaultModule
                 $pkg->setId($pkgDao->getPkgIdByNameVersionReleaseArchType($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArch(), $pkg->getType()));
                 if($pkg->getId() == -1){
                     # If pkg isn't in all pkgs
+                    if(!in_array($pkg->getArch(), $archsNames)){
+                        $arch = new Arch();
+                        $arch->setName($pkg->getArch());
+                        $archDao->create($arch);
+                        array_push($archsNames, $pkg->getArch());
+                    }
                     $pkgDao->create($pkg);
                     array_push($newPkgs, $pkg);
                 }
@@ -562,7 +570,7 @@ class FeederModule extends DefaultModule
     /*
      * Parse the long string containing list of installed packages.
      */
-    protected function parsePkgs(&$pkgs)
+    protected function parsePkgs($pkgs)
     {
         Utils::log(LOG_DEBUG, "Parsing packages", __FILE__, __LINE__);
         $parsedPkgs = array();
@@ -574,11 +582,14 @@ class FeederModule extends DefaultModule
         while ($tok !== FALSE) {
             switch ($this->_version) {
                 case "4":
-                    preg_match("/'(.*)' '(.*)' '(.*)' '(.*)'/", $tok, $entries);
-                    $pkgName = $entries[1];
-                    $pkgVersion = $entries[2];
-                    $pkgRelease = $entries[3];
-                    $pkgArch = $entries[4];
+                    if(preg_match("/'(.*)' '(.*)' '(.*)' '(.*)'/", $tok, $entries) == 1){
+                        $pkgName = $entries[1];
+                        $pkgVersion = $entries[2];
+                        $pkgRelease = $entries[3];
+                        $pkgArch = $entries[4];
+                    } else {
+                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot be parsed (omitted)!" , __FILE__, __LINE__);
+                    }
 
                     # If the host uses dpkg we need to split version manually to version and release by the dash.
                     # Suppress warnings, if the version doesn't contain dash, only version will be filled, release will be empty
@@ -598,7 +609,7 @@ class FeederModule extends DefaultModule
                         $pkgRelease = "";
                         $pkgArch = $entries[3];
                     } else {
-                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot parse (omitted)!" , __FILE__, __LINE__);
+                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot be parsed (omitted)!" , __FILE__, __LINE__);
                     }
                     break;
             }

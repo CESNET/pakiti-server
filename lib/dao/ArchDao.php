@@ -93,6 +93,11 @@ class ArchDao {
     return $this->db->queryToSingleValueMultiRow($sql);
   }
   
+  public function getArchsNames() {
+    $sql = "select name from Arch";
+    return $this->db->queryToSingleValueMultiRow($sql);
+  }
+  
   /*
    * Update the arch in the DB
    */
