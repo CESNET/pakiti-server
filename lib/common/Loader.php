@@ -30,7 +30,7 @@
 require_once(realpath(dirname(__FILE__)) . '/Constants.php');
 
 # Load the configuration file
-require_once(realpath(dirname(__FILE__)) . '/../../etc/Config.php');
+require_once('/etc/pakiti/Config.php');
 
 # Load Pakiti, Constants and Utils class
 require_once(realpath(dirname(__FILE__)) . '/Pakiti.php');

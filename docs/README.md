@@ -29,8 +29,12 @@
     mkdir -p /etc/ssl/localcerts
     openssl req -new -x509 -days 365 -nodes -out /etc/ssl/localcerts/pakiti3.pem -keyout /etc/ssl/localcerts/pakiti3.key
 
-####8, Edit Config.php####
-    edit var/www/pakiti3/etc/Config.php
+####8, Copy file Config.php to /etc/pakiti####
+    mkdir -p /etc/pakiti
+    cp /var/www/pakiti3/etc/Config.php.template /etc/pakiti/Config.php
+
+####9, Edit Config.php####
+    edit /etc/pakiti/Config.php
 
 set username and password to database for pakiti3 which will be created in initDB.php later
 
@@ -41,12 +45,12 @@ path to private key in order to decrypt incomming reports
 
     public static $CERN_REPORT_DECRYPTION_KEY = "/etc/ssl/localcerts/pakiti3.key";
 
-####9, Run php initDB.php for initalize database and create user which is defined in Config.php####
+####10, Run php initDB.php for initalize database and create user which is defined in Config.php####
 login as user who can create databases and users (root)
 
     php /var/www/pakiti3/install/initDB.php
 
-####10, Config and run pakiti-client for sending to pakiti-server####
+####11, Config and run pakiti-client for sending to pakiti-server####
     perl /var/www/pakiti3/bin/pakiti-client --url="localhost/feed/" --encrypt="/etc/ssl/localcerts/pakiti3.pem"
 
-####11, Open your browser and go to https://pakiti.com/####
+####12, Open your browser and go to https://pakiti.com/####
