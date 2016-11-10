@@ -216,6 +216,10 @@ class CveDefsManager extends DefaultManager
 
         $cvesDb = $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
 
+        if($cvesDb == null){
+            return array();
+        }
+
         $cves = array();
         foreach ($cvesDb as $cveDb) {
             $cve = new Cve();
