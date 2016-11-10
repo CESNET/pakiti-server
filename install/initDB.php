@@ -29,7 +29,7 @@
 # POSSIBILITY OF SUCH DAMAGE. 
 
 # Load global configuration file
-require_once(realpath(dirname(__FILE__)) . '/../etc/Config.php');
+require_once('/etc/pakiti/Config.php');
 require_once(realpath(dirname(__FILE__)) . '/../lib/common/Constants.php');
 require_once(realpath(dirname(__FILE__)) . '/../lib/common/AttributesNames.php');
 
@@ -161,7 +161,7 @@ foreach($sql as $query) {
 }
 print "OK\n";
 
-print "Granting privileges on '" . Config::$DB_NAME . ".*' to the user '" . Config::$DB_USER . "' configured in etc/Config.php ... ";
+print "Granting privileges on '" . Config::$DB_NAME . ".*' to the user '" . Config::$DB_USER . "' configured in /etc/pakiti/Config.php ... ";
 if (!$link->query("grant select, insert, update, delete ON ".Config::$DB_NAME.".* TO  '".Config::$DB_USER."'@'".Config::$DB_HOST.
 	"' IDENTIFIED BY '".Config::$DB_PASSWORD."'")) {
   print "ERROR: Cannot grant the privileges: " .  $link->error . "\n";
@@ -169,13 +169,13 @@ if (!$link->query("grant select, insert, update, delete ON ".Config::$DB_NAME.".
 }
 print "OK\n";
 
-print "Connecting to the database using connection settings from the etc/Config.php ... ";
+print "Connecting to the database using connection settings from the /etc/pakiti/Config.php ... ";
 if (!$link->close()) {
   print "ERROR: Cannot close existing connection to the database: " .  $link->error . "\n";
   exit(1);
 }
 if (!$newLink = new mysqli(Config::$DB_HOST, Config::$DB_USER, Config::$DB_PASSWORD)) {
-  print "ERROR: cannot connect to the database server using connection settings from the etc/Config.php: " . mysqli_connect_error() . "\n";
+  print "ERROR: cannot connect to the database server using connection settings from the /etc/pakiti/Config.php: " . mysqli_connect_error() . "\n";
   exit(1);
 }
 if (!mysqli_select_db($newLink, Config::$DB_NAME)) {
