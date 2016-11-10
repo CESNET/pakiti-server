@@ -31,7 +31,7 @@
 
 ####8, Copy file Config.php to /etc/pakiti####
     mkdir -p /etc/pakiti
-    cp /var/www/pakiti3/etc/Config.php /etc/pakiti/
+    cp /var/www/pakiti3/etc/Config.php.template /etc/pakiti/Config.php
 
 ####9, Edit Config.php####
     edit /etc/pakiti/Config.php
