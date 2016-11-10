@@ -288,6 +288,9 @@ class FeederModule extends DefaultModule
                 $this->_report->setReceivedOn(microtime(true));
                 $this->_report->setHeaderHash($headerHash);
                 $this->_report->setPkgsHash($pkgsHash);
+
+                # Add sameReports +1 to stats
+                $this->getPakiti()->getManager("StatsManager")->add("sameReports", 1);
             }
 
             # Get number of CVEs
@@ -299,6 +302,9 @@ class FeederModule extends DefaultModule
 
             # Add savedReport +1 to stats
             $this->getPakiti()->getManager("StatsManager")->add("savedReports", 1);
+
+            # Add checkedPkgs +num of installed packages to stats
+            $this->getPakiti()->getManager("StatsManager")->add("checkedPkgs", $this->_report->getNumOfInstalledPkgs());
 
         } catch (Exception $e) {
             # Rollback the transaction
@@ -333,6 +339,9 @@ class FeederModule extends DefaultModule
 
             # Add unsavedReport +1 to stats
             $this->getPakiti()->getManager("StatsManager")->add("unsavedReports", 1);
+            
+            # Add checkedPkgs +num of installed packages to stats
+            $this->getPakiti()->getManager("StatsManager")->add("checkedPkgs", $this->_report->getNumOfInstalledPkgs());
 
         } catch (Exception $e) {
             # Rollback the transaction

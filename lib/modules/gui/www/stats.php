@@ -29,10 +29,10 @@
 
 
 $NAMES_DEFINITIONS = array (
-    "savedReports"      => "Received reports which have been saved to database",
-    "unsavedReports"    => "Received reports which haven't been saved to database",
-    "checkedPkgs"       => "Checked packages",
-    "vulnerablePkgs"    => "Checked packages which contains vulnerability"
+    "savedReports"      => "Number of reports which were saved to database",
+    "unsavedReports"    => "Number of reports which weren't saved to database",
+    "checkedPkgs"       => "Number of all packages from reports",
+    "sameReports"       => "Number of reports when host didn't send any new data"
 );
 
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
