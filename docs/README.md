@@ -4,8 +4,8 @@
     apt-get update
     apt-get install apache2
     apt-get install mysql-server
-    apt-get install php5 libapache2-mod-php5 php5-mysql
     apt-get install curl
+    apt-get install php5 libapache2-mod-php5 php5-mysql php5-curl
     apt-get install subversion
 
 ####2, Download repository from github and place it to /var/www####

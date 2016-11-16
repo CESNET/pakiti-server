@@ -143,15 +143,14 @@ class TagsManager extends DefaultManager {
       	 		cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cve->getName()) . "' and
       	 		tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()));
 
-    if ($isAssigned != null) {
-      throw new Exception($cve->getName() . " is already associated with " . $tag->getName() . " tag!");
-    } else {
+    if ($isAssigned != 1) { 
       # Association between cve and cveTag doesn't exist, so create it
-      $this->getPakiti()->getManager("DbManager")->query("
-      		insert into CveTag set
-      			cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cve->getName()) . "',
-      	 		tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . ",
-      	 		`reason`='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getReason()) . "'");
+      $this->getPakiti()->getManager("DbManager")->query("insert into CveTag set
+        cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cve->getName()) . "',
+        tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . ",
+        enabled=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getEnabled()) . ",
+        modifier='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getModifier()) . "',
+        `reason`='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getReason()) . "'");
 
     }
   }

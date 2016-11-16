@@ -51,22 +51,26 @@ if (isset($opt["h"]) || isset($opt["help"])) {
 $url = isset($opt["u"]) ? $opt["u"] : (isset($opt["url"]) ? $opt["url"] : null);
 
 if($url == null){
-  die("URL not specified!\n");
-} elseif(!file_exists($url)){
-  die("Failed to open " . $url . " !");
+  usage();
 } else {
-  
+  $xml = simplexml_load_string(Utils::getContent($url));
+
+  if($xml == null){
+    die("Xml parsing error! Check log for curl errors.");
+  }
+
   if (isset($opt["r"]) || isset($opt["remove"])) {
     $pakiti->getDao("Tag")->deleteCveTags();
   }
 
-  $xml = simplexml_load_file($url);
   foreach($xml->cveTag as $cveTagNode){
     if($pakiti->getDao("Cve")->getCvesByName($cveTagNode->cveName) != null){
       $tag = new Tag();
       $tag->setName($cveTagNode->tag->name);
       $tag->setDescription($cveTagNode->tag->description);
       $tag->setReason($cveTagNode->reason);
+      $tag->setModifier($url);
+      $tag->setEnabled($cveTagNode->enabled);
       $cve = new Cve();
       $cve->setName($cveTagNode->cveName);
       $pakiti->getManager("TagsManager")->assignTagToCve($cve, $tag);

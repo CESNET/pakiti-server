@@ -154,9 +154,9 @@ class InstalledPkgDao
     /*
      * Gets count of installed packages for defined host
      */
-    public function getInstalledPkgsCount(Host &$host)
+    public function getInstalledPkgsCount($hostId)
     {
-        $sql = "select count(*) from InstalledPkg where hostId={$host->getId()}";
+        $sql = "select count(*) from InstalledPkg where hostId={$hostId}";
         return $this->db->queryToSingleValue($sql);
     }
 

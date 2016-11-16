@@ -51,16 +51,18 @@ if (isset($opt["h"]) || isset($opt["help"])) {
 $url = isset($opt["u"]) ? $opt["u"] : (isset($opt["url"]) ? $opt["url"] : null);
 
 if($url == null){
-  die("URL not specified!\n");
-} elseif(!file_exists($url)){
-  die("Failed to open " . $url . " !");
+  usage();
 } else {
-  
+  $xml = simplexml_load_string(Utils::getContent($url));
+
+  if($xml == null){
+    die("Xml parsing error! Check log for curl errors.");
+  }
+
   if (isset($opt["r"]) || isset($opt["remove"])) {
     $pakiti->getDao("CveException")->deleteCvesExceptions();
   }
 
-  $xml = simplexml_load_file($url);
   foreach($xml->cveException as $cveExceptionNode){
     if($pakiti->getDao("Cve")->getCvesByName($cveExceptionNode->cveName) != null){
       $cveException = new CveException();

@@ -68,7 +68,7 @@ class InstalledPkgDaoTest extends \PHPUnit_Framework_TestCase {
     public function testGetInstalledPkgsCount()
     {
         self::$_testData->getPakiti()->getManager("DbManager")->begin();
-        $packages_num= self::$_testData->getPakiti() -> getDao("InstalledPkg") -> getInstalledPkgsCount(self::$_testData->getHost());
+        $packages_num= self::$_testData->getPakiti() -> getDao("InstalledPkg") -> getInstalledPkgsCount(self::$_testData->getHost()->getId());
         self::$_testData->getPakiti()->getManager("DbManager")->commit();
 
         $this->assertEquals(2, $packages_num);
