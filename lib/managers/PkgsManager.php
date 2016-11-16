@@ -73,7 +73,7 @@ class PkgsManager extends DefaultManager {
     }
     Utils::log(LOG_DEBUG, "Getting the count of installed packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
     
-    return $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsCount($host);
+    return $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsCount($host->getId());
   }
 
 

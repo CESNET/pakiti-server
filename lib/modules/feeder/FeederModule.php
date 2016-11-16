@@ -83,6 +83,7 @@ class FeederModule extends DefaultModule
         # Is the host proxy?
         if ($this->_report_proxy == Constants::$HOST_IS_PROXY) {
             $this->_report->setTroughtProxy(Constants::$HOST_IS_PROXY);
+            $this->_report->setProxyHostname($this->_host->getReporterHostname());
 
             # Check if the proxy is authorized to send the reports
             if (!$this->checkProxyAuthz($this->_host->getReporterHostname(), $this->_host->getReporterIp())) {
@@ -281,13 +282,9 @@ class FeederModule extends DefaultModule
                 $this->assignPkgsWithHost($this->_pkgs, $this->_host->getId(), $installedPkgs);
 
             } else {
-                # Get Report
-                $headerHash = $this->_report->getHeaderHash();
-                $pkgsHash = $this->_report->getPkgsHash();
-                $this->_report = $this->getPakiti()->getManager("ReportsManager")->getReportById($this->_host->getLastReportId());
-                $this->_report->setReceivedOn(microtime(true));
-                $this->_report->setHeaderHash($headerHash);
-                $this->_report->setPkgsHash($pkgsHash);
+                # Get number of installed packages and set to the new report
+                $numOfInstalledPkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsCount($this->_host);
+                $this->_report->setNumOfInstalledPkgs($numOfInstalledPkgs);
 
                 # Add sameReports +1 to stats
                 $this->getPakiti()->getManager("StatsManager")->add("sameReports", 1);
