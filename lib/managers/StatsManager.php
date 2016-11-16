@@ -42,7 +42,7 @@ class StatsManager extends DefaultManager {
     return $this->getPakiti()->getDao("Stat")->get($name);  
   }
   
-  public function listAll($name) {
+  public function listAll() {
     return $this->getPakiti()->getDao("Stat")->listAll();  
   }
 
