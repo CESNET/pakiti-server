@@ -98,4 +98,22 @@ final class Utils {
     }
     return stream_context_create($opts);
   }
+
+    /*
+     * Get content from url.
+     */
+  public static function getContent($url){
+    Utils::log(LOG_DEBUG, "Getting content from url: ". $url, __FILE__, __LINE__);
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    $content = curl_exec($ch);
+    if($content === false){
+      Utils::log(LOG_ERROR, "Curl error: " . curl_error($ch), __FILE__, __LINE__);
+    }
+    curl_close($ch);
+    return $content;
+  }
+
 }
