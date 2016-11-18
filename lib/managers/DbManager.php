@@ -79,11 +79,7 @@ final class DbManager {
    */
   public function queryToSingleValue($sql) {
     $res = $this->rawQuery($sql);
-    $row = $this->rawSingleRowFetch($res);
-    if ($row == null || !isset($row[0])) {
-      return null;
-    }
-    return $row[0];
+    return $this->rawSingleValueFetch($res);
   }
   
   /*
@@ -165,19 +161,36 @@ final class DbManager {
     
     return $res;
   }
-  
+
+
   /*
-   * Single raw row fetch, just check if there are some results
+   * Single raw row fetch for single column, just check if there are some results
    */
-  protected function rawSingleRowFetch($res) {
-    if (($row = $res->fetch_row()) == null) {
-      return null;
+  protected function rawSingleValueFetch($res) {
+    $ret = null;
+    if (($row = $res->fetch_row()) != null) {
+      $ret = $row[0];
     }
 
     # Free the resources
     mysqli_free_result($res);
 
-    return $row;
+    return $ret;
+  }
+
+  /*
+   * Single raw row fetch, just check if there are some results
+   */
+  protected function rawSingleRowFetch($res) {
+    $ret = null;
+    if (($row = $res->fetch_assoc()) != null) {
+      $ret = $row;
+    }
+
+    # Free the resources
+    mysqli_free_result($res);
+
+    return $ret;
   }
   
   /*
@@ -192,11 +205,7 @@ final class DbManager {
     # Free the resources
     mysqli_free_result($res);
 
-    if (sizeof($ret) > 0) {
-      return $ret;
-    } else {
-      return null;
-    }
+    return $ret;
   }
   
 /*
@@ -211,31 +220,28 @@ final class DbManager {
     # Free the resources
     mysqli_free_result($res);
 
-    if (sizeof($ret) > 0) {
-      return $ret;
-    } else {
-      return null;
-    }
+    return $ret;
   }
   
 	/*
    * Single raw object fetch, just check if the fetch was successfull and return the result
    */
   protected function rawSingleObjectFetch($res, $class, $params) {
+    $ret = null;
     if ($params != null) {
-      if (($row = $res->fetch_object($class, $params)) == null) {
-        return null;
+      if (($row = $res->fetch_object($class, $params)) != null) {
+        $ret = $row;
       }
     } else {
-    if (($row = $res->fetch_object($class)) == null) {
-        return null;
+      if (($row = $res->fetch_object($class)) != null) {
+        $ret = $row;
       }
     }
 
     # Free the resources
     mysqli_free_result($res);
 
-    return $row;
+    return $ret;
   }
 
   /*
@@ -245,11 +251,11 @@ final class DbManager {
     $ret = array();
     if ($params != null) {
       while ($row = $res->fetch_object($class, $params)) {
-	array_push($ret, $row);
+        array_push($ret, $row);
       }
     } else {
-    while ($row = $res->fetch_object($class)) {
-	array_push($ret, $row);
+      while ($row = $res->fetch_object($class)) {
+        array_push($ret, $row);
       }
     }
 
@@ -258,5 +264,5 @@ final class DbManager {
 
     return $ret;
   }
- 
+
 }
