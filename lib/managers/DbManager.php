@@ -38,14 +38,14 @@ final class DbManager {
    * Transaction methods
    */
   public function begin() {
-    if (!$this->_dbLink->query("begin")) {
+    if (!$this->_dbLink->begin_transaction()) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction begin failed: " . $this->_dbLink->error);
     }
     Utils::log(LOG_DEBUG, "Starting transaction", __FILE__, __LINE__);
   }
   public function commit() {
-    if (!$res = $this->_dbLink->query("commit")) {
+    if (!$res = $this->_dbLink->commit()) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction commit failed: " . $this->_dbLink->error);
     }
@@ -53,7 +53,7 @@ final class DbManager {
   }
   
   public function rollback() {
-    if (!$res = $this->_dbLink->query("rollback")) {
+    if (!$res = $this->_dbLink->rollback()) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction rollback failed: " . $this->_dbLink->error);
     }
@@ -173,10 +173,14 @@ final class DbManager {
     if (($row = $res->fetch_row()) == null) {
       return null;
     }
+
+    # Free the resources
+    mysqli_free_result($res);
+
     return $row;
   }
   
-	/*
+  /*
    * Multi raw row fetch, just check if there are some results
    */
   protected function rawMultiRowFetch($res) {
@@ -184,11 +188,11 @@ final class DbManager {
     while (($row = $res->fetch_assoc()) != null) {
       array_push($ret, $row);
     }
-    
+
+    # Free the resources
+    mysqli_free_result($res);
+
     if (sizeof($ret) > 0) {
-      # Free the resources
-      mysqli_free_result($res);
-    
       return $ret;
     } else {
       return null;
@@ -203,11 +207,11 @@ final class DbManager {
     while (($row = $res->fetch_row()) != null) {
       array_push($ret, $row[0]);
     }
-    
+
+    # Free the resources
+    mysqli_free_result($res);
+
     if (sizeof($ret) > 0) {
-      # Free the resources
-      mysqli_free_result($res);
-    
       return $ret;
     } else {
       return null;
@@ -227,6 +231,10 @@ final class DbManager {
         return null;
       }
     }
+
+    # Free the resources
+    mysqli_free_result($res);
+
     return $row;
   }
 
@@ -244,8 +252,11 @@ final class DbManager {
 	array_push($ret, $row);
       }
     }
+
+    # Free the resources
+    mysqli_free_result($res);
+
     return $ret;
   }
  
 }
-?>
