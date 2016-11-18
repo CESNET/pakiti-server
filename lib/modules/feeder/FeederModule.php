@@ -63,8 +63,6 @@ class FeederModule extends DefaultModule
         # Get the hostname and ip of the reporting machine (could be a NAT machine)
         $this->_host->setReporterIp(isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : "0.0.0.0");
         $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
-        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ", reporterIp=" . $this->_host->getReporterIp() . ", clientVersion=" . $this->_version . "]",
-            __FILE__, __LINE__);
 
         # Map variables in the report to the internal variables
         $this->doReportMapping($this->_version);
@@ -97,6 +95,8 @@ class FeederModule extends DefaultModule
         } else {
             $this->_report->setTroughtProxy(Constants::$HOST_IS_NOT_PROXY);
         }
+
+        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ", reporterIp=" . $this->_host->getReporterIp() . ", clientVersion=" . $this->_version . "]", __FILE__, __LINE__);
     }
 
     public function getResults()
