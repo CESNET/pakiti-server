@@ -154,10 +154,8 @@ class HostsManager extends DefaultManager {
     $hostsIds =& $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum);
     
     $hosts = array();
-    if ($hostsIds) {
-      foreach ($hostsIds as $hostId) {
-        array_push($hosts, $this->getHostById($hostId));
-      }
+    foreach ($hostsIds as $hostId) {
+      array_push($hosts, $this->getHostById($hostId));
     }
     
     return $hosts;
@@ -171,11 +169,8 @@ class HostsManager extends DefaultManager {
     $hostsIds =& $this->getPakiti()->getDao("Host")->getHostsIdsByFirstLetter($firstLetter);
     
     $hosts = array();
-    if(is_array($hostsIds))
-    {
-        foreach ($hostsIds as $hostId) {
-          array_push($hosts, $this->getHostById($hostId));
-        }
+    foreach ($hostsIds as $hostId) {
+      array_push($hosts, $this->getHostById($hostId));
     }
     
     return $hosts;
@@ -198,11 +193,9 @@ class HostsManager extends DefaultManager {
 
     $hostIdsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
     $hosts = array();
-    if ($hostIdsDb != null) {
-      foreach ($hostIdsDb as $hostIdDb) {
-        $host = $this->getHostById($hostIdDb["id"]);
-        array_push($hosts, $host);
-      }
+    foreach ($hostIdsDb as $hostIdDb) {
+      $host = $this->getHostById($hostIdDb["id"]);
+      array_push($hosts, $host);
     }
     return $hosts;
   }
@@ -243,10 +236,8 @@ class HostsManager extends DefaultManager {
     $osesIds =& $this->getPakiti()->getDao("Os")->getOsesIds($orderBy, $pageSize, $pageNum);
 
     $oses = array();
-    if ($osesIds) {
-      foreach ($osesIds as $osId) {
-	array_push($oses, $this->getPakiti()->getDao("Os")->getById($osId));
-      }
+    foreach ($osesIds as $osId) {
+      array_push($oses, $this->getPakiti()->getDao("Os")->getById($osId));
     }
 
     return $oses;
@@ -262,10 +253,8 @@ class HostsManager extends DefaultManager {
     $archsIds =& $this->getPakiti()->getDao("Arch")->getArchsIds($orderBy, $pageSize, $pageNum);
 
     $archs = array();
-    if ($archsIds) {
-      foreach ($archsIds as $archId) {
-	array_push($archs, $this->getPakiti()->getDao("Arch")->getById($archId));
-      }
+    foreach ($archsIds as $archId) {
+      array_push($archs, $this->getPakiti()->getDao("Arch")->getById($archId));
     }
 
     return $archs;

@@ -39,10 +39,8 @@ class OsGroupsManager extends DefaultManager{
         Utils::log(LOG_DEBUG, "Getting all OS Groups", __FILE__, __LINE__);
         $osGroupsIds =& $this->getPakiti()->getDao("OsGroup")->getOsGroupsIds($orderBy, $pageSize, $pageNum);
         $osGroups = array();
-        if ($osGroupsIds) {
-            foreach ($osGroupsIds as $osGroupId) {
-                array_push($osGroups, $this->getPakiti()->getDao("OsGroup")->getById($osGroupId));
-            }
+        foreach ($osGroupsIds as $osGroupId) {
+            array_push($osGroups, $this->getPakiti()->getDao("OsGroup")->getById($osGroupId));
         }
 
         return $osGroups;

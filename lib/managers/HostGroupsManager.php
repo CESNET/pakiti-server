@@ -63,10 +63,8 @@ class HostGroupsManager extends DefaultManager {
     $hostGroupsIds = $this->getPakiti()->getDao("HostGroup")->getHostGroupsIds($orderBy, $pageNum, $pageSize); 
 
     $hostGroups = array();
-    if ($hostGroupsIds != null) {
-      foreach ($hostGroupsIds as $hostGroupId) {
-	array_push($hostGroups, $this->getHostGroupById($hostGroupId));
-      }
+    foreach ($hostGroupsIds as $hostGroupId) {
+      array_push($hostGroups, $this->getHostGroupById($hostGroupId));
     }
 
     return $hostGroups;

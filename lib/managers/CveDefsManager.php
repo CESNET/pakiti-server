@@ -128,29 +128,27 @@ class CveDefsManager extends DefaultManager
 
         $cveDefsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
         $pkgsCveDefs = array();
-        if ($cveDefsDb != null) {
-            foreach ($cveDefsDb as $cveDefDb) {
-                $cveDef = new CveDef();
-                $cveDef->setId($cveDefDb["id"]);
-                $cveDef->setDefinitionId($cveDefDb["definitionId"]);
-                $cveDef->setTitle($cveDefDb["title"]);
-                $cveDef->setRefUrl($cveDefDb["refUrl"]);
-                $cveDef->setVdsSubSourceDefId($cveDefDb["vdsSubSourceDefId"]);
+        foreach ($cveDefsDb as $cveDefDb) {
+            $cveDef = new CveDef();
+            $cveDef->setId($cveDefDb["id"]);
+            $cveDef->setDefinitionId($cveDefDb["definitionId"]);
+            $cveDef->setTitle($cveDefDb["title"]);
+            $cveDef->setRefUrl($cveDefDb["refUrl"]);
+            $cveDef->setVdsSubSourceDefId($cveDefDb["vdsSubSourceDefId"]);
 
-                # Exclude CVEs with exceptions
-                $cves = $this->getCvesByCveDef($cveDef);
-                foreach ($cves as $key => $cve) {
-                    foreach ($cve->getCveExceptions() as $cveException) {
-                        if ($cveException->getPkgId() == $cveDefDb["pkgId"] && $cveException->getOsGroupId() == $cveDefDb["osGroupId"]) {
-                            unset($cves[$key]);
-                            //If we found exception, we can skip the others
-                            break;
-                        }
+            # Exclude CVEs with exceptions
+            $cves = $this->getCvesByCveDef($cveDef);
+            foreach ($cves as $key => $cve) {
+                foreach ($cve->getCveExceptions() as $cveException) {
+                    if ($cveException->getPkgId() == $cveDefDb["pkgId"] && $cveException->getOsGroupId() == $cveDefDb["osGroupId"]) {
+                        unset($cves[$key]);
+                        //If we found exception, we can skip the others
+                        break;
                     }
                 }
-                $cveDef->setCves($cves);
-                $pkgsCveDefs[$cveDefDb["pkgId"]][] = $cveDef;
             }
+            $cveDef->setCves($cves);
+            $pkgsCveDefs[$cveDefDb["pkgId"]][] = $cveDef;
         }
         return $pkgsCveDefs;
     }
@@ -215,10 +213,6 @@ class CveDefsManager extends DefaultManager
             and PkgCveDef.osGroupId in (" . implode(",", array_map("intval", $osGroupsIds)) . ")";
 
         $cvesDb = $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
-
-        if($cvesDb == null){
-            return array();
-        }
 
         $cves = array();
         foreach ($cvesDb as $cveDb) {

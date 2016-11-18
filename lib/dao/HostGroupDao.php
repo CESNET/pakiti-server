@@ -54,20 +54,11 @@ class HostGroupDao {
   }
 
   public function getByHostId($hostId) {
-    $ids = $this->db->queryToSingleValueMultiRow(
-      "select
-	hostGroupId
-       from
-	HostHostGroup
-       where
-        hostId=$hostId");
-     
-     $hostGroups = array();
-     foreach ($ids as $id) {
-      array_push($hostGroups, $this->getById($id));
-     }
-
-     return $hostGroups;
+    $sql = "select HostGroup.id as _id, HostGroup.name as _name
+      from HostHostGroup
+      inner join HostGroup on HostHostGroup.hostGroupId = HostGroup.id
+      where HostHostGroup.hostId=$hostId";
+    return $this->db->queryObjects($sql, "HostGroup");
   }
   
   public function getIdByName($name) {

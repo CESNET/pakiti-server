@@ -81,11 +81,9 @@ class InstalledPkgDao
     */
     public function getIdsByHostId($hostId)
     {
-        return $this->db->queryToSingleValueMultiRow("select
-	pkgId
-      from
-	InstalledPkg
-      where hostId=".$this->db->escape($hostId));
+        return $this->db->queryToSingleValueMultiRow("select pkgId
+            from InstalledPkg
+            where hostId=".$this->db->escape($hostId));
     }
 
     /*
@@ -123,11 +121,7 @@ class InstalledPkgDao
     public function getInstalledPkgsIdsByHostId($hostId)
     {
         $sql = "select pkgId from InstalledPkg where hostId=" . $this->db->escape($hostId);
-        $pkgsIds = $this->db->queryToSingleValueMultiRow($sql);
-        if($pkgsIds == null){
-            $pkgsIds = array();
-        }
-        return $pkgsIds;
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
 
     /*
@@ -142,11 +136,8 @@ class InstalledPkgDao
 
         $installedPkgsDb =& $this->db->queryToMultiRow($sql);
         $installedPkgs = array();
-
-        if ($installedPkgsDb != null) {
-            foreach ($installedPkgsDb as $installedPkgDb) {
-                $installedPkgs[$installedPkgDb["pkgName"]][$installedPkgDb["pkgArch"]] = array('pkgVersion' => $installedPkgDb["pkgVersion"], 'pkgRelease' => $installedPkgDb["pkgRelease"]);
-            }
+        foreach ($installedPkgsDb as $installedPkgDb) {
+            $installedPkgs[$installedPkgDb["pkgName"]][$installedPkgDb["pkgArch"]] = array('pkgVersion' => $installedPkgDb["pkgVersion"], 'pkgRelease' => $installedPkgDb["pkgRelease"]);
         }
         return $installedPkgs;
     }
