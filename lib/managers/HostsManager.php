@@ -28,89 +28,55 @@
 # POSSIBILITY OF SUCH DAMAGE. 
 
 class HostsManager extends DefaultManager {
-  
-  /*
-   * Stores the Host from the report into the DB
-   */
-  public function storeHostFromReport(Host &$host) {
-    Utils::log(LOG_DEBUG, "Storing the host from the report", __FILE__, __LINE__);
+
+  /**
+  * Create if not exist, else update it
+  * @return false if already exist
+  */
+  public function storeHost(Host &$host) {
+    Utils::log(LOG_DEBUG, "Storing the host", __FILE__, __LINE__);
     if ($host == null) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Host object is not valid or Host.id is not set");
-    } 
-    
+    }
+
     # Get the osId
-    $osDao = $this->getPakiti()->getDao("Os");
-    $osId = $osDao->getIdByName($host->getOsName());
-    if ($osId == -1) {
-      # Os is missing, so store it
-      $os = new Os();
-      $os->setName($host->getOsName());
-      $osDao->create($os);
-      $osId = $os->getId();
-    } else {
-      $os = $osDao->getById($osId);
-    }
-    $host->setOsId($osId);
+    $os = new Os();
+    $os->setName($host->getOsName());
+    $this->getPakiti()->getManager("OsesManager")->storeOs($os);
+    $host->setOsId($os->getId());
     $host->setOs($os);
-    
+
     # Get the archId
-    $archDao = $this->getPakiti()->getDao("Arch");
-    $archId = $archDao->getIdByName($host->getArchName());
-    if ($archId == -1) {
-      # Arch is missing, so store it
-      $arch = new Arch();
-      $arch->setName($host->getArchName());
-      $archDao->create($arch);
-      $archId = $arch->getId();
-    } else {
-      $arch = $archDao->getById($archId);
-    }
-    $host->setArchId($archId);
+    $arch = new Arch();
+    $arch->setName($host->getArchName());
+    $this->getPakiti()->getManager("ArchsManager")->storeArch($arch);
+    $host->setArchId($arch->getId());
     $host->setArch($arch);
-    
+
     # Get the domainId
-    $domainDao = $this->getPakiti()->getDao("Domain");
-    $domainId = $domainDao->getIdByName($host->getDomainName());
-    if ($domainId == -1) {
-      # Domain is missing, so store it
-      $domain = new Domain();
-      $domain->setName($host->getDomainName());
-      $domainDao->create($domain);
-      $domainId = $domain->getId();
-    } else {
-      $domain = $domainDao->getById($domainId);
-    }
-    $host->setDomainId($domainId);
+    $domain = new Domain();
+    $domain->setName($host->getDomainName());
+    $this->getPakiti()->getManager("DomainsManager")->storeDomain($domain);
+    $host->setDomainId($domain->getId());
     $host->setDomain($domain);
-    
-    # Get the hostGroupId
-    $hostGroupDao = $this->getPakiti()->getDao("HostGroup");
-    $hostGroupId = $hostGroupDao->getIdByName($host->getHostGroupName());
-    if ($hostGroupId == -1) {
-      # HostGroup is missing, so store it
-      $hostGroup = new HostGroup();
-      $hostGroup->setName($host->getHostGroupName());
-      $hostGroupDao->create($hostGroup);
-    } else {
-      $hostGroup = $hostGroupDao->getById($hostGroupId);
-    }
-    
-    # Try to find the host in the DB
-    $host->setId($this->getHostId($host));
-    if ($host->getId() != -1) {
-      # Update entries
+
+    $new = false;
+    $dao = $this->getPakiti()->getDao("Host");
+    $hostId = $this->getHostId($host);
+    if ($hostId != -1) {
+      $host->setId($hostId);
+      # Host exist, so update it
       $this->getPakiti()->getDao("Host")->update($host);
     } else {
+      # Host is missing, so store it
       $this->getPakiti()->getDao("Host")->create($host);
+      $new = true;
     }
-    
-    $this->getPakiti()->getManager("HostGroupsManager")->assignHostToHostGroup($host,$hostGroup);
-    
-    return $host;
+    return $new;
   }
-  
-	/*
+
+  /*
    * Try to find host using hostname, reporterHostnem, ip and reporterIp
    */
   public function getHostId(Host &$host) {
@@ -154,10 +120,8 @@ class HostsManager extends DefaultManager {
     $hostsIds =& $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum);
     
     $hosts = array();
-    if ($hostsIds) {
-      foreach ($hostsIds as $hostId) {
-        array_push($hosts, $this->getHostById($hostId));
-      }
+    foreach ($hostsIds as $hostId) {
+      array_push($hosts, $this->getHostById($hostId));
     }
     
     return $hosts;
@@ -171,11 +135,8 @@ class HostsManager extends DefaultManager {
     $hostsIds =& $this->getPakiti()->getDao("Host")->getHostsIdsByFirstLetter($firstLetter);
     
     $hosts = array();
-    if(is_array($hostsIds))
-    {
-        foreach ($hostsIds as $hostId) {
-          array_push($hosts, $this->getHostById($hostId));
-        }
+    foreach ($hostsIds as $hostId) {
+      array_push($hosts, $this->getHostById($hostId));
     }
     
     return $hosts;
@@ -198,11 +159,9 @@ class HostsManager extends DefaultManager {
 
     $hostIdsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
     $hosts = array();
-    if ($hostIdsDb != null) {
-      foreach ($hostIdsDb as $hostIdDb) {
-        $host = $this->getHostById($hostIdDb["id"]);
-        array_push($hosts, $host);
-      }
+    foreach ($hostIdsDb as $hostIdDb) {
+      $host = $this->getHostById($hostIdDb["id"]);
+      array_push($hosts, $host);
     }
     return $hosts;
   }
@@ -243,10 +202,8 @@ class HostsManager extends DefaultManager {
     $osesIds =& $this->getPakiti()->getDao("Os")->getOsesIds($orderBy, $pageSize, $pageNum);
 
     $oses = array();
-    if ($osesIds) {
-      foreach ($osesIds as $osId) {
-	array_push($oses, $this->getPakiti()->getDao("Os")->getById($osId));
-      }
+    foreach ($osesIds as $osId) {
+      array_push($oses, $this->getPakiti()->getDao("Os")->getById($osId));
     }
 
     return $oses;
@@ -262,10 +219,8 @@ class HostsManager extends DefaultManager {
     $archsIds =& $this->getPakiti()->getDao("Arch")->getArchsIds($orderBy, $pageSize, $pageNum);
 
     $archs = array();
-    if ($archsIds) {
-      foreach ($archsIds as $archId) {
-	array_push($archs, $this->getPakiti()->getDao("Arch")->getById($archId));
-      }
+    foreach ($archsIds as $archId) {
+      array_push($archs, $this->getPakiti()->getDao("Arch")->getById($archId));
     }
 
     return $archs;

@@ -75,10 +75,8 @@ class CveDao
         $sql = "select DISTINCT name from Cve"; //TODO remove limit
         $cveNamesDb =& $this->db->queryToMultiRow($sql);
         $cveNames = array();
-        if ($cveNamesDb != null) {
-            foreach ($cveNamesDb as $cveNameDb) {
-                array_push($cveNames, $cveNameDb["name"]);
-            }
+        foreach ($cveNamesDb as $cveNameDb) {
+            array_push($cveNames, $cveNameDb["name"]);
         }
         return $cveNames;
     }

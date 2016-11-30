@@ -128,9 +128,7 @@ class HostDao {
       $offset = $pageSize*$pageNum;
       $sql .= " limit $offset,$pageSize";
     }
-    $hostsIds = $this->db->queryToSingleValueMultiRow($sql);
-    
-    return $hostsIds;
+    return $this->db->queryToSingleValueMultiRow($sql);
   }
 
   public function getHostsIdsByFirstLetter($firstLetter) {

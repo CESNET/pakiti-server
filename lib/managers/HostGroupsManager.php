@@ -37,7 +37,23 @@ class HostGroupsManager extends DefaultManager {
   public function getPakiti() {
     return $this->_pakiti;
   }
-  
+
+  /**
+  * Create if not exist, else set id
+  * @return false if already exist
+  */
+  public function storeHostGroup(HostGroup &$hostGroup){
+    $new = false;
+    $dao = $this->getPakiti()->getDao("HostGroup");
+    $hostGroup = $dao->getByName($hostGroup->getName());
+    if ($hostGroup == null) {
+        # HostGroup is missing, so store it
+        $dao->create($hostGroup);
+        $new = true;
+    }
+    return $new;
+  }
+
   public function getHostGroupById($id) {
     Utils::log(LOG_DEBUG, "Getting host group by id [hostGroupId=$id]", __FILE__, __LINE__);
     return $this->getPakiti()->getDao("HostGroup")->getById($id);  
@@ -63,10 +79,8 @@ class HostGroupsManager extends DefaultManager {
     $hostGroupsIds = $this->getPakiti()->getDao("HostGroup")->getHostGroupsIds($orderBy, $pageNum, $pageSize); 
 
     $hostGroups = array();
-    if ($hostGroupsIds != null) {
-      foreach ($hostGroupsIds as $hostGroupId) {
-	array_push($hostGroups, $this->getHostGroupById($hostGroupId));
-      }
+    foreach ($hostGroupsIds as $hostGroupId) {
+      array_push($hostGroups, $this->getHostGroupById($hostGroupId));
     }
 
     return $hostGroups;
@@ -94,43 +108,14 @@ class HostGroupsManager extends DefaultManager {
 
     return $hosts;
   }
-			/*
+  /*
    * Create association between host and hostGroup
    */
-  public function assignHostToHostGroup(Host &$host, HostGroup &$hostGroup) {
-    if (($host == null) || ($host->getId() == -1) || ($hostGroup == null)) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host or HostGroup object is not valid or Host.id|HostGroup.id is not set");
-    }
-    Utils::log(LOG_DEBUG, "Assigning the host to the host group [host=" . $host->getHostname() . ",hostGroupName=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
-    
-    # Check if the hostGroup name is valid
-    if ($hostGroup->getName() == "") {
-      $hostGroup->setName(Constants::$NA);
-    }
-    $hostGroupId = $this->getHostGroupIdByName($hostGroup->getName());
-    if ($hostGroupId == -1) {
-      # HostGroup doesn't exist, so create it
-      $this->getPakiti()->getDao("HostGroup")->create($hostGroup);
-    } else {
-      $hostGroup->setId($hostGroupId);
-    }
-
-    Utils::log(LOG_DEBUG, "Assinging the host to the hostGroup [hostId=" . $host->getId() . ",hostGroupId=" . $hostGroup->getId() . "]", __FILE__, __LINE__);
-    # Check if the tag already exists
-    $isAssigned = 
-      $this->getPakiti()->getManager("DbManager")->queryToSingleValue(
-    		"select 1 from HostHostGroup where 
-    	 		hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId())." and 
-    	 		hostGroupId=".$this->getPakiti()->getManager("DbManager")->escape($hostGroup->getId()));
-    
-    if ($isAssigned == null) {
-      # Association between host and hostTag doesn't exist, so create it
-      $this->getPakiti()->getManager("DbManager")->query(
-    		"insert into HostHostGroup set 
-          hostId=".$this->getPakiti()->getManager("DbManager")->escape($host->getId()).",
-    	 		hostGroupId=".$this->getPakiti()->getManager("DbManager")->escape($hostGroup->getId()));
-    }
+  public function assignHostToHostGroup($hostId, $hostGroupId) {
+    Utils::log(LOG_DEBUG, "Assign host to hostGroup [hostId=" . $hostId . ",hostGroupId=" . $hostGroupId . "]", __FILE__, __LINE__);
+    $this->getPakiti()->getManager("DbManager")->query("insert ignore into HostHostGroup set
+      hostId=".$this->getPakiti()->getManager("DbManager")->escape($hostId).",
+      hostGroupId=".$this->getPakiti()->getManager("DbManager")->escape($hostGroupId));
   }
   
   /*

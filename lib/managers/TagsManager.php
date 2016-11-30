@@ -194,13 +194,11 @@ class TagsManager extends DefaultManager {
     public function getTags($orderBy = "name", $pageSize = -1, $pageNum = -1) {
       Utils::log(LOG_DEBUG, "Getting all tags", __FILE__, __LINE__);
         $tagsIds =& $this->getPakiti()->getDao("Tag")->getTagsIds($orderBy, $pageSize, $pageNum);
-    
+
         $tags = array();
-	if ($tagsIds) {
-          foreach ($tagsIds as $tagId) {
-            array_push($tags, $this->getTagById($tagId));
-          }
-	}
+        foreach ($tagsIds as $tagId) {
+          array_push($tags, $this->getTagById($tagId));
+        }
         return $tags;
     }
 

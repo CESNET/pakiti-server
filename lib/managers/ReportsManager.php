@@ -132,8 +132,8 @@ class ReportsManager extends DefaultManager {
         "select lastReportHeaderHash, lastReportPkgsHash from Host where id=" . $this->getPakiti()->getManager("DbManager")->escape($host->getId()));
 
     $ret = array (
-      Constants::$REPORT_LAST_HEADER_HASH => $row[0],
-      Constants::$REPORT_LAST_PKGS_HASH => $row[1]
+      Constants::$REPORT_LAST_HEADER_HASH => $row["lastReportHeaderHash"],
+      Constants::$REPORT_LAST_PKGS_HASH => $row["lastReportPkgsHash"]
     );
     return $ret;
   }

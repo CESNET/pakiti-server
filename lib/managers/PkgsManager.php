@@ -37,7 +37,23 @@ class PkgsManager extends DefaultManager {
   public function getPakiti() {
     return $this->_pakiti;
   }
-  
+
+  /**
+  * Create if not exist, else set id
+  * @return false if already exist
+  */
+  public function storePkg(Pkg &$pkg){
+    $new = false;
+    $dao = $this->getPakiti()->getDao("Pkg");
+    $pkg->setId($dao->getPkgIdByNameVersionReleaseArchType($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArch(), $pkg->getType()));
+    if ($pkg->getId() == -1) {
+      # Pkg is missing, so store it
+      $dao->create($pkg);
+      $new = true;
+    }
+    return $new;
+  }
+
   public function getInstalledPkgsAsArray(Host $host) {
     if (($host == null) || ($host->getId() == -1)) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
@@ -180,5 +196,23 @@ class PkgsManager extends DefaultManager {
   public function createPkg(&$pkg) {
       $this->getPakiti()->getDao("Pkg")->create($pkg);
     return $pkg->getId();
+  }
+
+    /*
+    * Assign Pkgs with Host
+    */
+  public function assignPkgsWithHost($pkgsIds, $hostId, $installedPkgsIds = array())
+  {
+    Utils::log(LOG_DEBUG, "Assign Pkgs with Host", __FILE__, __LINE__);
+
+    $installedPkgDao = $this->getPakiti()->getDao("InstalledPkg");
+    $pkgsIdsToAdd = array_diff($pkgsIds, $installedPkgsIds);
+    $pkgsIdsToRemove = array_diff($installedPkgsIds, $pkgsIds);
+    foreach($pkgsIdsToAdd as $pkgId){
+      $installedPkgDao->createByHostIdAndPkgId($hostId, $pkgId);
+    }
+    foreach($pkgsIdsToRemove as $pkgId){
+      $installedPkgDao->removeByHostIdAndPkgId($hostId, $pkgId);
+    }
   }
 }

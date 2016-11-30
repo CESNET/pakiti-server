@@ -35,8 +35,6 @@ try {
     # Initialize
     $feeder = new FeederModule($pakiti);
 
-    $report = Utils::getHttpVar(Constants::$REPORT_REPORT);
-
     # Asynchronous mode - only store the results and exit
     #----------------------------------------------------
     if (Config::$FEEDER_MODE == Constants::$FEEDER_ASYNCHRONOUS_MODE) {
@@ -52,25 +50,15 @@ try {
     # Synchronous mode - process data immediatelly
     #---------------------------------------------
     elseif (Config::$FEEDER_MODE == Constants::$FEEDER_SYNCHRONOUS_MODE) {
-        if ($report == Constants::$SAVE_REPORT || $report == Constants::$SAVE_AND_SEND_REPORT || $report == NULL) {
-            if (Config::$BACKUP === TRUE) {
-                # Store incomming report
-                $feeder->storeReportToFile();
-            }
-            # Process incomming data
-            $feeder->processReport();
+        if (Config::$BACKUP === TRUE) {
+            # Store incomming report
+            $feeder->storeReportToFile();
         }
+        # Process incomming data
+        $feeder->processReport();
 
-        if($report == Constants::$SEND_REPORT) {
-            # Prepare incomming data without saving and send result back
-            $feeder->processReportWithoutSaving();
-            print $feeder->getResultsWithoutSaving();
-        }
-        
-        if ($report == Constants::$SAVE_AND_SEND_REPORT) {
-            # Send result back
-            print $feeder->getResults();
-        }
+        # Send result back
+        print $feeder->getResult();
     }
 
     # Something is wrong here

@@ -38,14 +38,14 @@ final class DbManager {
    * Transaction methods
    */
   public function begin() {
-    if (!$this->_dbLink->query("begin")) {
+    if (!$this->_dbLink->begin_transaction()) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction begin failed: " . $this->_dbLink->error);
     }
     Utils::log(LOG_DEBUG, "Starting transaction", __FILE__, __LINE__);
   }
   public function commit() {
-    if (!$res = $this->_dbLink->query("commit")) {
+    if (!$res = $this->_dbLink->commit()) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction commit failed: " . $this->_dbLink->error);
     }
@@ -53,7 +53,7 @@ final class DbManager {
   }
   
   public function rollback() {
-    if (!$res = $this->_dbLink->query("rollback")) {
+    if (!$res = $this->_dbLink->rollback()) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("SQL transaction rollback failed: " . $this->_dbLink->error);
     }
@@ -79,11 +79,7 @@ final class DbManager {
    */
   public function queryToSingleValue($sql) {
     $res = $this->rawQuery($sql);
-    $row = $this->rawSingleRowFetch($res);
-    if ($row == null || !isset($row[0])) {
-      return null;
-    }
-    return $row[0];
+    return $this->rawSingleValueFetch($res);
   }
   
   /*
@@ -165,18 +161,39 @@ final class DbManager {
     
     return $res;
   }
-  
+
+
+  /*
+   * Single raw row fetch for single column, just check if there are some results
+   */
+  protected function rawSingleValueFetch($res) {
+    $ret = null;
+    if (($row = $res->fetch_row()) != null) {
+      $ret = $row[0];
+    }
+
+    # Free the resources
+    mysqli_free_result($res);
+
+    return $ret;
+  }
+
   /*
    * Single raw row fetch, just check if there are some results
    */
   protected function rawSingleRowFetch($res) {
-    if (($row = $res->fetch_row()) == null) {
-      return null;
+    $ret = null;
+    if (($row = $res->fetch_assoc()) != null) {
+      $ret = $row;
     }
-    return $row;
+
+    # Free the resources
+    mysqli_free_result($res);
+
+    return $ret;
   }
   
-	/*
+  /*
    * Multi raw row fetch, just check if there are some results
    */
   protected function rawMultiRowFetch($res) {
@@ -184,15 +201,11 @@ final class DbManager {
     while (($row = $res->fetch_assoc()) != null) {
       array_push($ret, $row);
     }
-    
-    if (sizeof($ret) > 0) {
-      # Free the resources
-      mysqli_free_result($res);
-    
-      return $ret;
-    } else {
-      return null;
-    }
+
+    # Free the resources
+    mysqli_free_result($res);
+
+    return $ret;
   }
   
 /*
@@ -203,31 +216,32 @@ final class DbManager {
     while (($row = $res->fetch_row()) != null) {
       array_push($ret, $row[0]);
     }
-    
-    if (sizeof($ret) > 0) {
-      # Free the resources
-      mysqli_free_result($res);
-    
-      return $ret;
-    } else {
-      return null;
-    }
+
+    # Free the resources
+    mysqli_free_result($res);
+
+    return $ret;
   }
   
 	/*
    * Single raw object fetch, just check if the fetch was successfull and return the result
    */
   protected function rawSingleObjectFetch($res, $class, $params) {
+    $ret = null;
     if ($params != null) {
-      if (($row = $res->fetch_object($class, $params)) == null) {
-        return null;
+      if (($row = $res->fetch_object($class, $params)) != null) {
+        $ret = $row;
       }
     } else {
-    if (($row = $res->fetch_object($class)) == null) {
-        return null;
+      if (($row = $res->fetch_object($class)) != null) {
+        $ret = $row;
       }
     }
-    return $row;
+
+    # Free the resources
+    mysqli_free_result($res);
+
+    return $ret;
   }
 
   /*
@@ -237,15 +251,18 @@ final class DbManager {
     $ret = array();
     if ($params != null) {
       while ($row = $res->fetch_object($class, $params)) {
-	array_push($ret, $row);
+        array_push($ret, $row);
       }
     } else {
-    while ($row = $res->fetch_object($class)) {
-	array_push($ret, $row);
+      while ($row = $res->fetch_object($class)) {
+        array_push($ret, $row);
       }
     }
+
+    # Free the resources
+    mysqli_free_result($res);
+
     return $ret;
   }
- 
+
 }
-?>

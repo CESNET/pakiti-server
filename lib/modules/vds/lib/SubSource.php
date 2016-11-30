@@ -54,19 +54,11 @@ class SubSource {
   }
 
   public function getSubSourceDefs() {
-    $subSourcesDefsIds = $this->_db->queryToSingleValueMultiRow(
-      "select id from VdsSubSourceDef 
-        where 
-      vdsSubSourceId=".$this->_db->escape($this->getId()));
+    $sql = "select id as _id, name as _name, uri as _uri, enabled as _enabled, lastChecked as _lastChecked, vdsSubSourceId as _subSourceId
+    from VdsSubSourceDef
+    where vdsSubSourceId=".$this->_db->escape($this->getId());
 
-    $subSourceDefs = array();
-    if ($subSourcesDefsIds != null) {
-      foreach ($subSourcesDefsIds as $subSourceDefId) {
-        array_push($subSourceDefs, $this->getBy($subSourceDefId, "id"));
-      }
-    }
-
-    return $subSourceDefs;
+    return $this->_db->queryObjects($sql, "SubSourceDef");
   }
 
   public function addSubSourceDef(ISubSourceDef &$subSourceDef) {
@@ -118,7 +110,7 @@ class SubSource {
   {
     $row = $this->_db->queryToSingleRow("select lastSubSourceDefHash from VdsSubSourceDef
         where id=" . $this->_db->escape($subSourceDef->getId()));
-    return $row[0];
+    return $row["lastSubSourceDefHash"];
   }
 
   protected function isSubSourceDefContainsNewData(ISubSourceDef &$subSourceDef, $currentSubSourceHash)

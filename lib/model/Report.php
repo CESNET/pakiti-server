@@ -9,10 +9,10 @@ class Report {
 	private $_processedOn;
 	private $_throughProxy;
 	private $_proxyHostname = null;
-	private $_numOfInstalledPkgs = 0;
+	private $_numOfInstalledPkgs = -1;
 	private $_numOfVulnerablePkgsSec = 0;
 	private $_numOfVulnerablePkgsNorm = 0;
-	private $_numOfCves = 0;
+	private $_numOfCves = -1;
 	private $_headerHash;
 	private $_pkgsHash;
 	
