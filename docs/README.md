@@ -51,6 +51,6 @@ login as user who can create databases and users (root)
     php /var/www/pakiti3/install/initDB.php
 
 ####11, Config and run pakiti-client for sending to pakiti-server####
-    perl /var/www/pakiti3/bin/pakiti-client --url="localhost/feed/" --encrypt="/etc/ssl/localcerts/pakiti3.pem"
+    perl /var/www/pakiti3/bin/pakiti-client --url="localhost" --encrypt="/etc/ssl/localcerts/pakiti3.pem"
 
 ####12, Open your browser and go to https://pakiti.com/####
