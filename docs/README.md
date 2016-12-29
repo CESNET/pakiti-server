@@ -54,3 +54,6 @@ login as user who can create databases and users (root)
     perl /var/www/pakiti3/bin/pakiti-client --url="localhost/feed/" --encrypt="/etc/ssl/localcerts/pakiti3.pem"
 
 ####12, Open your browser and go to https://pakiti.com/####
+
+####Example of OVAL source for VDS definition####
+    For RedHat based Linux distro you can use feeds available at https://www.redhat.com/security/data/oval/
