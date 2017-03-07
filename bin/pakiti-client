@@ -186,6 +186,11 @@ sub find_system ($) {
         $data->{system} = read_file1("/etc/issue.net");
         return;
     }
+    $path = "/etc/devuan_version";
+    if (-f $path) {
+        $data->{system} = read_file1("/etc/issue.net");
+        return;
+    }
     $path = "/etc/SuSE-release";
     if (-f $path) {
         foreach my $line (split(/\n/, read_file($path))) {
