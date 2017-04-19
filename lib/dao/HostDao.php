@@ -58,21 +58,14 @@ class HostDao {
     Utils::log(LOG_DEBUG, "Host created", __FILE__, __LINE__);
   }
   
-  public function getId(Host &$host) {
-    if ($host == null) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid");
-    }
-    $id = $this->db->queryToSingleValue(
-    	"select 
-    		id 
-      from 
-      	Host
-      where
-      	hostname='".$this->db->escape($host->getHostname())."' and 
-      	ip='".$this->db->escape($host->getIp())."' and 
-    		reporterIp='".$this->db->escape($host->getReporterIp())."' and 
-      	reporterHostname='".$this->db->escape($host->getReporterHostname())."'");
+  public function getIdByHostnameIpReporterHostnameReporterIp($hostname, $ip, $reporterHostname, $reporterIp) {
+    $id = $this->db->queryToSingleValue("
+      select id from Host
+      where hostname='".$this->db->escape($hostname)."'
+      and ip='".$this->db->escape($ip)."'
+      and reporterHostname='".$this->db->escape($reporterHostname)."'
+      and reporterIp='".$this->db->escape($reporterIp)."'
+    ");
     if ($id == null) {
       return -1;
     }

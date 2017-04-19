@@ -461,7 +461,7 @@ class FeederModule extends DefaultModule
     public function isHostSentNewData()
     {
         # Get host if exist
-        $id = $this->getPakiti()->getManager("HostsManager")->getHostId($this->_host);
+        $id = $this->getPakiti()->getManager("HostsManager")->getHostId($this->_host->getHostname(), $this->_host->getIp(), $this->_host->getReporterHostname(), $this->_host->getReporterIp());
         if($id != -1){
             $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostById($id);
         }
@@ -563,9 +563,8 @@ class FeederModule extends DefaultModule
             $installedPkgsArray[$installedPkg->getName()][] = $installedPkg;
         }
 
-        $pkgDao = $this->getPakiti()->getDao("Pkg");
-        $archDao = $this->getPakiti()->getDao("Arch");
-        $archsNames = $archDao->getArchsNames();
+        $archsManager = $this->getPakiti()->getManager("ArchsManager");
+        $archsNames = $archsManager->getArchsNames();
         $newPkgs = array();
         foreach($this->_pkgs as &$pkg){
             # Check if pkg is already in installed pkgs
@@ -582,6 +581,12 @@ class FeederModule extends DefaultModule
             }
             # If pkg isn't in installed pkgs yet
             if($pkg->getId() == -1){
+                if(!in_array($pkg->getArch(), $archsNames)){
+                    $arch = new Arch();
+                    $arch->setName($pkg->getArch());
+                    $archsManager->storeArch($arch);
+                    array_push($archsNames, $arch->getName());
+                }
                 if($pkgsManager->storePkg($pkg)){
                     array_push($newPkgs, $pkg);
                 }

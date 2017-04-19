@@ -34,10 +34,16 @@ class OsesManager extends DefaultManager {
     * @return false if already exist
     */
     public function storeOs(Os &$os){
+        Utils::log(LOG_DEBUG, "Storing the os", __FILE__, __LINE__);
+        if ($os == null) {
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+            throw new Exception("Os object is not valid");
+        }
+
         $new = false;
         $dao = $this->getPakiti()->getDao("Os");
-        $os = $dao->getByName($os->getName());
-        if ($os == null) {
+        $os->setId($dao->getIdByName($os->getName()));
+        if ($os->getId() == -1) {
             # Os is missing, so store it
             $dao->create($os);
             $new = true;

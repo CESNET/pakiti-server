@@ -43,10 +43,16 @@ class HostGroupsManager extends DefaultManager {
   * @return false if already exist
   */
   public function storeHostGroup(HostGroup &$hostGroup){
+    Utils::log(LOG_DEBUG, "Storing the hostGroup", __FILE__, __LINE__);
+    if ($hostGroup == null) {
+        Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+        throw new Exception("HostGroup object is not valid");
+    }
+
     $new = false;
     $dao = $this->getPakiti()->getDao("HostGroup");
-    $hostGroup = $dao->getByName($hostGroup->getName());
-    if ($hostGroup == null) {
+    $hostGroup->setId($dao->getIdByName($hostGroup->getName()));
+    if ($hostGroup->getId() == -1) {
         # HostGroup is missing, so store it
         $dao->create($hostGroup);
         $new = true;
