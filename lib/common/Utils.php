@@ -116,4 +116,8 @@ final class Utils {
     return $content;
   }
 
+  public static function isConnectionSecure() {
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off');
+  }
+
 }
