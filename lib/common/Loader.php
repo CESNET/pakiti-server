@@ -26,11 +26,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE. 
+
 # Load the constants
 require_once(realpath(dirname(__FILE__)) . '/Constants.php');
 
 # Load the configuration file
-require_once('/etc/pakiti/Config.php');
+require_once(Constants::$PAKITI_CONFIG_FILE);
 
 # Load Pakiti, Constants and Utils class
 require_once(realpath(dirname(__FILE__)) . '/Pakiti.php');

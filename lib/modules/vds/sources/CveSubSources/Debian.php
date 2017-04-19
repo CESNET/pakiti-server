@@ -29,10 +29,6 @@
 
 require_once(realpath(dirname(__FILE__)) . '/../../include/ISubSource.php');
 require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
-require_once(realpath(dirname(__FILE__)) . '/../../../../common/Pakiti.php');
-require_once(realpath(dirname(__FILE__)) . '/../../../../common/Utils.php');
-require_once(realpath(dirname(__FILE__)) . '/../../../../managers/DbManager.php');
-require_once('/etc/pakiti/Config.php');
 
 
 class Debian extends SubSource implements ISubSource

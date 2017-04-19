@@ -21,8 +21,7 @@ final class Utils {
   }
 
   /*
-   * If debug is enabled in the /etc/pakiti/Config.php, the also LOG_DEBUG
-   * messages will be logged
+   * If debug is enabled, then also LOG_DEBUG messages will be logged
    */
   public static function log($priority, $msg, $file = "", $line = "") {
     if (Config::$DEBUG) {
