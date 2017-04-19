@@ -114,11 +114,11 @@ class FeederModule extends DefaultModule
             $pkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $this->_pkgs);
         } else {
             $host = $this->getPakiti()->getManager("HostsManager")->getHostById($this->_host->getId());
-            $os = $host->getOsName();
+            $os = $host->getOs()->getName();
             $pkgsIds = $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsIdsByHostId($host->getId());
         }
 
-        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($this->_host->getOsName());
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($os);
         $pkgsWithCve = $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds);
 
         $return_string = "";
