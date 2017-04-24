@@ -343,19 +343,22 @@ sub send_report ($) {
     write_file($data, $report);
     if ($Option{curl}) {
         @command = ($Option{curl});
-        push(@command, qw(-q --include --silent --show-error -X POST));
+        push(@command, qw(-q --silent -X POST));
+        push(@command, qw(--include --show-error)) if $Option{debug};
         push(@command, "--data-binary", "\@" . $data);
     } elsif ($Option{wget}) {
         @command = ($Option{wget});
-        push(@command, qw(--tries=1 --server-response --output-document=-));
+        push(@command, qw(--tries=1 --output-document=-));
+        push(@command, qw(--server-response)) if $Option{debug};
         push(@command, "--post-file", $data);
     } else {
         die("$Script: cannot send to $Option{url}: curl/wget not installed\n");
     }
     ## no critic 'InputOutput::ProhibitBacktickOperators'
     $output = qx(@command $Option{url} 2>&1);
-    if ($output =~ /$Option{expect}/ and $? == 0) {
+    if ($output =~ /$Option{expect}$/ and $? == 0) {
         print(STDERR "report successfully sent\n") if -t STDERR;
+        print $output if $output;
         return;
     }
     warn($output) if $output;
@@ -414,6 +417,7 @@ sub init () {
         "host"     => "=s",
         "input"    => "|i=s",
         "manual"   => "|m",
+        "debug"    => "|d",
         "output"   => "|o=s",
         "rndsleep" => "|r=i",
         "site"     => "=s",
@@ -598,6 +602,10 @@ set the path of the C<lsb_release> command to use
 =item B<--manual>, B<-m>
 
 show this manual
+
+=item B<--debug>, B<-d>
+
+enable debug mode
 
 =item B<--openssl> I<PATH>
 
