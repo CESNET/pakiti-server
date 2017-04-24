@@ -106,6 +106,10 @@ class FeederModule extends DefaultModule
 
     public function getResult()
     {
+        if(!Utils::isConnectionSecure()){
+            return;
+        }
+
         if($this->_processReportType == Constants::$SAVE_REPORT){
             return "";
         }
