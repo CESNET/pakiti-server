@@ -32,6 +32,8 @@
 final class Constants {
   public static $PAKITI_VERSION = "3.0.0";
   
+  public static $PAKITI_CONFIG_FILE = "/etc/pakiti/Config.php";
+  
   public static $FEEDER_SYNCHRONOUS_MODE = 1;
   public static $FEEDER_ASYNCHRONOUS_MODE = 2;
   
