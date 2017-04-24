@@ -43,6 +43,12 @@ class PkgsManager extends DefaultManager {
   * @return false if already exist
   */
   public function storePkg(Pkg &$pkg){
+    Utils::log(LOG_DEBUG, "Storing the pkg", __FILE__, __LINE__);
+    if ($pkg == null) {
+        Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+        throw new Exception("Pkg object is not valid");
+    }
+
     $new = false;
     $dao = $this->getPakiti()->getDao("Pkg");
     $pkg->setId($dao->getPkgIdByNameVersionReleaseArchType($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArch(), $pkg->getType()));

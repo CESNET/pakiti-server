@@ -34,15 +34,29 @@ class ArchsManager extends DefaultManager {
     * @return false if already exist
     */
     public function storeArch(Arch &$arch){
+        Utils::log(LOG_DEBUG, "Storing the arch", __FILE__, __LINE__);
+        if ($arch == null) {
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+            throw new Exception("Arch object is not valid");
+        }
+
         $new = false;
         $dao = $this->getPakiti()->getDao("Arch");
-        $arch = $dao->getByName($arch->getName());
-        if ($arch == null) {
+        $arch->setId($dao->getIdByName($arch->getName()));
+        if ($arch->getId() == -1) {
             # Arch is missing, so store it
             $dao->create($arch);
             $new = true;
         }
         return $new;
+    }
+
+    /**
+    * Get all archs names
+    * @return archs names array
+    */
+    public function getArchsNames() {
+        return $this->getPakiti()->getDao("Arch")->getArchsNames();
     }
 
 }

@@ -37,7 +37,7 @@ class HostsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Storing the host", __FILE__, __LINE__);
     if ($host == null) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
+      throw new Exception("Host object is not valid");
     }
 
     # Get the osId
@@ -63,7 +63,7 @@ class HostsManager extends DefaultManager {
 
     $new = false;
     $dao = $this->getPakiti()->getDao("Host");
-    $hostId = $this->getHostId($host);
+    $hostId = $dao->getIdByHostnameIpReporterHostnameReporterIp($host->getHostname(), $host->getIp(), $host->getReporterHostname(), $host->getReporterIp());
     if ($hostId != -1) {
       $host->setId($hostId);
       # Host exist, so update it
@@ -77,16 +77,11 @@ class HostsManager extends DefaultManager {
   }
 
   /*
-   * Try to find host using hostname, reporterHostnem, ip and reporterIp
+   * Try to find host using hostname, ip, reporterHostname and reporterIp
    */
-  public function getHostId(Host &$host) {
-    if ($host == null) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid.");
-    }
-
+  public function getHostId($hostname, $ip, $reporterHostname, $reporterIp) {
     Utils::log(LOG_DEBUG, "Getting the host ID", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("Host")->getId($host);
+    return $this->getPakiti()->getDao("Host")->getIdByHostnameIpReporterHostnameReporterIp($hostname, $ip, $reporterHostname, $reporterIp);
   }
   
   /*
