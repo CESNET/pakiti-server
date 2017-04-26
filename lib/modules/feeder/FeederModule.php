@@ -125,16 +125,14 @@ class FeederModule extends DefaultModule
         $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($os);
         $pkgsWithCve = $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds);
 
-        $return_string = "";
+        $s = "";
         foreach ($pkgsWithCve as $pkg) {
-            foreach ($pkg['CVE'] as $pkgCve) {
-                $cveTag = $pkgCve->getTag();
-                if (!empty($cveTag)) {
-                    $return_string = $return_string . str_pad($pkg["Pkg"]->getName(), 30) . str_pad($pkg["Pkg"]->getVersionRelease(), 30) . $pkg["Pkg"]->getArch() . "\n";
-                }
-            }
+            $s .= $pkg["Pkg"]->getName() . "\t" .
+                $pkg["Pkg"]->getVersionRelease() . "\t" .
+                $pkg["Pkg"]->getArch() . "\t" .
+                implode(",", array_map(function($cve){ return $cve->getName(); }, $pkg['CVE'])) . "\n";
         }
-        return $return_string;
+        return $s;
     }
 
     /*
