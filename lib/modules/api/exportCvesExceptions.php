@@ -10,7 +10,7 @@ $cveExceptions = $pakiti->getDao("CveException")->getCvesExceptions();
 $pkgDao = $pakiti->getDao("Pkg");
 $osGroupDao = $pakiti->getDao("OsGroup");
 
-$xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?> <xml></xml>');
+$xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?> <cveExceptions></cveExceptions>');
 
 foreach($cveExceptions as $cveException){
     $cveExceptionNode = $xml->addChild("cveException");

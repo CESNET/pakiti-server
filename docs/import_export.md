@@ -18,7 +18,7 @@
 
 ####Structure of exported/imported cvesExceptions####
 ```xml
-<xml>
+<cveExceptions>
     <cveException>
         <cveName>...</cveName>
         <reason>...</reason>
@@ -33,20 +33,21 @@
             <name>...</name>
         </osGroup>
     </cveException>
-</xml>
+</cveExceptions>
 ```
 
 ####Structure of exported/imported cvesTags####
 ```xml
-<xml>
+<cveTags>
     <cveTag>
         <cveName>...</cveName>
         <reason>...</reason>
+        <infoUrl>...</infoUrl>
         <enabled>...</enabled>
         <tag>
             <name>...</name>
             <description>...</description>
         </tag>
     </cveTag>
-</xml>
+</cveTags>
 ```

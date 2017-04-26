@@ -250,6 +250,7 @@ class HTMLModule extends DefaultModule
             <th>CVE</th>
             <th>CVE Tag</th>
             <th>Reason</th>
+            <th>InfoUrl</th>
             <th>Modifier</th>
             <th>Timestamp</th>
             <th>Action</th>
@@ -259,6 +260,7 @@ class HTMLModule extends DefaultModule
         foreach ($cveNames as $cveName) {
             $tags = $this->getPakiti()->getManager("TagsManager")->getTagsByCveName($cveName);
             foreach ($tags as $tag) {
+                $i++;
                 print "<tr class=\"a" . ($i & 1) . "\">";
                 print "<td> <input type=" . "checkbox" . " onClick=\"document.tags.cveName.value='" . $cveName . "';document.tags.isEnable.value=this.checked;
                 document.tags.tagId.value='" . $tag->getId() . "';document.tags.act.value='update'; document.tags.submit()\"";
@@ -278,6 +280,7 @@ class HTMLModule extends DefaultModule
                 print "</td>";
                 print "<td>" . $tag->getName() . "</td>";
                 print "<td>" . $tag->getReason() . "</td>";
+                print "<td><a href='" . $tag->getInfoUrl() . "' target='_blank'> " . $tag->getInfoUrl() . "</a></td>";
                 print "<td>" . $tag->getModifier() . "</td>";
                 print "<td>" . $tag->getTimestamp() . "</td>";
                 print "<td><span style='color: #002BFF; font-weight: bold; cursor: pointer;' onclick=\"document.tags.act.value='delete';document.tags.cveName.value='" . $cveName . "';

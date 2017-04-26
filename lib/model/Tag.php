@@ -11,6 +11,7 @@ class Tag
     private $_cveName;
     private $_description;
     private $_reason;
+    private $_infoUrl;
     private $_modifier;
     private $_timestamp;
     private $_enabled = 1;
@@ -100,6 +101,16 @@ class Tag
     public function setReason($reason)
     {
         $this->_reason = $reason;
+    }
+
+    public function getInfoUrl()
+    {
+        return $this->_infoUrl;
+    }
+
+    public function setInfoUrl($infoUrl)
+    {
+        $this->_infoUrl = $infoUrl;
     }
 
     /**

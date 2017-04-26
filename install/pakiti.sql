@@ -224,6 +224,7 @@ create table `CveTag` (
 	`cveName` varchar(63) not null,
 	`tagId` integer(10) not null,
 	`reason` varchar(255),
+	`infoUrl` varchar(255),
 	`timestamp` timestamp default CURRENT_TIMESTAMP,
 	`enabled` int(1) default 1,
 	`modifier` varchar(255),

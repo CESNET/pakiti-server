@@ -69,6 +69,7 @@ if($url == null){
       $tag->setName($cveTagNode->tag->name);
       $tag->setDescription($cveTagNode->tag->description);
       $tag->setReason($cveTagNode->reason);
+      $tag->setInfoUrl($cveTagNode->infoUrl);
       $tag->setModifier($url);
       $tag->setEnabled($cveTagNode->enabled);
       $cve = new Cve();

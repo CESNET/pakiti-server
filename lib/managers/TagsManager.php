@@ -59,7 +59,7 @@ class TagsManager extends DefaultManager {
   public function getCveTags(Cve $cve)
   {
     $sql = "select Tag.id as _id, Tag.name as _name, Tag.description
-            as _description, CveTag.reason as _reason, CveTag.modifier as _modifier, CveTag.timestamp as _timestamp,
+            as _description, CveTag.reason as _reason, CveTag.infoUrl as _infoUrl, CveTag.modifier as _modifier, CveTag.timestamp as _timestamp,
             CveTag.enabled as _enabled from CveTag join Tag on CveTag.tagId=Tag.id where CveTag.cveName='" . $cve->getName() . "'";
 
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Tag");
@@ -69,7 +69,7 @@ class TagsManager extends DefaultManager {
   {
     $sql = "select 
             Tag.id as _id, Tag.name as _name, Tag.description as _description,
-            CveTag.reason as _reason, CveTag.cveName as _cveName, CveTag.modifier as _modifier, CveTag.timestamp as _timestamp, CveTag.enabled as _enabled 
+            CveTag.reason as _reason, CveTag.infoUrl as _infoUrl, CveTag.cveName as _cveName, CveTag.modifier as _modifier, CveTag.timestamp as _timestamp, CveTag.enabled as _enabled 
             from CveTag join Tag on CveTag.tagId=Tag.id";
 
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Tag");
@@ -150,6 +150,7 @@ class TagsManager extends DefaultManager {
         tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . ",
         enabled=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getEnabled()) . ",
         modifier='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getModifier()) . "',
+        infoUrl='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getInfoUrl()) . "',
         `reason`='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getReason()) . "'");
 
     }
@@ -214,7 +215,7 @@ class TagsManager extends DefaultManager {
       throw new Exception("Cve name is not valid");
     }
     return $this->getPakiti()->getManager("DbManager")->queryObjects("select id as _id, cveName as _cveName, name as _name,
-    description as _description, reason as _reason, modifier as _modifier, timestamp as
+    description as _description, reason as _reason, CveTag.infoUrl as _infoUrl, modifier as _modifier, timestamp as
     _timestamp, enabled as _enabled from CveTag join Tag on CveTag.tagId = Tag.id  where cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'", "Tag");
   }
 
@@ -237,7 +238,7 @@ class TagsManager extends DefaultManager {
     }
 
     return $this->getPakiti()->getManager("DbManager")->queryObject("select id as _id, cveName as _cveName, name as _name,
-    description as _description, reason as _reason, modifier as _modifier, timestamp as
+    description as _description, reason as _reason, CveTag.infoUrl as _infoUrl, modifier as _modifier, timestamp as
     _timestamp, enabled as _enabled from CveTag join Tag on CveTag.tagId = Tag.id  where cveName='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'
     and tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tagId) . "
     ", "Tag");
@@ -256,7 +257,7 @@ class TagsManager extends DefaultManager {
     }
 
     $this->getPakiti()->getManager("DbManager")->query("update CveTag set cveName= '" . $this->getPakiti()->getManager("DbManager")->escape($tag->getCveName()) . "', tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . ",
-     reason='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getReason()) . "', modifier= '" . $this->getPakiti()->getManager("DbManager")->escape($tag->getModifier()) . "', timestamp ='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getTimestamp()) . "',
+     reason='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getReason()) . "', infoUrl= '" . $this->getPakiti()->getManager("DbManager")->escape($tag->getInfoUrl()) . "', modifier= '" . $this->getPakiti()->getManager("DbManager")->escape($tag->getModifier()) . "', timestamp ='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getTimestamp()) . "',
     enabled=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getEnabled()) . " where cveName='" . $this->getPakiti()->getManager("DbManager")->escape($tag->getCveName()) . "' and tagId=" . $this->getPakiti()->getManager("DbManager")->escape($tag->getId()) . "");
   }
 
