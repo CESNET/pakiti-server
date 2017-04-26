@@ -61,8 +61,9 @@ class FeederModule extends DefaultModule
             $this->_version = "cern_1";
         }
 
-        if (($this->_processReportType = Utils::getHttpVar(Constants::$REPORT_REPORT)) == null) {
-            $this->_processReportType = Constants::$SAVE_REPORT;
+        $this->_processReportType = Utils::getHttpVar(Constants::$REPORT_REPORT);
+        if ($this->_processReportType != Constants::$STORE_ONLY && $this->_processReportType != Constants::$STORE_AND_REPORT && $this->_processReportType != Constants::$REPORT_ONLY) {
+            $this->_processReportType = Constants::$STORE_ONLY;
         }
 
         # Get the hostname and ip of the reporting machine (could be a NAT machine)
@@ -110,10 +111,10 @@ class FeederModule extends DefaultModule
             return;
         }
 
-        if($this->_processReportType == Constants::$SAVE_REPORT){
+        if($this->_processReportType == Constants::$STORE_ONLY){
             return "";
         }
-        if($this->_processReportType == Constants::$SEND_REPORT){
+        if($this->_processReportType == Constants::$REPORT_ONLY){
             $os = $this->_host->getOsName();
             $pkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $this->_pkgs);
         } else {
@@ -266,7 +267,7 @@ class FeederModule extends DefaultModule
      */
     public function processReport()
     {
-        if($this->_processReportType != Constants::$SEND_REPORT){
+        if($this->_processReportType != Constants::$REPORT_ONLY){
 
             # If host want save report to database
             if(!$this->isHostSentNewData()){

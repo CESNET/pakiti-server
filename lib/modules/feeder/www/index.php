@@ -38,7 +38,7 @@ try {
     # Asynchronous mode - only store the results and exit
     #----------------------------------------------------
     if (Config::$FEEDER_MODE == Constants::$FEEDER_ASYNCHRONOUS_MODE) {
-        if ($report == Constants::$SAVE_REPORT || $report == NULL) {
+        if ($report == Constants::$STORE_ONLY || $report == NULL) {
             # Store incomming report
             $feeder->storeReportToFile();
         } else {

@@ -94,10 +94,10 @@ final class Constants {
   public static $REPORT_LAST_HEADER_HASH = "lastReportHeaderHash";
   public static $REPORT_LAST_PKGS_HASH = "lastReportPkgsHash";
   
-  # If the server will send the report back to the client
-  public static $SAVE_REPORT = 0;
-  public static $SAVE_AND_SEND_REPORT = 1;
-  public static $SEND_REPORT = 2;
+  # What the server has to do with the report
+  public static $STORE_ONLY = "store-only";
+  public static $STORE_AND_REPORT = "store-and-report";
+  public static $REPORT_ONLY = "report-only";
   
   # Is the reporting host a proxy?
   public static $HOST_IS_PROXY = 1;
