@@ -38,6 +38,38 @@ $html->addHtmlAttribute("title", "Vulnerability Definition System");
 
 $vds = new VdsModule($pakiti);
 
+/* TEMPORARY SENT FORM */
+switch(Utils::getHttpVar("act")){
+  case "create":
+    $defName = Utils::getHttpPostVar("defName");
+    $defUri = Utils::getHttpPostVar("defUri");
+    @list ($sourceId, $subSourceId) = explode(' ', Utils::getHttpPostVar("ids"));
+
+    $source = $vds->getSourceById($sourceId);
+    $subSource = $source->getSubSourceById($subSourceId);
+
+    $html->setMessage("Adding subsource definition for the subsource ".$subSource->getName()."");
+
+    $subSourceDef = new SubSourceDef();
+    $subSourceDef->setName($defName);
+    $subSourceDef->setUri($defUri);
+    $subSourceDef->setSubSourceId($subSource->getId());
+    $subSource->addSubSourceDef($subSourceDef);
+    break;
+  case "delete":
+    @list ($sourceId, $subSourceId) = explode(' ', Utils::getHttpPostVar("ids"));
+    $subSourceDefId = Utils::getHttpPostVar("subSourceDefId");
+
+    $source = $vds->getSourceById($sourceId);
+    $subSource = $source->getSubSourceById($subSourceId);
+    $subSourceDef = new SubSourceDef();
+    $subSourceDef->setId($subSourceDefId);
+    $subSource->removeSubSourceDef($subSourceDef);
+    break;
+  default:
+    break;
+}
+
 $sources = $vds->getSources();
 //---- Output HTML
 
@@ -45,6 +77,40 @@ $html->printHeader();
 
 # Print table with oses
 ?>
+
+<table class="tableList">
+  <tr>
+    <th>Add new entry</th>
+  </tr>
+  <tr>
+    <td>
+      <form action="" name="vds" method="post">
+        <label for="defName">Name: </label>
+        <input type="text" name="defName" size="20">
+        &nbsp;&nbsp;
+
+        <label for="defUri">URI: </label>
+        <input type="text" name="defUri" size="60">
+        &nbsp;&nbsp;
+
+        <label for="ids">SubSource: </label>
+        <select name="ids">
+          <?php foreach($sources as $source){?>
+            <?php foreach($source->getSubSources() as $subSource){?>
+              <option value="<?php print $source->getId()." ".$subSource->getId(); ?>"> <?php print $subSource->getName() . " [" . $source->getName() . "]"; ?> </option>
+            <?php } ?>
+          <?php } ?>
+        </select>
+        &nbsp;&nbsp;
+
+        <input type="submit" value="Add">
+        <input type="hidden" name="act" value="create" />
+        <input type="hidden" name="subSourceDefId" value="-1" />
+      </form>
+    </td>
+  </tr>
+</table>
+<br><br>
 
 <table class="tableList">
   <tr>
@@ -65,6 +131,8 @@ $html->printHeader();
 	<div>&nbsp;&nbsp;<u>Name:</u> {$subSourceDef->getName()}</div>
 	<div>&nbsp;&nbsp;<u>URI:</u> {$subSourceDef->getUri()}</div>
 	<div>&nbsp;&nbsp;<u>Last check:</u> {$subSourceDef->getLastChecked()}</div>
+  <div><span style='color: #002BFF; font-weight: bold; cursor: pointer;' onclick=\"document.vds.act.value='delete'; document.vds.ids.value='" . $source->getId() . " " . $subSource->getId() . "';
+  document.vds.subSourceDefId.value='" . $subSourceDef->getId() . "'; document.vds.submit();\" ><a>[remove]</a></span></div>
 	</div></td></tr>\n";
       }
     }
