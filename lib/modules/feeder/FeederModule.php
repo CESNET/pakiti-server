@@ -127,10 +127,15 @@ class FeederModule extends DefaultModule
 
         $s = "";
         foreach ($pkgsWithCve as $pkg) {
-            $s .= $pkg["Pkg"]->getName() . "\t" .
-                $pkg["Pkg"]->getVersionRelease() . "\t" .
-                $pkg["Pkg"]->getArch() . "\t" .
-                implode(",", array_map(function($cve){ return $cve->getName(); }, $pkg['CVE'])) . "\n";
+            foreach ($pkg['CVE'] as $pkgCve) {
+                foreach ($pkgCve->getTag() as $tag) {
+                    $s .= $pkg["Pkg"]->getName() . "\t" .
+                        $pkg["Pkg"]->getVersionRelease() . "\t" .
+                        $pkg["Pkg"]->getArch() . "\t" .
+                        $pkgCve->getName() . "\t" .
+                        $tag->getName() . "\n";
+                }
+            }
         }
         return $s;
     }
