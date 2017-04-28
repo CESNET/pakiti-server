@@ -177,9 +177,13 @@ class Debian extends SubSource implements ISubSource
     public function retrieveDefinitions()
     {
         Utils::log(LOG_DEBUG, "Retreiving definitions from the " . Debian::getName(), __FILE__, __LINE__);
-        $this->loadDSA();
-        return $this->processDSA();
 
+        $defs = array();
+        if(!empty($this->getSubSourceDefs())){
+            $this->loadDSA();
+            $defs = $this->processDSA();
+        }
+        return $defs;
     }
 
     public function getName()
