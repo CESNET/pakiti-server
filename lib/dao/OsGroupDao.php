@@ -68,7 +68,7 @@ class OsGroupDao {
     return $id;
   }
 
-  public function getOsGroupsIds($orderBy, $pageSize, $pageNum) {
+  public function getOsGroupsIds($orderBy = "name", $pageSize = -1, $pageNum = -1) {
     $sql = "select id from OsGroup order by name";
     
     if ($pageSize != -1 && $pageNum != -1) {
