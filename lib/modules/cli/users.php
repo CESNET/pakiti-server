@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-# Copyright (c) 2011, CESNET. All rights reserved.
+# Copyright (c) 2017, CESNET. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or
 # without modification, are permitted provided that the following

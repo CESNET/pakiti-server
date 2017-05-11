@@ -1,10 +1,10 @@
 <?php
-# Copyright (c) 2011, CESNET. All rights reserved.
-# 
+# Copyright (c) 2017, CESNET. All rights reserved.
+#
 # Redistribution and use in source and binary forms, with or
 # without modification, are permitted provided that the following
 # conditions are met:
-# 
+#
 #   o Redistributions of source code must retain the above
 #     copyright notice, this list of conditions and the following
 #     disclaimer.
@@ -12,7 +12,7 @@
 #     copyright notice, this list of conditions and the following
 #     disclaimer in the documentation and/or other materials
 #     provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
 # CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -26,6 +26,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 require(realpath(dirname(__FILE__)) . '/../../../common/DefaultModule.php');
 require(realpath(dirname(__FILE__)) . '/../../../modules/vds/VdsModule.php');
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
