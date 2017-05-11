@@ -41,6 +41,8 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("stats");
 
 $html->addHtmlAttribute("title", "Statistics");
 $stats = $pakiti->getManager("StatsManager")->listAll();

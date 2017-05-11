@@ -92,14 +92,6 @@ create table `Host` (
 	foreign key (`lastReportId`) references Report(`id`)
 )ENGINE=INNODB;
 
-create table `HostTag` (
-	`hostId` integer(10) not null,
-	`tagId` integer(10) not null,
-	unique key `unique` (`hostId`, `tagId`),
-	foreign key (`hostId`) references Host(`id`) on delete cascade,
-	foreign key (`tagId`) references Tag(`id`)  on delete cascade
-)ENGINE=INNODB;
-
 create table `HostHostGroup` (
 	`hostId` integer(10) not null,
 	`hostGroupId` integer(10) not null,
@@ -153,14 +145,6 @@ create table `VdsSubSource` (
 	primary key (`id`),
 	unique key (`name`),
 	foreign key (`vdsSourceId`) references VdsSource(`id`) on delete cascade
-)ENGINE=INNODB;
-
-create table `VdsSubSourceDefOs` (
-	`vdsSubSourceId` integer(10) not null,
-	`osId` integer(10) not null,
-	unique key `unique` (`vdsSubSourceId`, `osId`),
-	foreign key (`osId`) references Os(`id`) on delete cascade,
-	foreign key (`vdsSubSourceId`) references VdsSubSource(`id`) on delete cascade
 )ENGINE=INNODB;
 
 create table `VdsSubSourceDef` (
@@ -251,83 +235,27 @@ create table `Vulnerability` (
 
 create table `User` (
 	`id` integer(10) not null auto_increment, 
-	`name` VARCHAR(30) not null, 
-	`createdAt` DATETIME not null, 
-	`createdBy` VARCHAR(30) not null, 
-	`modifiedAt` DATETIME not null,
-	`modifiedBy` VARCHAR(30) not null,
-	primary key (`id`)
-)ENGINE=INNODB;
-
-create table `Group` (
-	`id` integer(10) not null auto_increment, 
-	`name` VARCHAR(30) not null, 
-	`description` VARCHAR(100) not null,
-	`createdAt` DATETIME not null, 
-	`createdBy` VARCHAR(30) not null, 
-	`modifiedAt` DATETIME not null, 
-	`modifiedBy` VARCHAR(30) not null,
-	primary key (`id`)
-)ENGINE=INNODB;
-
-create table `Object` (
-	`id` integer(10) not null auto_increment, 
-	`name` VARCHAR(30) not null, 
-	`createdAt` DATETIME not null, 
-	`createdBy` VARCHAR(30) not null, 
-	`modifiedAt` DATETIME not null,
-	`modifiedBy` VARCHAR(30) not null,
-	primary key (`id`)
-)ENGINE=INNODB;
-
-create table `Permission` (
-	`id` integer(10) not null auto_increment, 
-	`objectId` integer(10) not null,
-	`name` VARCHAR(30) not null, 
-	`description` VARCHAR(100) not null,
-	`createdAt` DATETIME not null, 
-	`createdBy` VARCHAR(30) not null, 
-	`modifiedAt` DATETIME not null, 
-	`modifiedBy` VARCHAR(30) not null,
+	`uid` VARCHAR(255) not null,
+	`name` VARCHAR(255) not null,
+	`email` VARCHAR(255) not null,
+	`admin` integer(1) not null,
+	`createdAt` DATETIME not null,
 	primary key (`id`),
-	foreign key (`objectId`) references `Object`(`id`) on delete cascade
+	unique key (`uid`)
 )ENGINE=INNODB;
 
-create table `GroupPermission` (
-	`id` integer(10) not null auto_increment,
-	`groupId` integer(10) not null, 
-	`permissionId` integer(10) not null, 
-	`createdAt` DATETIME not null, 
-	`createdBy` VARCHAR(30) not null, 
-	`modifiedAt` DATETIME not null, 
-	`modifiedBy` VARCHAR(30) not null,
-	primary key (`id`),
-	foreign key (`groupId`) references `Group`(`id`) on delete cascade,
-	foreign key (`permissionId`) references `Permission`(`id`) on delete cascade
-)ENGINE=INNODB;
-
-create table `UserGroup` (
-	`id` integer(10) not null auto_increment,
-	`userId` integer(10) not null,	
-	`groupId` integer(10) not null,  
-	`createdAt` DATETIME not null, 
-	`createdBy` VARCHAR(30) not null, 
-	`modifiedAt` DATETIME not null, 
-	`modifiedBy` VARCHAR(30) not null,
-	primary key (`id`),
-	foreign key (`userId`) references `User`(`id`) on delete cascade,
-	foreign key (`groupId`) references `Group`(`id`) on delete cascade
-)ENGINE=INNODB;
-
-create table `UserIdentity` (
-	`id` integer(10) not null auto_increment,
+create table `UserHostGroup` (
 	`userId` integer(10) not null,
-	`type` varchar(30) not null,
-	`source` varchar(30) not null,	 
-	`createdAt` DATETIME not null, 
-	`createdBy` VARCHAR(30) not null, 
-	`modifiedAt` DATETIME not null,
-	`modifiedBy` VARCHAR(30) not null,
-	primary key (`id`),
-	foreign key (`userId`) references `User`(`id`) on delete cascade
+	`hostGroupId` integer(10) not null,
+	unique key `unique` (`userId`, `hostGroupId`),
+	foreign key (`userId`) references User(`id`) on delete cascade,
+	foreign key (`hostGroupId`) references HostGroup(`id`) on delete cascade
+)ENGINE=INNODB;
+
+create table `UserHost` (
+	`userId` integer(10) not null,
+	`hostId` integer(10) not null,
+	unique key `unique` (`userId`, `hostId`),
+	foreign key (`userId`) references User(`id`) on delete cascade,
+	foreign key (`hostId`) references Host(`id`) on delete cascade
 )ENGINE=INNODB;

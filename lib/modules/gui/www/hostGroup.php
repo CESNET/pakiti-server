@@ -33,18 +33,25 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("hostGroup");
+
+$userId = $html->getUserId();
+
 $hostGroupId = $html->getHttpGetVar("hostGroupId", 0);
-$hostGroupName = $html->getHttpGetVar("hostGroupName", 0);
 $pageNum = $html->getHttpGetVar("pageNum", 0);
 $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
 $sort = $html->getHttpGetVar("sortBy", "name");
 
+$hostGroup = null;
 if ($hostGroupId != 0) {
-  $hostGroup =& $pakiti->getManager("HostGroupsManager")->getHostGroupById($hostGroupId);
-} else if ($hostGroupName != null) {
-  $hostGroup =& $pakiti->getManager("HostGroupsManager")->getHostGroupByName($hostGroupName);
-} else {
-  $html->setError("HostGroupId nor HostGroupName was supplied");
+    $hostGroup = $pakiti->getManager("HostGroupsManager")->getHostGroupById($hostGroupId, $userId);
+}
+
+if($hostGroup == null){
+    $html->setError("HostGroup with id $hostGroupId doesn't exist or access denied");
+    $html->printHeader();
+    $html->printFooter();
 }
 
 $html->addHtmlAttribute("title", "Host Group: " . $hostGroup->getName());

@@ -1,10 +1,10 @@
 <?php
 # Copyright (c) 2011, CESNET. All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or
 # without modification, are permitted provided that the following
 # conditions are met:
-# 
+#
 #   o Redistributions of source code must retain the above
 #     copyright notice, this list of conditions and the following
 #     disclaimer.
@@ -12,7 +12,7 @@
 #     copyright notice, this list of conditions and the following
 #     disclaimer in the documentation and/or other materials
 #     provided with the distribution.
-# 
+#
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
 # CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -25,63 +25,103 @@
 # ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE. 
+# POSSIBILITY OF SUCH DAMAGE.
 
-class Acl {
-  public static $PAKITI_ADMIN = 1;
-  public static $HOSTGROUP_ADMIN = 2;
-  public static $HOSTGROUP_VIEWER = 3;
-  public static $HOST_ADMIN = 4;
-  public static $HOST_VIEWER = 5;
-  public static $ANONYMOUS = 6;
-  
-  private $_userIdentity;
-  private $_roles = array();
-  
-  public function __construct() {
+class Acl
+{
+    private $_pakiti;
+    private $_user = null;
 
-    // Get the user identity, try REMOTE_USER and SSL_CLIENT_S_DN
-    if (array_key_exists('REMOTE_USER', $_SERVER)) {
-      $this->_userIdentity = $_SERVER['REMOTE_USER'];
-    } else if (array_key_exists('SSL_CLIENT_S_DN', $_SERVER)) {
-      $this->userIdentity = $_SERVER['SSL_CLIENT_S_DN'];
-    } else {
-      $this->userIdentity = null;
+    public function getPakiti()
+    {
+        return $this->_pakiti;
     }
-    
-    $this->userIdentity = trim($this->_userIdentity);
-    
-    if ($this->userIdentity != null && Config::$ENABLE_AUTHZ) {
-      // Initialize user's roles
-      $this->initRoles();
+
+    public function __construct(Pakiti &$pakiti)
+    {
+        $this->_pakiti = &$pakiti;
+        if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_NONE) {
+
+            # Get data from env variables
+            array_key_exists(Config::$AUTHZ_UID, $_SERVER) ? $uid = $_SERVER[Config::$AUTHZ_UID] : $uid = "";
+            array_key_exists(Config::$AUTHZ_NAME, $_SERVER) ? $name = $_SERVER[Config::$AUTHZ_NAME] : $name = "";
+            array_key_exists(Config::$AUTHZ_EMAIL, $_SERVER) ? $email = $_SERVER[Config::$AUTHZ_EMAIL] : $email = "";
+
+            # Try to get user from dtb by UID
+            $user = $this->getPakiti()->getManager("UsersManager")->getUserByUid($uid);
+
+            # Create or update user if AUTHZ_MODE is auto-create
+            if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_AUTOCREATE) {
+                if ($user == null) {
+                    $user = new User();
+                    # If it is first user in dtb set as admin
+                    if ($this->getPakiti()->getManager("UsersManager")->getUsersCount() == 0) {
+                        $user->setAdmin(true);
+                    }
+                }
+                # Set up user and store only if data was changed or new one
+                if ($user->getId() == -1 || $user->getUid() != $uid || $user->getName() != $name || $user->getEmail() != $email) {
+                    $user->setUid($uid);
+                    $user->setName($name);
+                    $user->setEmail($email);
+                    $this->getPakiti()->getManager("UsersManager")->storeUser($user);
+                }
+            }
+
+            $this->_user = $user;
+        }
     }
-  }
-  
-  public function getUserIdentity() {
-    return $this->_userIdentity;
-  }
-  
-  public function getRoles() {
-    return $this->_roles;
-  }
-  
-  public function isPakitiAdmin() {
-  }
-  
-  public function isHostGroupAdmin(HostGroup $hostGroup) {
-  }
-  
-  public function isHostGroupViewer(HostGroup $hostGroup) {
-  }
-  
-  public function isHostAdmin(Host $host) {
-  }
-  
-  public function isHostViewer(Host $host) {
-  }
-  
-  protected function initRoles() {
-    // Here we will iterate through all acl modules in the directory lib/modules/acl/ and try to get info about user's roles
-    //TODO 
-  }
+
+    /**
+    * Get user ID
+    * @return -1 if AUTHZ_MODE is none or user is admin
+    */
+    public function getUserId()
+    {
+        if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_NONE) {
+            return -1;
+        }
+
+        # This method shouldn't be called if user is null
+        if ($this->_user == null) {
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+            throw new Exception("When AUTHZ_MODE isn't none and user is null, so this method shouldn't be called");
+        }
+
+        if ($this->_user->isAdmin()) {
+            return -1;
+        }
+
+        return $this->_user->getId();
+    }
+
+    /**
+    * Get user
+    * @return User
+    */
+    public function getUser()
+    {
+        return $this->_user;
+    }
+
+    /**
+    * Check if user has permission to source
+    * @return true if user has permission to source
+    */
+    public function permission($source)
+    {
+        if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_NONE) {
+            return true;
+        }
+
+        if ($this->_user == null) {
+            return false;
+        }
+
+        if ($this->_user->isAdmin()) {
+            return true;
+        }
+
+        return in_array($source, ["hosts", "host", "hostGroups", "hostGroup", "reports", "cve"]);
+    }
 }

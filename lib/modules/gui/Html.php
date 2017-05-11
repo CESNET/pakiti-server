@@ -47,7 +47,7 @@ class HTMLModule extends DefaultModule
         $this->_htmlAttributes = array();
 
         $this->_httpGetVars = array();
-        $this->_acl = new Acl();
+        $this->_acl = new Acl($pakiti);
         $this->_errors = array();
         $this->_messages = array();
     }
@@ -79,8 +79,8 @@ class HTMLModule extends DefaultModule
     	</tr>\n
     </table>\n";
 
-        if ($this->getAcl()->getUserIdentity() != null) {
-            print "<div id=\:login\">Logged as {$this->getAcl()->getUserIdentity()}</div>\n";
+        if ($this->getUserName() != null) {
+            print "<div id=\:login\">Logged as {$this->getUserName()}</div>\n";
         }
 
         print "<!-- Loading element is shown while page is loading -->\n
@@ -372,22 +372,40 @@ class HTMLModule extends DefaultModule
      */
     protected function printMenu()
     {
-        print "<div id=\"menu\">
-    	<a href=\"hosts.php\">Hosts</a>
-    	<a href=\"hostGroups.php\">Host Groups</a>
-    	<a href=\"oses.php\">Oses</a>
-    	<a href=\"archs.php\">Archs</a>
-    	<a href=\"vds.php\">VDS</a>
-    	<a href=\"tags.php\">Tags</a>
-    	<a href=\"cve_tags.php\">CVE Tags</a>
-    	<a href=\"exceptions.php\">Exceptions</a>
-    	<a href=\"stats.php\">Statistics</a>
-    </div>";
+        print "<div id=\"menu\">";
+        $this->permission("hosts") ? print "<a href=\"hosts.php\">Hosts</a> " : print "";
+        $this->permission("hostGroups") ? print "<a href=\"hostGroups.php\">Host Groups</a> " : print "";
+        $this->permission("oses") ? print "<a href=\"oses.php\">Oses</a> " : print "";
+        $this->permission("archs") ? print "<a href=\"archs.php\">Archs</a> " : print "";
+        $this->permission("vds") ? print "<a href=\"vds.php\">VDS</a> " : print "";
+        $this->permission("tags") ? print "<a href=\"tags.php\">Tags</a> " : print "";
+        $this->permission("cveTags") ? print "<a href=\"cve_tags.php\">CVE Tags</a> " : print "";
+        $this->permission("cveExceptions") ? print "<a href=\"exceptions.php\">Exceptions</a> " : print "";
+        $this->permission("stats") ? print "<a href=\"stats.php\">Statistics</a> " : print "";
+        $this->permission("users") ? print "<a href=\"users.php\">Users</a> " : print "";
+        print "</div>";
     }
 
-    protected function getAcl()
-    {
-        return $this->_acl;
+    public function checkPermission($source) {
+        if(!$this->_acl->permission($source)){
+            header('HTTP/1.0 403 Forbidden');
+            exit;
+        }
+    }
+
+    public function permission($source) {
+        return $this->_acl->permission($source);
+    }
+
+    public function getUserId(){
+        return $this->_acl->getUserId();
+    }
+
+    public function getUserName(){
+        if ($this->_acl->getUser() != null) {
+            return $this->_acl->getUser()->getName();
+        }
+        return null;
     }
 
 }

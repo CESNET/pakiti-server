@@ -32,6 +32,10 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
+
+// Access control
+$html->checkPermission("oses");
+
 $entries = Utils::getHttpPostVar("entries");
 if ($entries == "") {
     $entries = 0;

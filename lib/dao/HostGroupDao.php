@@ -44,9 +44,25 @@ class HostGroupDao {
     $hostGroup->setId($this->db->getLastInsertedId());
   }
   
-  public function getById($id) {
+  public function getById($id, $userId = -1) {
     if (!is_numeric($id)) return null;
-    return $this->getBy($id, "id");
+
+    if($userId != -1){
+      $join = "inner join UserHostGroup on HostGroup.id = UserHostGroup.hostGroupId";
+      $conditions = "UserHostGroup.userId = $userId and";
+    } else {
+      $join = "";
+      $conditions = "";
+    }
+    
+    return $this->db->queryObject("
+      select id as _id, name as _name
+      from HostGroup
+      $join
+      where
+      $conditions
+      id = $id
+    ", "HostGroup");
   }
   
   public function getByName($name) {
@@ -75,8 +91,18 @@ class HostGroupDao {
     return $id;
   }
   
-  public function getHostGroupsIds($orderBy, $pageSize, $pageNum) {
-    $sql = "select id from HostGroup order by name";
+  public function getHostGroupsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $userId = -1) {
+    $sql = "select HostGroup.id as _id from HostGroup";
+    
+    if($userId != -1){
+      $sql .= " inner join UserHostGroup on HostGroup.id = UserHostGroup.hostGroupId where UserHostGroup.userId = $userId";
+    }
+    
+    if($orderBy == null) {
+      $sql .= " order by HostGroup.name";
+    } else {
+      $sql .= " order by HostGroup.$orderBy";
+    }
     
     if ($pageSize != -1 && $pageNum != -1) {
       $offset = $pageSize*$pageNum;

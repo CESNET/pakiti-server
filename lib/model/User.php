@@ -1,51 +1,75 @@
 <?php
-require_once(realpath(dirname(__FILE__)) . '/Role.php');
-require_once(realpath(dirname(__FILE__)) . '/Contact.php');
-require_once(realpath(dirname(__FILE__)) . '/UserRole.php');
-require_once(realpath(dirname(__FILE__)) . '/Tag.php');
-require_once(realpath(dirname(__FILE__)) . '/DefaultException.php');
 
-/**
- * @access public
- * @author Michal Prochazka
- */
-class User {
-	/**
-	 * @AttributeType int
-	 */
-	private $_id;
-	/**
-	 * @AttributeType String
-	 */
-	private $_name;
-	/**
-	 * @AttributeType int
-	 */
-	private $_isPakitiAdmin = 0;
-	/**
-	 * @AssociationType Role
-	 * @AssociationMultiplicity 0..*
-	 */
-	public $_roles = array();
-	/**
-	 * @AssociationType Contact
-	 * @AssociationMultiplicity 1
-	 */
-	public $_contact;
-	/**
-	 * @AssociationType UserRole
-	 * @AssociationMultiplicity 0..*
-	 */
-	public $_usersRoles = array();
-	/**
-	 * @AssociationType Tag
-	 * @AssociationMultiplicity 0..*
-	 */
-	public $_tags = array();
-	/**
-	 * @AssociationType Exception
-	 * @AssociationMultiplicity 0..*
-	 */
-	public $_exceptions = array();
+class User
+{
+    private $_id = -1;
+    private $_uid;
+    private $_name;
+    private $_email;
+    private $_admin = 0;
+    private $_createdAt;
+
+    public function getId()
+    {
+        return $this->_id;
+    }
+
+    public function setId($val)
+    {
+        $this->_id = $val;
+    }
+
+    public function getUid()
+    {
+        return $this->_uid;
+    }
+
+    public function setUid($val)
+    {
+        $this->_uid = $val;
+    }
+
+    public function getName()
+    {
+        return $this->_name;
+    }
+
+    public function setName($val)
+    {
+        $this->_name = $val;
+    }
+
+    public function getEmail()
+    {
+        return $this->_email;
+    }
+
+    public function setEmail($val)
+    {
+        $this->_email = $val;
+    }
+
+    public function isAdmin()
+    {
+        return $this->_admin;
+    }
+
+    public function setAdmin($val)
+    {
+        if ($val) {
+            $this->_admin = 1;
+        } else {
+            $this->_admin = 0;
+        }
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->_createdAt;
+    }
+
+    public function setCreatedAt($val)
+    {
+        $this->_createdAt = $val;
+    }
 }
-?>

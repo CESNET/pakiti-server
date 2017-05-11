@@ -60,9 +60,9 @@ class HostGroupsManager extends DefaultManager {
     return $new;
   }
 
-  public function getHostGroupById($id) {
+  public function getHostGroupById($id, $userId = -1) {
     Utils::log(LOG_DEBUG, "Getting host group by id [hostGroupId=$id]", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("HostGroup")->getById($id);  
+    return $this->getPakiti()->getDao("HostGroup")->getById($id, $userId);  
   }
   
   public function getHostGroupByName($name) {
@@ -80,9 +80,9 @@ class HostGroupsManager extends DefaultManager {
     return $this->getPakiti()->getDao("HostGroup")->getByHostId($host->getId());  
   }
 
-  public function getHostGroups($orderBy, $pageNum = -1, $pageSize = -1) {
+  public function getHostGroups($orderBy = null, $pageNum = -1, $pageSize = -1, $userId = -1) {
     Utils::log(LOG_DEBUG, "Getting all host groups", __FILE__, __LINE__);
-    $hostGroupsIds = $this->getPakiti()->getDao("HostGroup")->getHostGroupsIds($orderBy, $pageNum, $pageSize); 
+    $hostGroupsIds = $this->getPakiti()->getDao("HostGroup")->getHostGroupsIds($orderBy, $pageNum, $pageSize, $userId); 
 
     $hostGroups = array();
     foreach ($hostGroupsIds as $hostGroupId) {
@@ -92,9 +92,9 @@ class HostGroupsManager extends DefaultManager {
     return $hostGroups;
   }
 
-  public function getHostGroupsCount() {
+  public function getHostGroupsCount($userId = -1) {
     Utils::log(LOG_DEBUG, "Getting the count of all host groups", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("HostGroup")->getHostGroupsCount(); 
+    return sizeof($this->getPakiti()->getDao("HostGroup")->getHostGroupsIds(null, -1, -1, $userId));
   }
 
   public function getHostsCount(HostGroup &$hostGroup) {

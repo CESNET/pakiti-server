@@ -72,29 +72,37 @@ class HostDao {
     return $id;
   }
   
-  public function getById($id) {
+  public function getById($id, $userId = -1) {
     # Try to find the host in the DB
     if (!is_numeric($id)) return null;
 
-    return $this->db->queryObject(
-    	"select 
-    		h.id as _id, 
-    		h.hostname as _hostname,
-    		h.ip as _ip, 
-    		h.reporterIp as _reporterIp,
-    		h.reporterHostname as _reporterHostname,
-    		h.kernel as _kernel,
-    		h.type as _type,
-    		h.ownRepositoriesDef as _ownRepositoriesDef,
-    		h.osId as _osId,
-    		h.archId as _archId,
-    		h.domainId as _domainId,
-    		h.lastReportId as _lastReportId 
-      from 
-      	Host h 
-      where
-      	h.id=$id"
-      , "Host");
+    $select = "distinct
+      Host.id as _id, 
+      Host.hostname as _hostname,
+      Host.ip as _ip, 
+      Host.reporterIp as _reporterIp,
+      Host.reporterHostname as _reporterHostname,
+      Host.kernel as _kernel,
+      Host.type as _type,
+      Host.ownRepositoriesDef as _ownRepositoriesDef,
+      Host.osId as _osId,
+      Host.archId as _archId,
+      Host.domainId as _domainId,
+      Host.lastReportId as _lastReportId";
+    $from = "Host";
+    $join = null;
+    $where[] = "Host.id = $id";
+
+    if($userId != -1){
+      $join[] ="inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+      $join[] ="left join UserHostGroup on HostHostGroup.hostGroupId = UserHostGroup.hostGroupId";
+      $join[] ="left join UserHost on Host.id = UserHost.hostId";
+      $where[] = "(UserHostGroup.userId = $userId or UserHost.userId = $userId)";
+    }
+
+    $sql = Utils::sqlSelectStatement($select, $from, $join, $where);
+
+    return $this->db->queryObject($sql, "Host");
   }
   
   public function getByHostname($hostname) {
@@ -102,42 +110,65 @@ class HostDao {
     return $this->getById($hostId);  
   }
   
-  public function getHostsIds($orderBy, $pageSize, $pageNum) {
+  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $startsWith = null, $userId = -1, $directlyAssignedToUser = false) {
+
+    $select = "distinct Host.id";
+    $from = "Host";
+    $join = null;
+    $where = null;
+    $order = null;
+    $limit = null;
+    $offset = null;
+
     // Because os and arch are ids to other tables, we have to do different sorting
     switch ($orderBy) {
       case "os":
-        $sql = "select Host.id from Host left join Os on Host.osId=Os.id order by Os.name";
+        $join[] = "left join Os on Host.osId=Os.id";
+        $order[] = "Os.name";
         break;
       case "arch":
-        $sql = "select Host.id from Host left join Arch on Host.archId=Arch.id order by Arch.name";
+        $join[] = "left join Arch on Host.archId=Arch.id";
+        $order[] = "Arch.name";
         break;
       case "hostGroup":
-	$sql = "select Host.id from Host, HostHostGroup, HostGroup where Host.id=HostHostGroup.hostId and HostHostGroup.hostGroupId=HostGroup.id order by HostGroup.name";
-	break;
+        $join[] = "left join HostHostGroup as g on g.hostId = Host.id";
+        $join[] = "left join HostGroup on g.hostGroupId = HostGroup.id";
+        $order[] = "HostGroup.name";
+        break;
+      case null:
+        $order[] = "Host.hostname";
+        break;
       default:
-        $sql = "select Host.id from Host order by $orderBy"; 
+        $order[] = "Host.".$this->db->escape($orderBy)."";
     }
+
+    if($startsWith != null) {
+      $where[] = "lower(hostname) like '".$this->db->escape(strtolower($startsWith))."%'";
+    }
+
+    if($userId != -1) {
+      $join[] = "left join UserHost on Host.id = UserHost.hostId";
+
+      if ($directlyAssignedToUser) {
+          $where[] = "UserHost.userId = $userId";
+      } else {
+          $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+          $join[] = "left join UserHostGroup on HostHostGroup.hostGroupId = UserHostGroup.hostGroupId";
+          $where[] = "(UserHostGroup.userId = $userId or UserHost.userId = $userId)";
+      }
+    }
+
     if ($pageSize != -1 && $pageNum != -1) {
-      $offset = $pageSize*$pageNum;
-      $sql .= " limit $offset,$pageSize";
+      $limit = $pageSize;
+      $offset = $pageSize * $pageNum;
     }
+
+    $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
+
     return $this->db->queryToSingleValueMultiRow($sql);
   }
 
-  public function getHostsIdsByFirstLetter($firstLetter) {
-    $firstLetter = strtolower($firstLetter);
-    $sql = "select Host.id from Host where lower(hostname) like '$firstLetter%'";
-    return $this->db->queryToSingleValueMultiRow($sql);
-  }
 
-  //public function getHostsByHostName($
-
-  public function getHostsIdsCount() {
-    $sql = "select count(Host.id) from Host";
-    
-    return $this->db->queryToSingleValue($sql);
-  }
-  
   public function update(Host &$host) {
     if ($host == null || $host->getId() == -1) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
