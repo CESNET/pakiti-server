@@ -39,6 +39,8 @@ final class Constants {
   
   public static $RETURN_OK = "OK";
   public static $RETURN_ERROR = "ERROR";
+
+  public static $DATE_FORMAT = "Y-m-d H:i:s";
   
   public static $NA = "N/A";
   
