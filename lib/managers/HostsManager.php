@@ -87,9 +87,9 @@ class HostsManager extends DefaultManager {
   /*
    * Get the host by its ID
    */
-  public function getHostById($id) {
+  public function getHostById($id, $userId = -1) {
     Utils::log(LOG_DEBUG, "Getting the host by its ID [id=$id]", __FILE__, __LINE__);
-    $host =& $this->getPakiti()->getDao("Host")->getById($id);
+    $host =& $this->getPakiti()->getDao("Host")->getById($id, $userId);
     if (is_object($host)) {
       $host->setArch($this->getPakiti()->getDao("Arch")->getById($host->getArchId()));
       $host->setOs($this->getPakiti()->getDao("Os")->getById($host->getOsId()));
@@ -110,24 +110,9 @@ class HostsManager extends DefaultManager {
   /*
    * Get all hosts
    */
-  public function getHosts($orderBy, $pageSize = -1, $pageNum = -1) {
+  public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $startsWith = null, $userId = -1, $directlyAssignedToUser = false) {
     Utils::log(LOG_DEBUG, "Getting all hosts", __FILE__, __LINE__);
-    $hostsIds =& $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum);
-    
-    $hosts = array();
-    foreach ($hostsIds as $hostId) {
-      array_push($hosts, $this->getHostById($hostId));
-    }
-    
-    return $hosts;
-  }
-
-  /*
-   * Get hosts by theirs first letter
-   */
-  public function getHostsByFirstLetter($firstLetter) {
-    Utils::log(LOG_DEBUG, "Getting hosts by firstLetter", __FILE__, __LINE__);
-    $hostsIds =& $this->getPakiti()->getDao("Host")->getHostsIdsByFirstLetter($firstLetter);
+    $hostsIds = $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $startsWith, $userId, $directlyAssignedToUser);
     
     $hosts = array();
     foreach ($hostsIds as $hostId) {
@@ -164,9 +149,9 @@ class HostsManager extends DefaultManager {
   /*
    * Get hosts count
    */
-  public function getHostsCount() {
+  public function getHostsCount($userId = -1) {
     Utils::log(LOG_DEBUG, "Getting hosts count", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("Host")->getHostsIdsCount();
+    return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, null, $userId));
   }
   
   /*

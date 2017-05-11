@@ -119,4 +119,55 @@ final class Utils {
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off');
   }
 
+  /*
+   * Compose sql select statement
+   * select, from, join, where and order could be string, string array or null
+   * limit and offset could be numeric or null
+   * @return sql statement
+   */
+  public static function sqlSelectStatement($select, $from, $join = null, $where = null, $order = null, $limit = null, $offset = null){
+    $sql = "";
+    $sql .= Utils::compose("select", $select, ",");
+    $sql .= Utils::compose("from", $from, ",");
+    $sql .= Utils::compose("", $join, "");
+    $sql .= Utils::compose("where", $where, "and");
+    $sql .= Utils::compose("order by", $order, ",");
+    $sql .= Utils::checkNull("limit", $limit);
+    $sql .= Utils::checkNull("offset", $offset);
+
+    if ($select == null || $from == null || ($limit != null && !is_numeric($limit)) || ($offset != null && !is_numeric($offset))) {
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+      throw new Exception("Select SQL statement error: $sql");
+    }
+
+    return $sql;
+  }
+
+  private static function compose($mean, $string, $separator){
+    $sql = "";
+    if($string != null){
+      if(!is_array($string)){
+        $sql .= "$mean $string ";
+      } else {
+        if(!empty($string)){
+          $sql .= "$mean ";
+          foreach($string as $item){
+            $sql .= "$item$separator ";
+          }
+          $length = -1 - strlen($separator);
+          $sql = substr($sql, 0, $length);
+          $sql .= " ";
+        }
+      }
+    }
+    return $sql;
+  }
+
+  private static function checkNull($mean, $string){
+    if($string != null){
+      return "$mean $string ";
+    }
+    return "";
+  }
+
 }
