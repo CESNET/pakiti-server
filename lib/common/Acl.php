@@ -40,7 +40,7 @@ class Acl
     public function __construct(Pakiti &$pakiti)
     {
         $this->_pakiti = &$pakiti;
-        if (Config::$AUTHZ_MODE != "none") {
+        if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_NONE) {
 
             # Get data from env variables
             array_key_exists(Config::$AUTHZ_UID, $_SERVER) ? $uid = $_SERVER[Config::$AUTHZ_UID] : $uid = "";
@@ -50,8 +50,8 @@ class Acl
             # Try to get user from dtb by UID
             $user = $this->getPakiti()->getManager("UsersManager")->getUserByUid($uid);
 
-            # Create or update user if mode is "auto-create"
-            if (Config::$AUTHZ_MODE == "auto-create") {
+            # Create or update user if AUTHZ_MODE is auto-create
+            if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_AUTOCREATE) {
                 if ($user == null) {
                     $user = new User();
                     # If it is first user in dtb set as admin
@@ -74,18 +74,18 @@ class Acl
 
     /**
     * Get user ID
-    * @return -1 if AUTHZ_MODE == \"none\" || user->isAdmin()
+    * @return -1 if AUTHZ_MODE is none or user is admin
     */
     public function getUserId()
     {
-        if (Config::$AUTHZ_MODE == "none") {
+        if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_NONE) {
             return -1;
         }
 
         # This method shouldn't be called if user is null
         if ($this->_user == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("When AUTHZ_MODE != \"none\" && user == null, this method shouldn't be called");
+            throw new Exception("When AUTHZ_MODE isn't none and user is null, so this method shouldn't be called");
         }
 
         if ($this->_user->isAdmin()) {
@@ -110,7 +110,7 @@ class Acl
     */
     public function permission($source)
     {
-        if (Config::$AUTHZ_MODE == "none") {
+        if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_NONE) {
             return true;
         }
 

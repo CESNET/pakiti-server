@@ -41,7 +41,7 @@ $html->addHtmlAttribute("title", "User management");
 /* TEMPORARY SENT FORM */
 switch (Utils::getHttpVar("act")) {
   case "store":
-    if (Config::$AUTHZ_MODE == "auto-create" || Config::$AUTHZ_MODE == "import") {
+    if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_AUTOCREATE || Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
         break;
     }
     $user = new User();
@@ -51,7 +51,7 @@ switch (Utils::getHttpVar("act")) {
     $pakiti->getManager("UsersManager")->storeUser($user);
     break;
   case "update":
-    if (Config::$AUTHZ_MODE == "import") {
+    if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
         break;
     }
     $id = Utils::getHttpPostVar("id");
@@ -61,7 +61,7 @@ switch (Utils::getHttpVar("act")) {
     $pakiti->getManager("UsersManager")->storeUser($user);
     break;
   case "delete":
-    if (Config::$AUTHZ_MODE == "import") {
+    if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
         break;
     }
     $id = Utils::getHttpPostVar("id");
@@ -101,7 +101,7 @@ $hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups();
 $html->printHeader();
 ?>
 
-<?php if (Config::$AUTHZ_MODE != "auto-create" && Config::$AUTHZ_MODE != "import") {
+<?php if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_AUTOCREATE && Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) {
     ?>
 
 <table class="tableList">
@@ -222,7 +222,7 @@ $html->printHeader();
 
       # Prepare delete button
       $delete = "";
-      if (Config::$AUTHZ_MODE != "import") {
+      if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) {
           $delete = "<span class=\"delete-button\" onclick=\"
             document.user.act.value='delete';
             document.user.id.value='".$user->getId()."';
@@ -232,7 +232,7 @@ $html->printHeader();
 
       # Prepare admin button
       $admin = "<input type=\"checkbox\" ".(($user->isAdmin()) ? " checked" : "")." disabled>";
-      if (Config::$AUTHZ_MODE != "import") {
+      if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) {
           $admin = "<input type=\"checkbox\" onClick=\"
             document.user.act.value='update';
             document.user.id.value='".$user->getId()."';

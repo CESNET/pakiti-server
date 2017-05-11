@@ -42,6 +42,12 @@ final class Constants {
 
   public static $DATE_FORMAT = "Y-m-d H:i:s";
   
+  # Authorization modes
+  public static $AUTHZ_MODE_NONE = "none";
+  public static $AUTHZ_MODE_AUTOCREATE = "auto-create";
+  public static $AUTHZ_MODE_IMPORT = "import";
+  public static $AUTHZ_MODE_MANUAL = "manual";
+  
   public static $NA = "N/A";
   
   public static $ENABLED = 1;
