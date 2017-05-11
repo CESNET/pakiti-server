@@ -1,5 +1,5 @@
 <?php
-# Copyright (c) 2011, CESNET. All rights reserved.
+# Copyright (c) 2017, CESNET. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or
 # without modification, are permitted provided that the following
@@ -29,11 +29,9 @@
 
 require_once(realpath(dirname(__FILE__)) . '/../lib/Source.php');
 
-/*
- * Interface for all source of OVALs (RedHat, SUSE, Debian, ...).
- * They are little bit different.
+/**
+ * @author Michal Prochazka
  */
-
 class CveSource extends Source implements ISource
 {
     private static $NAME = "Cve";
