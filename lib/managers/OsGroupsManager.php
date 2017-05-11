@@ -46,6 +46,11 @@ class OsGroupsManager extends DefaultManager{
         return $osGroups;
     }
 
+    public function getOsGroupsIds() {
+        Utils::log(LOG_DEBUG, "Getting all OS groups IDs", __FILE__, __LINE__);
+        return $this->getPakiti()->getDao("OsGroup")->getOsGroupsIds();
+    }
+
     public function getOsGroupIdByName($name){
         Utils::log(LOG_DEBUG, "Getting os group ID by name [osGroupName=$name]", __FILE__, __LINE__);
         return $this->getPakiti()->getDao("OsGroup")->getIdByName($name);

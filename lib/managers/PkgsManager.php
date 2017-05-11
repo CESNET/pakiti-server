@@ -221,4 +221,8 @@ class PkgsManager extends DefaultManager {
       $installedPkgDao->removeByHostIdAndPkgId($hostId, $pkgId);
     }
   }
+
+  public function getPkgsTypesNames(){
+    return $this->getPakiti()->getDao("Pkg")->getPkgsTypesNames();
+  }
 }

@@ -38,47 +38,73 @@ $longopts = array(
       "remove"
 );
 
-function usage() {
-  die("Usage: importCvesExceptions (-u <url> | --url=<url>) [-r | --remove]\n");
+function usage()
+{
+    die("Usage: importCvesExceptions (-u <url> | --url=<url>) [-r | --remove]\n");
 }
 
 $opt = getopt($shortopts, $longopts);
 
 if (isset($opt["h"]) || isset($opt["help"])) {
-  usage();
+    usage();
 }
 
 $url = isset($opt["u"]) ? $opt["u"] : (isset($opt["url"]) ? $opt["url"] : null);
 
-if($url == null){
-  usage();
+if ($url == null) {
+    usage();
 } else {
-  $xml = simplexml_load_string(Utils::getContent($url));
+    $xml = simplexml_load_string(Utils::getContent($url));
 
-  if($xml == null){
-    die("Xml parsing error! Check log for curl errors.");
-  }
-
-  if (isset($opt["r"]) || isset($opt["remove"])) {
-    $pakiti->getDao("CveException")->deleteCvesExceptions();
-  }
-
-  foreach($xml->cveException as $cveExceptionNode){
-    if($pakiti->getDao("Cve")->getCvesByName($cveExceptionNode->cveName) != null){
-      $cveException = new CveException();
-      $cveException->setCveName($cveExceptionNode->cveName);
-      $cveException->setReason($cveExceptionNode->reason);
-      $pkgId = $pakiti->getManager("PkgsManager")->getPkgId($cveExceptionNode->pkg->name,$cveExceptionNode->pkg->version,$cveExceptionNode->pkg->release,$cveExceptionNode->pkg->arch,$cveExceptionNode->pkg->type);
-      $osGroupId = $pakiti->getManager("OsGroupsManager")->getOsGroupIdByName($cveExceptionNode->osGroup->name);
-      if($pkgId != -1 && $osGroupId != -1){
-        $cveException->setPkgId($pkgId );
-        $cveException->setOsGroupId($osGroupId);
-        if($pakiti->getDao("CveException")->getByCveNamePkgIdOsGroupId($cveException->getCveName(), $cveException->getPkgId(), $cveException->getOsGroupId()) == null){
-          $pakiti->getManager("CveExceptionsManager")->createCveException($cveException);
-        }
-      }
+    if ($xml == null) {
+        die("Xml parsing error! Check log for curl errors.");
     }
-  }
+
+    if (isset($opt["r"]) || isset($opt["remove"])) {
+        $pakiti->getDao("CveException")->deleteCvesExceptions();
+    }
+
+    foreach ($xml->cveException as $cveExceptionNode) {
+
+        # If pkg->type is missing, iterate over all types
+        if (!isset($cveExceptionNode->pkg->type)) {
+            $types = $pakiti->getManager("PkgsManager")->getPkgsTypesNames();
+        } else {
+            $types = [$cveExceptionNode->pkg->type];
+        }
+
+        # If pkg->arch is missing, iterate over all archs
+        if (!isset($cveExceptionNode->pkg->arch)) {
+            $archs = $pakiti->getManager("ArchsManager")->getArchsNames();
+        } else {
+            $archs = [$cveExceptionNode->pkg->arch];
+        }
+
+        # If osGroup->name is missing, iterate over all osGroups
+        if (!isset($cveExceptionNode->osGroup->name)) {
+            $osGroupIds = $pakiti->getManager("OsGroupsManager")->getOsGroupsIds();
+        } else {
+            $osGroupIds = [$pakiti->getManager("OsGroupsManager")->getOsGroupIdByName($cveExceptionNode->osGroup->name)];
+        }
+
+        foreach ($types as $type) {
+            foreach ($archs as $arch) {
+                $pkgId = $pakiti->getManager("PkgsManager")->getPkgId($cveExceptionNode->pkg->name, $cveExceptionNode->pkg->version, $cveExceptionNode->pkg->release, $arch, $type);
+                if ($pkgId != -1) {
+                    foreach ($osGroupIds as $osGroupId) {
+                        if ($pakiti->getManager("CveExceptionsManager")->isExceptionCandidate($cveExceptionNode->cveName, $pkgId, $osGroupId)) {
+                            $cveException = new CveException();
+                            $cveException->setCveName($cveExceptionNode->cveName);
+                            $cveException->setReason($cveExceptionNode->reason);
+                            $cveException->setPkgId($pkgId);
+                            $cveException->setOsGroupId($osGroupId);
+                            $pakiti->getManager("CveExceptionsManager")->storeCveException($cveException);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 ?>

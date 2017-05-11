@@ -44,7 +44,7 @@ if ($exp_id != "") {
     $pakiti->getManager("CveExceptionsManager")->removeCveException($exp);
 }
 
-$selectedCveName = Utils::getHttpPostVar("cve-name");
+$selectedCveName = Utils::getHttpGetVar("cve-name");
 $cveExceptions = array();
 
 $cveNames = $pakiti->getManager("CveDefsManager")->getCveNames();
@@ -62,7 +62,7 @@ if ($entries > 0) {
             $exception->setOsGroupId($data[1]);
             $exception->setReason(Utils::getHttpPostVar("reason$i"));
             $exception->setModifier("");
-            $pakiti->getManager("CveExceptionsManager")->createCveException($exception);
+            $pakiti->getManager("CveExceptionsManager")->storeCveException($exception);
         }
     }
 }
@@ -70,11 +70,11 @@ if ($entries > 0) {
 if ($selectedCveName != "") {
     $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsByCveName($selectedCveName);
 } else {
-    $cveExceptions = array();
+    $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCvesExceptions();
 }
 
 $html->printHeader(); ?>
-    <form action="" method="post" name="cve_form">
+    <form action="" method="get" name="cve_form">
         <p style="width:200px; margin:0 auto;">
             <label for="cve-name">CVE: </label>
             <select name="cve-name" onchange="cve_form.submit();">
@@ -94,7 +94,7 @@ $html->printHeader(); ?>
 
         </p>
     </form>
-    <label>Selected CVE:
+    <label><?php if($selectedCveName != ""){ print "Selected CVE:"; } else { print "All CVE Exceptions"; }; ?>
             <span style="font-weight: bold;">
             <?php print $selectedCveName ?>
         </span>
@@ -102,6 +102,7 @@ $html->printHeader(); ?>
     <form action="" method="post" name="exception_form">
         <table class="tableDetail">
             <tr>
+                <th class="header">CVE</th>
                 <th class="header">Package</th>
                 <th class="header">Reason</th>
                 <th class="header">Modifier</th>
@@ -113,7 +114,8 @@ $html->printHeader(); ?>
                     $pkg = $pakiti->getManager("PkgsManager")->getPkgById($cveException->getPkgId());
                     $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById($cveException->getOsGroupId());
                     print "<tr>";
-                    print "<td>" . $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") " . "</i>" . " " . $osGroup->getName() . "</td>";
+                    print "<td>" . $cveException->getCveName() . "</td>";
+                    print "<td>" . $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName() . "</td>";
                     print "<td>" . $cveException->getReason() . "</td>";
                     print "<td>" . $cveException->getModifier() . "</td>";
                     print "<td>" . $cveException->getTimestamp() . "</td>";
@@ -123,6 +125,10 @@ $html->printHeader(); ?>
             ?>
         </table>
 
+        <?php
+         if ($selectedCveName != ""){
+        ?>
+        <br><br>
         <table class="tableDetail">
             <tr>
                 <th class="headerCheckBox"></th>
@@ -139,7 +145,7 @@ $html->printHeader(); ?>
                 <input name=\"exception" . $i . "\" id=\"exception" . $i . "\" value=\"" . $pkg->getId() . " " . $osGroup->getId() . "\" type=\"checkbox\">
             </td>
             <td>
-                " . $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") " . "</i>" . $osGroup->getName() . "
+                " . $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName() . "
             </td>
             <td>
                 <input type=\"text\" name=\"reason" . $i . "\" size=\"50\" onKeyUp=\"document.getElementById('exception" . $i . "').checked = true\">
@@ -154,6 +160,9 @@ $html->printHeader(); ?>
             print "<input type=\"hidden\" id=\"cve-name\" name=\"cve-name\" value=\"" . $selectedCveName . "\">";
             ?>
             <button type="button" onclick="exception_form.submit();">Save changes</button>
+        <?php
+        }
+        ?>
     </form>
 
 <?php $html->printFooter(); ?>

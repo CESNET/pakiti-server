@@ -42,23 +42,33 @@ class CveExceptionsManager extends DefaultManager
         return $this->_pakiti;
     }
 
+
     /**
-     * Stores Exception into DB
-     * @param CveException|Exception $exception
-     * @return Exception
-     * @throws Exception
-     */
-    public function createCveException(CveException &$exception)
+    * Create if not exist, else set id
+    * @return false if already exist
+    */
+    public function storeCveException(CveException &$cveException)
     {
-        if ($exception == null) {
+        Utils::log(LOG_DEBUG, "Storing the CveException", __FILE__, __LINE__);
+        if ($cveException == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Exception object is not valid");
+            throw new Exception("CveException object is not valid");
         }
 
-        Utils::log(LOG_DEBUG, "Creating the exception", __FILE__, __LINE__);
+        $new = false;
+        $dao = $this->getPakiti()->getDao("CveException");
+        $cveException->setId($dao->getIdByCveNamePkgIdOsGroupId($cveException->getCveName(), $cveException->getPkgId(), $cveException->getOsGroupId()));
+        if ($cveException->getId() == -1) {
+            # CveException is missing, so store it
+            $dao->create($cveException);
+            $new = true;
+        }
+        return $new;
+    }
 
-        $this->getPakiti()->getDao("CveException")->create($exception);
-        return $exception;
+    public function getCvesExceptions()
+    {
+        return $this->getPakiti()->getDao("CveException")->getCvesExceptions();
     }
 
     public function getCveExceptionsByPkg(Pkg $pkg)
@@ -80,5 +90,10 @@ class CveExceptionsManager extends DefaultManager
     public function getCveExceptionById($exceptionId)
     {
         return $this->getPakiti()->getDao("CveException")->getById($exceptionId);
+    }
+
+    public function isExceptionCandidate($cveName, $pkgId, $osGroupId)
+    {
+        return $this->getPakiti()->getDao("CveException")->isExceptionCandidate($cveName, $pkgId, $osGroupId);
     }
 }

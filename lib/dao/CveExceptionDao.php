@@ -56,9 +56,8 @@ class CveExceptionDao
 
     public function getCvesExceptions()
     {
-        return $this->db->queryObjects("select
-            id as _id, cveName as _cveName, pkgId as _pkgId, osGroupId as _osGroupId, `reason` as _reason, modifier as _modifier,  `timestamp` as _timestamp
-            from CveException", "CveException");
+        $sql = "select id as _id, cveName as _cveName, pkgId as _pkgId, osGroupId as _osGroupId, `reason` as _reason, modifier as _modifier, `timestamp` as _timestamp from CveException";
+        return $this->db->queryObjects($sql, "CveException");
     }
 
     public function getCveExceptionsByPkgId($pkgId)
@@ -104,6 +103,19 @@ class CveExceptionDao
         ", "CveException");
     }
 
+    public function getIdByCveNamePkgIdOsGroupId($cveName, $pkgId, $osGroupId) {
+        $sql = "select id from CveException
+            where cveName='" . $this->db->escape($cveName) . "'
+            and pkgId='" . $this->db->escape($pkgId) . "'
+            and osGroupId='" . $this->db->escape($osGroupId) . "'";
+
+        $id = $this->db->queryToSingleValue($sql);
+        if ($id == null) {
+            return -1;
+        }
+        return $id;
+    }
+
     public function delete(CveException &$exception)
     {
         $this->db->query(
@@ -132,6 +144,20 @@ class CveExceptionDao
       	CveException
       where
       	$where", "CveException");
+    }
+
+    public function isExceptionCandidate($cveName, $pkgId, $osGroupId){
+        $sql = "select 1 from Cve
+            inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId
+            where Cve.name = '".$this->db->escape($cveName)."'
+            and PkgCveDef.pkgId = '".$this->db->escape($pkgId)."'
+            and PkgCveDef.osGroupId = '".$this->db->escape($osGroupId)."'";
+        
+        if($this->db->queryToSingleValue($sql) == 1){
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

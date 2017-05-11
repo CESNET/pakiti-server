@@ -187,5 +187,11 @@ class PkgDao
       	$where"
             , "Pkg");
     }
+
+    public function getPkgsTypesNames(){
+        $sql = "select distinct(type) from Pkg";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
 }
 ?>
