@@ -33,6 +33,11 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("reports");
+
+$userId = $html->getUserId();
+
 $hostId = $html->getHttpGetVar("hostId");
 $hostname = $html->getHttpGetVar("hostname");
 $pageNum = $html->getHttpGetVar("pageNum", 0);
@@ -41,13 +46,13 @@ $sort = $html->getHttpGetVar("sortBy", "receivedOn");
 
 $host = null;
 if ($hostId != null) {
-  $host =& $pakiti->getManager("HostsManager")->getHostById($hostId);
-} else if ($hostname != null) {
-  $host =& $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
+  $host = $pakiti->getManager("HostsManager")->getHostById($hostId, $userId);
 }
 
-if ($host == null) {
-  $html->fatalError("HostId nor Hostname was supplied");
+if($host == null){
+    $html->setError("Host with id $id doesn't exist or access denied");
+    $html->printHeader();
+    $html->printFooter();
 }
 
 $html->addHtmlAttribute("title", "Host: " . $host->getHostname());

@@ -33,6 +33,9 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("cveTags");
+
 /* TEMPORARY SENT FORM */
 switch(Utils::getHttpPostVar("act")){
     case "create":

@@ -33,6 +33,9 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("archs");
+
 $pageNum = $html->getHttpGetVar("pageNum", 0);
 $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
 

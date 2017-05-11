@@ -33,6 +33,8 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("tags");
 
 /* TEMPORARY SENT FORM */
 if(Utils::getHttpPostVar("tag-create-form") == "sent"){

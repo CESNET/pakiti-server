@@ -33,6 +33,9 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("cve");
+
 $cve = $html->getHttpGetVar("cve");
 $html->addHtmlAttribute("title", "Selected CVE: " . $cve);
 

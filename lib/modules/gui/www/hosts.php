@@ -33,17 +33,22 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("hosts");
+
+$userId = $html->getUserId();
+
 // Process operations
 switch ($html->getHttpGetVar("op")) {
   case "del":
     // Delete host
     $hostId = $html->getHttpGetVar("hostId");
-    //TODO Check Authz
-    $host = $pakiti->getManager("HostsManager")->getHostById($hostId);
+
+    $host = $pakiti->getManager("HostsManager")->getHostById($hostId, $userId);
     if ($host != null) {
       $pakiti->getManager("HostsManager")->deleteHost($host);
     } else {
-      $html->setError("Cannot delete host, host with id $hostId doesn't exist");
+      $html->setError("Cannot delete host, host with id $hostId doesn't exist or access denied");
     }
     break;
 }
@@ -55,15 +60,13 @@ $pageNum = $html->getHttpGetVar("pageNum", 0);
 $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
 $sort = $html->getHttpGetVar("sortBy", "hostname");
 
-$hostsCount = $pakiti->getManager("HostsManager")->getHostsCount();
+$hostsCount = $pakiti->getManager("HostsManager")->getHostsCount($userId);
 
 // if displaying all
 if($firstLetter == "all"){
-    $hosts = $pakiti->getManager("HostsManager")->getHosts($sort);
-}else{
-    //$hosts = $pakiti->getManager("HostsManager")->getHosts($sort, $pageSize, $pageNum);
-    $hosts = $pakiti->getManager("HostsManager")->getHostsByFirstLetter($firstLetter);
+  $firstLetter = null;
 }
+$hosts = $pakiti->getManager("HostsManager")->getHosts($sort, -1, -1, $firstLetter, $userId);
 
 
 $displayAllLink = $html -> getQueryString(array("firstLetter" => "all"));

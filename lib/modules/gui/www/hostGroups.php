@@ -33,14 +33,19 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
 
+// Access control
+$html->checkPermission("hostGroups");
+
+$userId = $html->getUserId();
+
 $html->addHtmlAttribute("title", "List of host groups");
 
 $pageNum = $html->getHttpGetVar("pageNum", 0);
 $pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
 $sort = $html->getHttpGetVar("sortBy", "name");
 
-$hostGroupsCount = $pakiti->getManager("HostGroupsManager")->getHostGroupsCount();
-$hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups($sort, $pageSize, $pageNum);
+$hostGroupsCount = $pakiti->getManager("HostGroupsManager")->getHostGroupsCount($userId);
+$hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups($sort, $pageSize, $pageNum, $userId);
 
 //---- Output HTML
 
