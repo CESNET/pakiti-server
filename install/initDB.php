@@ -31,106 +31,112 @@
 # Load the constants
 require_once(realpath(dirname(__FILE__)) . '/../lib/common/Constants.php');
 
-# Load the configuration file
-require_once(Constants::$PAKITI_CONFIG_FILE);
-
 require_once(realpath(dirname(__FILE__)) . '/../lib/common/AttributesNames.php');
+
+$shortopts = "hu:p::c:r";
+$longopts = array(
+      "help",
+      "user:",
+      "password::",
+      "config:",
+      "reInitialize"
+);
+$opt = getopt($shortopts, $longopts);
+
+function usage() {
+  die("Usage: initDB.php [OPTIONS]
+    -h, --help \t Display this help and exit.
+    -u, --user=name \t User for login if not root user.
+    -p, --password[=name] \t Password to use when connecting to server. If password is not given it's asked from the stty.
+    -c, --config=name \t Pakiti config file for use if not default file.
+    -r, --reInitialize \t Drop existing database
+    \n");
+}
+
+# Help
+if (isset($opt["h"]) || isset($opt["help"])) {
+  usage();
+}
+
+# Load the configuration file
+$config_file = Constants::$PAKITI_CONFIG_FILE;
+if(isset($opt["c"])){
+  $config_file = $opt["c"];
+} elseif(isset($opt["config"])){
+  $config_file = $opt["config"];
+}
+if(!file_exists($config_file)){
+  die("Config file [".$config_file."] does not exists.");
+}
+require_once($config_file);
+
+# User
+$dbUser = "root";
+if(isset($opt["u"])){
+  $dbUser = $opt["u"];
+} elseif(isset($opt["user"])){
+  $dbUser = $opt["user"];
+}
+
+# Password
+$dbPassword = null;
+if(isset($opt["p"]) && $opt["p"]){
+  $dbPassword = $opt["p"];
+} elseif(isset($opt["password"]) && $opt["password"]){
+  $dbPassword = $opt["password"];
+} elseif(isset($opt["password"]) || isset($opt["p"])){
+  $fh = fopen('php://stdin','r')  or die($php_errormsg);
+  print "Enter password:";
+  `/bin/stty -echo`;
+  $dbPassword = trim(fgets($fh,64)) or die($php_errormsg);
+  `/bin/stty echo`;
+  print "\n";
+  fclose($fh);
+}
+
+# ReInitialize
+$reInitialize = false;
+if(isset($opt["r"]) || isset($opt["reInitialize"])){
+  $reInitialize = true;
+}
+
 
 print "\n#########################\n";
 print "# Pakiti DB Initializer #\n";
 print "#########################\n\n";
 
-
-$dbHostname = Config::$DB_HOST;
-$dbUsername = "";
-$dbPassword = "";
-$dbName = Config::$DB_NAME;
-$reInitialize = FALSE;
-
-
-if (sizeof($argv) == 1) {
-  $fh = fopen('php://stdin','r')  or die($php_errormsg);
-  print "Login: ";
-  $dbUsername = trim(fgets($fh,64)) or die($php_errormsg);
-  print 'Password: ';
-  `/bin/stty -echo`;
-  $dbPassword = trim(fgets($fh,64)) or die($php_errormsg);
-  `/bin/stty echo`;
-  print "\n";
-  while(TRUE){
-    print "ReInitialize[Y/n]: ";
-    $temp = trim(fgets($fh,64)) or die($php_errormsg);
-    if ($temp == "Y" || $temp == "y"){
-      $reInitialize = TRUE;
-      break;
-    } elseif ($temp == "N" || $temp == "n") {
-      $reInitialize = FALSE;
-      break;
-    } else {
-      print "Please type Y or N! \n";
-    }
-  };
-  fclose($fh);
-} else {
-  foreach ($argv as $value) {
-    $attrs = explode('=',$value);
-    
-    $attrName = trim($attrs[0]);
-    if (array_key_exists(1, $attrs)) {
-      $attrValue = trim($attrs[1]);
-    } else {
-      $attrValue = "";
-    }
-    
-    switch ($attrName) {
-      case "--dbUsername":
-        $dbUsername = $attrValue;
-        break;
-      case "--dbPassword":
-        $dbPassword = $attrValue;
-        break;
-      case "--reInitialize":
-        $reInitialize = TRUE;
-        break;
-      default:
-        print "Usage: ". $argv[0] . " (--dbUsername=<username>) (--dbPassword=<password>) [--reInitialize]\n\n" .
-        "--reInitialize - drop existing database\n";
-        exit(0);
-    }
-  }
-}
-
 # Connect to the database
-print "Connection to the DB server '$dbHostname' ... ";
-if (!$link = new mysqli($dbHostname, $dbUsername, $dbPassword)) {
-  print "ERROR: cannot connect to the database server: " . mysqli_connect_error() . "\n";
-  exit(1);
+print "Connection to the DB server '".Config::$DB_HOST."' ... ";
+$link = new mysqli(Config::$DB_HOST, $dbUser, $dbPassword);
+if ($link->connect_error) {
+    print "ERROR: cannot connect to the database server: " . $link->connect_error . "\n";
+    exit(1);
 }
 $link->autocommit(true);
 print "OK\n";
 
 # If reInitialize was enabled, drop the database
 if ($reInitialize) {
-  print "Droping the database '$dbName' ... ";
-  if (!$link->query("drop database $dbName")) {
-    print "ERROR: cannot drop the database '$dbName': " . $link->error . "\n";
+  print "Droping the database '".Config::$DB_NAME."' ... ";
+  if (!$link->query("drop database ".Config::$DB_NAME."")) {
+    print "ERROR: cannot drop the database '".Config::$DB_NAME."': " . $link->error . "\n";
     exit(1);
   }
   print "OK\n"; 
 }
 
-print "Creating the database '$dbName' ... ";
+print "Creating the database '".Config::$DB_NAME."' ... ";
 # Create the database
-if (!$link->query("create database if not exists $dbName")) {
-  print "ERROR: cannot create the database '$dbName': " . $link->error . ", you can use --reInitialize which drops existing database\n";
+if (!$link->query("create database if not exists ".Config::$DB_NAME."")) {
+  print "ERROR: cannot create the database '".Config::$DB_NAME."': " . $link->error . ", you can use --reInitialize which drops existing database\n";
   exit(1);
 }
 print "OK\n";
 
-print "Connection to the newly created database '$dbName' ... ";
+print "Connection to the newly created database '".Config::$DB_NAME."' ... ";
 # Select the database
-if (!$link->select_db($dbName)) {
-  print "ERROR: cannot select the database '$dbName': " . $link->error . "\n";
+if (!$link->select_db(Config::$DB_NAME)) {
+  print "ERROR: cannot select the database '".Config::$DB_NAME."': " . $link->error . "\n";
   exit(1);
 }
 print "OK\n";
@@ -177,12 +183,13 @@ if (!$link->close()) {
   print "ERROR: Cannot close existing connection to the database: " .  $link->error . "\n";
   exit(1);
 }
-if (!$newLink = new mysqli(Config::$DB_HOST, Config::$DB_USER, Config::$DB_PASSWORD)) {
-  print "ERROR: cannot connect to the database server using connection settings from the pakiti configuration file: " . mysqli_connect_error() . "\n";
+$newLink = new mysqli(Config::$DB_HOST, Config::$DB_USER, Config::$DB_PASSWORD);
+if ($newLink->connect_error) {
+  print "ERROR: cannot connect to the database server using connection settings from the pakiti configuration file: " . $newLink->connect_error . "\n";
   exit(1);
 }
 if (!mysqli_select_db($newLink, Config::$DB_NAME)) {
-  print "ERROR: cannot select the database '$dbName': " . mysqli_error($newLink) . "\n";
+  print "ERROR: cannot select the database '".Config::$DB_NAME."': " . mysqli_error($newLink) . "\n";
   exit(1);
 }
 print "OK\n";

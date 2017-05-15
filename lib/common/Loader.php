@@ -30,8 +30,14 @@
 # Load the constants
 require_once(realpath(dirname(__FILE__)) . '/Constants.php');
 
+# If apache env variable exists, use it as pakiti config file path
+$config_file = Constants::$PAKITI_CONFIG_FILE;
+if(array_key_exists(Constants::$PAKITI_CONFIG_ENV, $_SERVER)){
+  $config_file = $_SERVER[Constants::$PAKITI_CONFIG_ENV];
+}
+
 # Load the configuration file
-require_once(Constants::$PAKITI_CONFIG_FILE);
+require_once($config_file);
 
 # Load Pakiti, Constants and Utils class
 require_once(realpath(dirname(__FILE__)) . '/Pakiti.php');
