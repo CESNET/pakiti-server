@@ -64,6 +64,13 @@ class CveExceptionDao
         return $this->db->queryObjects($sql, "CveException");
     }
 
+    public function getCvesExceptionsIds()
+    {
+        $sql = "select id
+            from CveException";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
     public function getCveExceptionsByPkgId($pkgId)
     {
         return $this->db->queryObjects(
@@ -124,6 +131,13 @@ class CveExceptionDao
     {
         $this->db->query(
             "delete from CveException where id=" . $this->db->escape($exception->getId()));
+    }
+
+    public function deleteCveExceptionById($id)
+    {
+        $sql = "delete from CveException
+            where id=".$this->db->escape($id);
+        $this->db->query($sql);
     }
 
     public function deleteCvesExceptions()

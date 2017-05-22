@@ -60,9 +60,6 @@ if ($url == null) {
         die("Xml parsing error! Check log for curl errors.");
     }
 
-    if (isset($opt["r"]) || isset($opt["remove"])) {
-        $pakiti->getDao("CveException")->deleteCvesExceptions();
-    }
 
     foreach ($xml->cveException as $cveExceptionNode) {
 
@@ -87,6 +84,7 @@ if ($url == null) {
             $osGroupIds = [$pakiti->getManager("OsGroupsManager")->getOsGroupIdByName($cveExceptionNode->osGroup->name)];
         }
 
+        $cvesExceptionsIds = array();
         foreach ($types as $type) {
             foreach ($archs as $arch) {
                 $pkgId = $pakiti->getManager("PkgsManager")->getPkgId($cveExceptionNode->pkg->name, $cveExceptionNode->pkg->version, $cveExceptionNode->pkg->release, $arch, $type);
@@ -99,11 +97,22 @@ if ($url == null) {
                             $cveException->setPkgId($pkgId);
                             $cveException->setOsGroupId($osGroupId);
                             $pakiti->getManager("CveExceptionsManager")->storeCveException($cveException);
+                            array_push($cvesExceptionsIds, $cveException->getId());
                         }
                     }
                 }
             }
         }
+
+        if (isset($opt["r"]) || isset($opt["remove"])) {
+            $allCvesExceptionsIds = $pakiti->getManager("CveExceptionsManager")->getCvesExceptionsIds();
+            foreach($allCvesExceptionsIds as $id){
+                if(!in_array($id, $cvesExceptionsIds)){
+                    $pakiti->getManager("CveExceptionsManager")->removeCveExceptionById($id);
+                }
+            }
+        }
+
     }
 }
 

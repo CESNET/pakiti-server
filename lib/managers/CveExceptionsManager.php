@@ -73,6 +73,11 @@ class CveExceptionsManager extends DefaultManager
         return $this->getPakiti()->getDao("CveException")->getCvesExceptions();
     }
 
+    public function getCvesExceptionsIds()
+    {
+        return $this->getPakiti()->getDao("CveException")->getCvesExceptionsIds();
+    }
+
     public function getCveExceptionsByPkg(Pkg $pkg)
     {
         $this->getPakiti()->getDao("CveException")->getCveExceptionsByPkgId($pkg->getId());
@@ -87,6 +92,11 @@ class CveExceptionsManager extends DefaultManager
     public function removeCveException(CveException $exception)
     {
         $this->getPakiti()->getDao("CveException")->delete($exception);
+    }
+
+    public function removeCveExceptionById($id)
+    {
+        $this->getPakiti()->getDao("CveException")->deleteCveExceptionById($id);
     }
 
     public function getCveExceptionById($exceptionId)
