@@ -199,17 +199,22 @@ class FeederModule extends DefaultModule
                     throw new Exception("Feeder [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "] doesn't send any data!");
                 }
                 
-                $tmpFileIn = tempnam("/dev/shm/", "cern_IN_");
-                $tmpFileOut = tempnam("/dev/shm/", "cern_OUT_");
+                $tmpFileIn = tempnam("/dev/shm/", "pakiti3_IN_");
                 # Store encrypted report into the file and the use openssl smime to decode it
                 if (file_put_contents($tmpFileIn, $data) === FALSE) {
-                    throw new Exception("Cannot write to the file '$tmpFileIn' during decoding cern_1 report");
+                    throw new Exception("Cannot write to the file '$tmpFileIn' during decoding report");
                 }
-                if (system("openssl smime -decrypt -binary -inform DER -inkey " . Config::$CERN_REPORT_DECRYPTION_KEY . " -in $tmpFileIn -out $tmpFileOut") === FALSE) {
-                    throw new Exception("Cannot run openssl smime on the file '$tmpFileIn'");
+                # If mime type is application/octet-stream try to decrypt data, else use data without decryption
+                if (mime_content_type($tmpFileIn) == Constants::$MIME_TYPE_ENCRYPTED_REPORT) {
+                    $tmpFileOut = tempnam("/dev/shm/", "pakiti3_OUT_");
+                    if (system("openssl smime -decrypt -binary -inform DER -inkey " . Config::$REPORT_DECRYPTION_KEY . " -in $tmpFileIn -out $tmpFileOut") === FALSE) {
+                        throw new Exception("Cannot run openssl smime on the file '$tmpFileIn'");
+                    }
+                    # Clean up
+                    unlink($tmpFileIn);
+                } else {
+                    $tmpFileOut = $tmpFileIn;
                 }
-                # Clean up
-                unlink($tmpFileIn);
 
                 $handle = fopen("$tmpFileOut", "r");
                 $lineNumber = 0;
