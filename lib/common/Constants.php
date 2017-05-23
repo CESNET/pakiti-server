@@ -128,5 +128,9 @@ final class Constants {
   
   # Does the host sending also its own repositories definitions?
   public static $OWN_REPOSITORIES_DEF = 1;
+
+  # Mime type of encrypted report
+  public static $MIME_TYPE_ENCRYPTED_REPORT = "application/octet-stream";
+
 }
 ?>
