@@ -118,3 +118,5 @@ If pkg->arch, pkg->type or osGroup->name is not set, iterate over all possible.
 If you need more pakiti servers on one machine, you can just set environment variable 'PAKITI_CONFIG_FILE' with path to appropriate Config.php in apache configuration.
 
     SetEnv PAKITI_CONFIG_FILE /etc/pakiti/Config2.php
+
+When using cli module, you must set the --config option to the correct Config.php otherwise the default Config.php will be used. Use the --config as the first option.
