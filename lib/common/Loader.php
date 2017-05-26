@@ -30,9 +30,19 @@
 # Load the constants
 require_once(realpath(dirname(__FILE__)) . '/Constants.php');
 
-# If apache env variable exists, use it as pakiti config file path
+# Default config file
 $config_file = Constants::$PAKITI_CONFIG_FILE;
-if(array_key_exists(Constants::$PAKITI_CONFIG_ENV, $_SERVER)){
+
+# If cli is used
+if(php_sapi_name() == "cli"){
+  # try to get config file path from option --config
+  $opt = getopt("", ["config:"]);
+  if(isset($opt["config"])){
+    $config_file = $opt["config"];
+  }
+# else if apache env variable exists
+} elseif(array_key_exists(Constants::$PAKITI_CONFIG_ENV, $_SERVER)){
+  # set pakiti config file path from env variable
   $config_file = $_SERVER[Constants::$PAKITI_CONFIG_ENV];
 }
 
