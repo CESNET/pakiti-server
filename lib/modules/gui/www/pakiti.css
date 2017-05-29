@@ -202,6 +202,11 @@ h1 {
   font-weight: bold;
 }
 
+.tagged_cve {
+  color: #000099;
+  font-weight: bold;
+}
+
 /* FORMS */
 form{
     padding:5px 10px;

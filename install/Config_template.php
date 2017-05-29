@@ -111,6 +111,12 @@ final class Config
         "linux-image-2.4",
         "linux-image-2.6",
     );
+
+    # Tags to mark CVEs
+    public static $TAGS = array(
+        "Critical",
+        "High"
+    );
 }
 
 ?>

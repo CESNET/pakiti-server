@@ -27,7 +27,6 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require_once(realpath(dirname(__FILE__)) . '/Tag.php');
 require_once(realpath(dirname(__FILE__)) . '/Pkg.php');
 require_once(realpath(dirname(__FILE__)) . '/Arch.php');
 require_once(realpath(dirname(__FILE__)) . '/RepositoryDef.php');

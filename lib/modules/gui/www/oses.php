@@ -49,7 +49,7 @@ if ($entries > 0) {
             $pakiti->getManager("OsGroupsManager")->updateOsGroup($osGroup);
         }
     }
-    $html->setMessage(sprintf("The changes have been saved.", $tagName));
+    $html->setMessage("The changes have been saved.");
 }
 
 $pageNum = $html->getHttpGetVar("pageNum", 0);

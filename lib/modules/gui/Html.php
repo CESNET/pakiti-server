@@ -245,58 +245,6 @@ class HTMLModule extends DefaultModule
         }
     }
 
-    public function printCveTags(&$cveNames)
-    {
-        print "
-  	<table class=\"tableList\">
-        <tr>
-            <th>Enable</th>
-            <th>CVE</th>
-            <th>CVE Tag</th>
-            <th>Reason</th>
-            <th>InfoUrl</th>
-            <th>Modifier</th>
-            <th>Timestamp</th>
-            <th>Action</th>
-            <th>&nbsp;</th>
-        </tr>";
-        $i = 0;
-        foreach ($cveNames as $cveName) {
-            $tags = $this->getPakiti()->getManager("TagsManager")->getTagsByCveName($cveName);
-            foreach ($tags as $tag) {
-                $i++;
-                print "<tr class=\"a" . ($i & 1) . "\">";
-                print "<td> <input type=" . "checkbox" . " onClick=\"document.tags.cveName.value='" . $cveName . "';document.tags.isEnable.value=this.checked;
-                document.tags.tagId.value='" . $tag->getId() . "';document.tags.act.value='update'; document.tags.submit()\"";
-                if ($tag->getEnabled() == 1) print " checked";
-                print "> </td>\n";
-                print "<td>";
-                print "<span";
-                if ($tag->getName() == "Critical" && $tag->getEnabled()) {
-                    print " class=\"critical_cve\"";
-                }
-
-                if ($tag->getName() == "High" && $tag->getEnabled()) {
-                    print " class=\"high_cve\"";
-                }
-
-                print ">" . $cveName . "</span>";
-                print "</td>";
-                print "<td>" . $tag->getName() . "</td>";
-                print "<td>" . $tag->getReason() . "</td>";
-                print "<td><a href='" . $tag->getInfoUrl() . "' target='_blank'> " . $tag->getInfoUrl() . "</a></td>";
-                print "<td>" . $tag->getModifier() . "</td>";
-                print "<td>" . $tag->getTimestamp() . "</td>";
-                print "<td><span style='color: #002BFF; font-weight: bold; cursor: pointer;' onclick=\"document.tags.act.value='delete';document.tags.cveName.value='" . $cveName . "';
-                document.tags.tagId.value='" . $tag->getId() . "';document.tags.submit()\" ><a>[remove]</a></span> </td>";
-                print "</tr>";
-            }
-
-        }
-
-        print "</table>";
-    }
-
     public function printHosts(&$hosts)
     {
         print "
@@ -382,8 +330,7 @@ class HTMLModule extends DefaultModule
         $this->permission("oses") ? print "<a href=\"oses.php\">Oses</a> " : print "";
         $this->permission("archs") ? print "<a href=\"archs.php\">Archs</a> " : print "";
         $this->permission("vds") ? print "<a href=\"vds.php\">VDS</a> " : print "";
-        $this->permission("tags") ? print "<a href=\"tags.php\">Tags</a> " : print "";
-        $this->permission("cveTags") ? print "<a href=\"cve_tags.php\">CVE Tags</a> " : print "";
+        $this->permission("cveTags") ? print "<a href=\"cve_tags.php\">Tags</a> " : print "";
         $this->permission("cveExceptions") ? print "<a href=\"exceptions.php\">Exceptions</a> " : print "";
         $this->permission("stats") ? print "<a href=\"stats.php\">Statistics</a> " : print "";
         $this->permission("users") ? print "<a href=\"users.php\">Users</a> " : print "";

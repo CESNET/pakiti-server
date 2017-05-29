@@ -59,22 +59,30 @@ if($url == null){
     die("Xml parsing error! Check log for curl errors.");
   }
 
-  if (isset($opt["r"]) || isset($opt["remove"])) {
-    $pakiti->getDao("Tag")->deleteCveTags();
+  # Get all cve names in order to check if cve name exists
+  $cveNames = $pakiti->getManager("CveDefsManager")->getCveNames();
+
+  $cveTagsIds = array();
+  foreach($xml->cveTag as $cveTagNode){
+    if(in_array($cveTagNode->cveName, $cveNames)){
+      $cveTag = new CveTag();
+      $cveTag->setCveName($cveTagNode->cveName);
+      $cveTag->setTagName($cveTagNode->tagName);
+      $cveTag->setReason($cveTagNode->reason);
+      $cveTag->setInfoUrl($cveTagNode->infoUrl);
+      $cveTag->setEnabled($cveTagNode->enabled);
+      $cveTag->setModifier($cveTagNode->modifier);
+      $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
+      array_push($cveTagsIds, $cveTag->getId());
+    }
   }
 
-  foreach($xml->cveTag as $cveTagNode){
-    if($pakiti->getDao("Cve")->getCvesByName($cveTagNode->cveName) != null){
-      $tag = new Tag();
-      $tag->setName($cveTagNode->tag->name);
-      $tag->setDescription($cveTagNode->tag->description);
-      $tag->setReason($cveTagNode->reason);
-      $tag->setInfoUrl($cveTagNode->infoUrl);
-      $tag->setModifier($url);
-      $tag->setEnabled($cveTagNode->enabled);
-      $cve = new Cve();
-      $cve->setName($cveTagNode->cveName);
-      $pakiti->getManager("TagsManager")->assignTagToCve($cve, $tag);
+  if (isset($opt["r"]) || isset($opt["remove"])) {
+    $allCveTagsIds = $pakiti->getManager("CveTagsManager")->getCveTagsIds();
+    foreach($allCveTagsIds as $id){
+      if(!in_array($id, $cveTagsIds)){
+        $pakiti->getManager("CveTagsManager")->deleteCveTagById($id);
+      }
     }
   }
 }

@@ -127,30 +127,6 @@ class HostsManager extends DefaultManager {
   }
 
   /*
-   * Get Host by tag name
-   */
-  public function getHostsByTagName($tagName)
-  {
-    $tagId = $this->getPakiti()->getManager("TagsManager")->getTagIdByName($tagName);
-    if ($tagId == -1) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("The tag $tagName does not exist");
-    }
-
-
-    $sql = "select Host.id from Host join HostTag on Host.id=HostTag.hostId where
-          HostTag.tagId={$tagId}";
-
-    $hostIdsDb =& $this->getPakiti()->getManager("DbManager")->queryToMultiRow($sql);
-    $hosts = array();
-    foreach ($hostIdsDb as $hostIdDb) {
-      $host = $this->getHostById($hostIdDb["id"]);
-      array_push($hosts, $host);
-    }
-    return $hosts;
-  }
-
-  /*
    * Get hosts count
    */
   public function getHostsCount($userId = -1) {
