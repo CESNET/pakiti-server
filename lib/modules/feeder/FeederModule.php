@@ -138,7 +138,7 @@ class FeederModule extends DefaultModule
                         $pkg["Pkg"]->getVersionRelease() . "\t" .
                         $pkg["Pkg"]->getArch() . "\t" .
                         $pkgCve->getName() . "\t" .
-                        $tag->getName() . "\n";
+                        $tag->getTagName() . "\n";
                 }
             }
         }

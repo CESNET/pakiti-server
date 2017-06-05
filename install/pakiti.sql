@@ -55,14 +55,6 @@ create table `Domain` (
 	unique key `name` (`name`)
 )ENGINE=INNODB;
 
-create table `Tag` (
-	`id` integer(10) not null auto_increment,
-	`name` varchar(63) not null,
-	`description` varchar(255),
-	primary key (`id`),
-	unique key `name` (`name`)
-)ENGINE=INNODB;
-
 create table `HostGroup` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
@@ -205,16 +197,17 @@ create table `CveException` (
 )ENGINE=INNODB;
 
 create table `CveTag` (
+	`id` integer(10) not null auto_increment,
 	`cveName` varchar(63) not null,
-	`tagId` integer(10) not null,
-	`reason` varchar(255),
-	`infoUrl` varchar(255),
+	`tagName` varchar(63) not null,
+	`reason` varchar(255) not null,
+	`infoUrl` varchar(255) not null,
 	`timestamp` timestamp default CURRENT_TIMESTAMP,
 	`enabled` int(1) default 1,
 	`modifier` varchar(255),
-	unique key `unique` (`cveName`, `tagId`),
-	foreign key (`cveName`) references Cve(`name`) on delete cascade,
-	foreign key (`tagId`) references Tag(`id`)  on delete cascade
+	primary key (`id`),
+	unique key `unique` (`cveName`, `tagName`),
+	foreign key (`cveName`) references Cve(`name`) on delete cascade
 )ENGINE=INNODB;
 
 create table `Vulnerability` (

@@ -33,7 +33,6 @@
 final class Pakiti {
   private $_dbManager = null;
   private $_hostsManager = null;
-  private $_tagsManager = null;
   private $_hostGroupsManager = null;
   private $_reportsManager = null;
   

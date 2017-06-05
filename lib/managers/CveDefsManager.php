@@ -68,7 +68,7 @@ class CveDefsManager extends DefaultManager
         Utils::log(LOG_DEBUG, "Getting CVE its name [name=$name] and cveDefId [cveDefId=$cveDefId]", __FILE__, __LINE__);
         $cve = $this->getPakiti()->getDao("Cve")->getCve();
         if (is_object($cve)) {
-            $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+            $cve->setTag($this->getPakiti()->getManager("CveTagsManager")->getCveTagsByCveName($cve->getName()));
             $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
         }
         return $cve;
@@ -79,7 +79,7 @@ class CveDefsManager extends DefaultManager
         $cves = $this->getPakiti()->getDao("Cve")->getCvesByCveDef($cveDef);
         if (is_array($cves)) {
             foreach ($cves as $cve) {
-                $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setTag($this->getPakiti()->getManager("CveTagsManager")->getCveTagsByCveName($cve->getName()));
                 $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
             }
         }
@@ -184,7 +184,7 @@ class CveDefsManager extends DefaultManager
         $cves = $this->getPakiti()->getDao("Cve")->getAllCves();
         foreach ($cves as $cve) {
             if (is_object($cve)) {
-                $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setTag($this->getPakiti()->getManager("CveTagsManager")->getCveTagsByCveName($cve->getName()));
                 $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
 
             }
@@ -202,7 +202,7 @@ class CveDefsManager extends DefaultManager
         $cves = $this->getPakiti()->getDao("Cve")->getCvesByName($name);
         foreach ($cves as $cve) {
             if (is_object($cve)) {
-                $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+                $cve->setTag($this->getPakiti()->getManager("CveTagsManager")->getCveTagsByCveName($cve->getName()));
                 $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
 
             }
@@ -246,7 +246,7 @@ class CveDefsManager extends DefaultManager
             $cve->setId($cveDb["id"]);
             $cve->setName($cveDb["name"]);
             $cve->setCveDefId($cveDb["cveDefId"]);
-            $cve->setTag($this->getPakiti()->getManager("TagsManager")->getCveTags($cve));
+            $cve->setTag($this->getPakiti()->getManager("CveTagsManager")->getCveTagsByCveName($cve->getName()));
             $cves[$cveDb["pkgId"]][] = $cve;
         }
         return $cves;

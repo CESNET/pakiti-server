@@ -171,12 +171,12 @@ $html->printHeader();
                                 if (!empty($tags)) {
                                     foreach ($tags as $tag) {
                                         print "<a href=\"cve.php?cve=" . $cve->getName() . "\"><span";
-                                        if ($tag->getName() == "Critical" && $tag->getEnabled()) {
+                                        if ($tag->getTagName() == "Critical" && $tag->isEnabled()) {
                                             print " class=\"critical_cve\"";
-                                        }
-
-                                        if ($tag->getName() == "High" && $tag->getEnabled()) {
+                                        } elseif ($tag->getTagName() == "High" && $tag->isEnabled()) {
                                             print " class=\"high_cve\"";
+                                        } else {
+                                            print " class=\"tagged_cve\"";
                                         }
 
                                         print ">" . $cve->getName() . " " . "</span></a>";

@@ -71,13 +71,11 @@ CVEs can be marked by tag. These CVEs are listed in the report back to the clien
 <cveTags>
     <cveTag>
         <cveName>...</cveName>
+        <tagName>...</tagName>
         <reason>...</reason>
         <infoUrl>...</infoUrl>
         <enabled>...</enabled>
-        <tag>
-            <name>...</name>
-            <description>...</description>
-        </tag>
+        <modifier>...</modifier>
     </cveTag>
 </cveTags>
 ```

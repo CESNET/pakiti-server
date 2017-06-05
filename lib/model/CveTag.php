@@ -29,23 +29,18 @@
 
 /**
  * @author Michal Prochazka
+ * @author Jakub Mlcak
  */
-class Tag
+class CveTag
 {
     private $_id = -1;
-    private $_name;
     private $_cveName;
-    private $_description;
+    private $_tagName;
     private $_reason;
     private $_infoUrl;
-    private $_modifier;
     private $_timestamp;
     private $_enabled = 1;
-
-    public function __construct()
-    {
-
-    }
+    private $_modifier;
 
     public function getId()
     {
@@ -57,40 +52,44 @@ class Tag
         $this->_id = $value;
     }
 
-    /**
-     * @return mixed
-     */
     public function getCveName()
     {
         return $this->_cveName;
     }
 
-    /**
-     * @param mixed $cveName
-     */
-    public function setCveName($cveName)
+    public function setCveName($value)
     {
-        $this->_cveName = $cveName;
+        $this->_cveName = $value;
     }
 
-    public function getName()
+    public function getTagName()
     {
-        return $this->_name;
+        return $this->_tagName;
     }
 
-    public function setName($value)
+    public function setTagName($value)
     {
-        $this->_name = $value;
+        $this->_tagName = $value;
     }
 
-    public function getDescription()
+    public function getReason()
     {
-        return $this->_description;
+        return $this->_reason;
     }
 
-    public function setDescription($value)
+    public function setReason($value)
     {
-        $this->_description = $value;
+        $this->_reason = $value;
+    }
+
+    public function getInfoUrl()
+    {
+        return $this->_infoUrl;
+    }
+
+    public function setInfoUrl($value)
+    {
+        $this->_infoUrl = $value;
     }
 
     public function getTimestamp()
@@ -103,57 +102,27 @@ class Tag
         $this->_timestamp = $value;
     }
 
-    public function getEnabled()
+    public function isEnabled()
     {
         return $this->_enabled;
     }
 
     public function setEnabled($value)
     {
-        $this->_enabled = $value;
+        if ($value) {
+            $this->_enabled = 1;
+        } else {
+            $this->_enabled = 0;
+        }
     }
 
-    /**
-     * @return mixed
-     */
-    public function getReason()
-    {
-        return $this->_reason;
-    }
-
-    /**
-     * @param mixed $reason
-     */
-    public function setReason($reason)
-    {
-        $this->_reason = $reason;
-    }
-
-    public function getInfoUrl()
-    {
-        return $this->_infoUrl;
-    }
-
-    public function setInfoUrl($infoUrl)
-    {
-        $this->_infoUrl = $infoUrl;
-    }
-
-    /**
-     * @return mixed
-     */
     public function getModifier()
     {
         return $this->_modifier;
     }
 
-    /**
-     * @param mixed $modifier
-     */
-    public function setModifier($modifier)
+    public function setModifier($value)
     {
-        $this->_modifier = $modifier;
+        $this->_modifier = $value;
     }
 }
-
-?>

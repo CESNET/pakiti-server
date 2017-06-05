@@ -27,7 +27,6 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require_once(realpath(dirname(__FILE__)) . '/Tag.php');
 require_once(realpath(dirname(__FILE__)) . '/CvePkg.php');
 require_once(realpath(dirname(__FILE__)) . '/CveException.php');
 
@@ -35,21 +34,9 @@ require_once(realpath(dirname(__FILE__)) . '/CveException.php');
  * @author Michal Prochazka
  */
 class Cve {
-	/**
-	 * @AttributeType int
-	 */
 	private $_id;
-	/**
-	 * @AttributeType String
-	 */
 	private $_name;
-	/**
-	 * @AssociationType Tag
-	 * @AssociationMultiplicity 0..*
-	 */
-
 	private $_cveDefId = -1;
-
 	private $_tag = array();
 	private $_cveExceptions = array();
 
