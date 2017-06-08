@@ -62,7 +62,7 @@ switch (Utils::getHttpPostVar("act")) {
         $id = Utils::getHttpPostVar("id");
         $enabled = Utils::getHttpPostVar("enabled");
         $cveTag = $pakiti->getManager("CveTagsManager")->getCveTagById($id);
-        $cveTag->setEnabled($enabled);
+        $cveTag->setEnabled($enabled == "true");
         $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
         break;
     case "delete":

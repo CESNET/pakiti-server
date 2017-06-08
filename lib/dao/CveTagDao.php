@@ -102,7 +102,7 @@ class CveTagDao
     public function getIdsByCveName($cveName)
     {
         $sql = "select id from CveTag
-            where cveName=".$this->db->escape($cveName);
+            where cveName='".$this->db->escape($cveName)."'";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 

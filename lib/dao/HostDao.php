@@ -171,6 +171,18 @@ class HostDao {
 
     return $this->db->queryToSingleValueMultiRow($sql);
   }
+  
+  public function getIdsByHostGroupId($hostGroupId) {
+
+    $select = "Host.id";
+    $from = "Host";
+    $join = "inner join HostHostGroup on Host.id = HostHostGroup.hostId";
+    $where = "HostHostGroup.hostGroupId = '" . $this->db->escape($hostGroupId) . "'";
+    $order = "Host.hostname";
+
+    $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
+    return $this->db->queryToSingleValueMultiRow($sql);
+  }
 
 
   public function update(Host &$host) {

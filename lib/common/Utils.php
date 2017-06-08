@@ -146,39 +146,41 @@ final class Utils {
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off');
   }
 
-  /*
+  /**
    * Compose sql select statement
    * select, from, join, where and order could be string, string array or null
    * limit and offset could be numeric or null
    * @return sql statement
    */
-  public static function sqlSelectStatement($select, $from, $join = null, $where = null, $order = null, $limit = null, $offset = null){
-    $sql = "";
-    $sql .= Utils::compose("select", $select, ",");
-    $sql .= Utils::compose("from", $from, ",");
-    $sql .= Utils::compose("", $join, "");
-    $sql .= Utils::compose("where", $where, "and");
-    $sql .= Utils::compose("order by", $order, ",");
-    $sql .= Utils::checkNull("limit", $limit);
-    $sql .= Utils::checkNull("offset", $offset);
+  public static function sqlSelectStatement($select, $from, $join = null, $where = null, $order = null, $limit = null, $offset = null)
+  {
+    $sql = Utils::compose("select ", $select, ",")
+      . Utils::compose("from ", $from, ",")
+      . Utils::compose("", $join, "")
+      . Utils::compose("where ", $where, " and")
+      . Utils::compose("order by ", $order, ",")
+      . Utils::compose("limit ", $limit)
+      . Utils::compose("offset ", $offset);
 
     if ($select == null || $from == null || ($limit != null && !is_numeric($limit)) || ($offset != null && !is_numeric($offset))) {
       Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
       throw new Exception("Select SQL statement error: $sql");
     }
 
+    Utils::log(LOG_DEBUG, "Select SQL statement: $sql", __FILE__, __LINE__);
     return $sql;
   }
 
-  private static function compose($mean, $string, $separator){
+  private static function compose($mean, $string, $separator = null)
+  {
     $sql = "";
-    if($string != null){
-      if(!is_array($string)){
-        $sql .= "$mean $string ";
+    if ($string != null) {
+      if (!is_array($string)) {
+        $sql .= "$mean$string ";
       } else {
-        if(!empty($string)){
-          $sql .= "$mean ";
-          foreach($string as $item){
+        if (!empty($string) && $separator !== null) {
+          $sql .= "$mean";
+          foreach ($string as $item) {
             $sql .= "$item$separator ";
           }
           $length = -1 - strlen($separator);
@@ -188,13 +190,6 @@ final class Utils {
       }
     }
     return $sql;
-  }
-
-  private static function checkNull($mean, $string){
-    if($string != null){
-      return "$mean $string ";
-    }
-    return "";
   }
 
 }

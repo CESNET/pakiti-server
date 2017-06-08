@@ -462,6 +462,8 @@ class FeederModule extends DefaultModule
         # Get number of CVEs
         $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
         $this->_report->setNumOfCves($cveCount);
+        $cveWithTagCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host, true);
+        $this->_report->setNumOfCvesWithTag($cveWithTagCount);
 
         # Get number of installed packages and set to the new report
         if($this->_report->getNumOfInstalledPkgs() == -1){

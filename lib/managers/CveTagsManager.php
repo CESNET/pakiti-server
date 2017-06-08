@@ -72,14 +72,14 @@ class CveTagsManager extends DefaultManager
 
     public function getCveTagIdByCveNameTagName($cveName, $tagName)
     {
-        Utils::log(LOG_DEBUG, "Getting cveTag ID by CVE name and Tag name", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Getting cveTag ID by CVE name[".$cveName."] and Tag name[".$tagName."]", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("CveTag");
         return $dao->getIdByCveNameTagName($cveName, $tagName);
     }
 
     public function getCveTagsByCveName($cveName)
     {
-        Utils::log(LOG_DEBUG, "Getting cveTags by CVE name", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Getting cveTags by CVE name[".$cveName."]", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("CveTag");
         $ids = $dao->getIdsByCveName($cveName);
 
@@ -88,6 +88,13 @@ class CveTagsManager extends DefaultManager
             array_push($cveTags, $dao->getById($id));
         }
         return $cveTags;
+    }
+
+    public function getCveTagById($id)
+    {
+        Utils::log(LOG_DEBUG, "Getting cveTag by ID[".$id."]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("CveTag");
+        return $dao->getById($id);
     }
 
     public function getCveTagsIds()
@@ -99,7 +106,7 @@ class CveTagsManager extends DefaultManager
 
     public function deleteCveTagById($id)
     {
-        Utils::log(LOG_DEBUG, "Deleting cveTag by ID", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Deleting cveTag by ID[".$id."]", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("CveTag");
         $dao->deleteById($id);
     }
