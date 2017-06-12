@@ -47,7 +47,8 @@ class ReportDao {
         numOfInstalledPkgs=".$this->db->escape($report->getNumOfInstalledPkgs()).",
         numOfVulnerablePkgsSec=".$this->db->escape($report->getNumOfVulnerablePkgsSec()).",
         numOfVulnerablePkgsNorm=".$this->db->escape($report->getNumOfVulnerablePkgsNorm()).",
-        numOfCves=".$this->db->escape($report->getNumOfCves()));
+        numOfCves=".$this->db->escape($report->getNumOfCves()).",
+        numOfCvesWithTag=".$this->db->escape($report->getNumOfCvesWithTag()));
     
     # Set the newly assigned id
     $report->setId($this->db->getLastInsertedId());
@@ -89,7 +90,8 @@ class ReportDao {
         numOfInstalledPkgs=".$this->db->escape($report->getNumOfInstalledPkgs()).",
         numOfVulnerablePkgsSec=".$this->db->escape($report->getNumOfVulnerablePkgsSec()).",
         numOfVulnerablePkgsNorm=".$this->db->escape($report->getNumOfVulnerablePkgsNorm()).",
-        numOfCves=".$this->db->escape($report->getNumOfCves())."
+        numOfCves=".$this->db->escape($report->getNumOfCves()).",
+        numOfCvesWithTag=".$this->db->escape($report->getNumOfCvesWithTag())."
       where id=".$report->getId());
   }
 
@@ -166,7 +168,8 @@ class ReportDao {
     		numOfInstalledPkgs as _numOfInstalledPkgs, 
     		numOfVulnerablePkgsSec as _numOfVulnerablePkgsSec,
     		numOfVulnerablePkgsNorm as _numOfVulnerablePkgsNorm,
-    		numOfCves as _numOfCves
+    		numOfCves as _numOfCves,
+    		numOfCvesWithTag as _numOfCvesWithTag
       from 
       	Report 
       where
@@ -174,5 +177,28 @@ class ReportDao {
       , "Report");
     
   }
+
+  public function getReportsIdsByHostIdFromTo($hostId, $fromDate, $toDate)
+  {
+    $select = "distinct Report.id";
+    $from = "Report";
+    $join = "inner join ReportHost on Report.id = ReportHost.reportId";
+    $where = null;
+    $order = "Report.receivedOn";
+
+    if ($hostId != null) {
+       $where[] = "ReportHost.hostId=".$this->db->escape($hostId);
+    }
+    if ($fromDate != null) {
+      $where[] = "Report.receivedOn >= '".$this->db->escape($fromDate)."'";
+    }
+    if ($toDate != null) {
+      $where[] = "Report.receivedOn <= '".$this->db->escape($toDate)."'";
+    }
+
+    $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
+    return $this->db->queryToSingleValueMultiRow($sql);
+  }
+
 }
 ?>

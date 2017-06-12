@@ -126,6 +126,18 @@ class HostsManager extends DefaultManager {
     return $hosts;
   }
 
+  public function getHostsByHostGroupId($hostGroupId) {
+    Utils::log(LOG_DEBUG, "Getting host IDs by HostGroup ID[".$hostGroupId."]", __FILE__, __LINE__);
+    $ids = $this->getPakiti()->getDao("Host")->getIdsByHostGroupId($hostGroupId);
+
+    $hosts = array();
+    foreach ($ids as $id) {
+      array_push($hosts, $this->getPakiti()->getDao("Host")->getById($id));
+    }
+    
+    return $hosts;
+  }
+
   /*
    * Get hosts count
    */

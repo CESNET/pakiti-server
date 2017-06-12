@@ -57,7 +57,7 @@ switch (Utils::getHttpVar("act")) {
     $id = Utils::getHttpPostVar("id");
     $admin = Utils::getHttpPostVar("admin");
     $user = $pakiti->getManager("UsersManager")->getUserById($id);
-    $user->setAdmin($admin);
+    $user->setAdmin($admin == "true");
     $pakiti->getManager("UsersManager")->storeUser($user);
     break;
   case "delete":

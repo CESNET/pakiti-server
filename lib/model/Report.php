@@ -40,6 +40,7 @@ class Report {
 	private $_numOfVulnerablePkgsSec = 0;
 	private $_numOfVulnerablePkgsNorm = 0;
 	private $_numOfCves = -1;
+	private $_numOfCvesWithTag = -1;
 	private $_headerHash;
 	private $_pkgsHash;
 	
@@ -76,6 +77,10 @@ class Report {
 	
   public function getNumOfCves() {
 	  return $this->_numOfCves;
+	}
+
+  public function getNumOfCvesWithTag() {
+	  return $this->_numOfCvesWithTag;
 	}
 
   public function getProxyHostname() {
@@ -120,6 +125,10 @@ class Report {
 	
   public function setNumOfCves($val) {
 	  $this->_numOfCves = $val;
+	}
+
+  public function setNumOfCvesWithTag($val) {
+	  $this->_numOfCvesWithTag = $val;
 	}
 
   public function setProxyHostname($val) {

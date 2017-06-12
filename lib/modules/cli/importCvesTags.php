@@ -66,12 +66,12 @@ if($url == null){
   foreach($xml->cveTag as $cveTagNode){
     if(in_array($cveTagNode->cveName, $cveNames)){
       $cveTag = new CveTag();
-      $cveTag->setCveName($cveTagNode->cveName);
-      $cveTag->setTagName($cveTagNode->tagName);
-      $cveTag->setReason($cveTagNode->reason);
-      $cveTag->setInfoUrl($cveTagNode->infoUrl);
-      $cveTag->setEnabled($cveTagNode->enabled);
-      $cveTag->setModifier($cveTagNode->modifier);
+      $cveTag->setCveName($cveTagNode->cveName->__toString());
+      $cveTag->setTagName($cveTagNode->tagName->__toString());
+      $cveTag->setReason($cveTagNode->reason->__toString());
+      $cveTag->setInfoUrl($cveTagNode->infoUrl->__toString());
+      $cveTag->setEnabled($cveTagNode->enabled->__toString());
+      $cveTag->setModifier($cveTagNode->modifier->__toString());
       $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
       array_push($cveTagsIds, $cveTag->getId());
     }

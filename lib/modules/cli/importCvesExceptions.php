@@ -92,10 +92,10 @@ if ($url == null) {
                     foreach ($osGroupIds as $osGroupId) {
                         if ($pakiti->getManager("CveExceptionsManager")->isExceptionCandidate($cveExceptionNode->cveName, $pkgId, $osGroupId)) {
                             $cveException = new CveException();
-                            $cveException->setCveName($cveExceptionNode->cveName);
-                            $cveException->setReason($cveExceptionNode->reason);
-                            $cveException->setPkgId($pkgId);
-                            $cveException->setOsGroupId($osGroupId);
+                            $cveException->setCveName($cveExceptionNode->cveName->__toString());
+                            $cveException->setReason($cveExceptionNode->reason->__toString());
+                            $cveException->setPkgId($pkgId->__toString());
+                            $cveException->setOsGroupId($osGroupId->__toString());
                             $pakiti->getManager("CveExceptionsManager")->storeCveException($cveException);
                             array_push($cvesExceptionsIds, $cveException->getId());
                         }

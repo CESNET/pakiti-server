@@ -62,6 +62,18 @@ class ReportsManager extends DefaultManager {
     return $reports;
   }
 
+  public function getReportsByHostIdFromTo($hostId, $from, $to) {
+    Utils::log(LOG_DEBUG, "Getting reports for host ID[". $hostId ."] from [$from] to [$to]", __FILE__, __LINE__);
+    $ids = $this->getPakiti()->getDao("Report")->getReportsIdsByHostIdFromTo($hostId, $from, $to);
+
+    $reports = array();
+    foreach ($ids as $id) {
+      array_push($reports, $this->getPakiti()->getDao("Report")->getById($id));
+    }
+
+    return $reports;
+  }
+
   /*
    * Get all host reports count
    */

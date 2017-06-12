@@ -92,24 +92,30 @@ class CveDefsManager extends DefaultManager
      * @param Host $host
      * @return int
      */
-    public function getCvesCount(Host $host){
+    public function getCvesCount(Host $host, $tagged = false){
         $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOs()->getName());
         $hostId = $host->getId();
-        return $this->getCvesCountByHostIdAndOsGroupsIds($hostId, $osGroupsIds);
+        return $this->getCvesCountByHostIdAndOsGroupsIds($hostId, $osGroupsIds, $tagged);
     }
 
-    public function getCvesCountByHostIdAndOsGroupsIds($hostId, $osGroupsIds){
+    public function getCvesCountByHostIdAndOsGroupsIds($hostId, $osGroupsIds, $tagged = false){
 
         if(empty($osGroupsIds)){
             return 0;
         }
-        $sql = "select COUNT(Cve.name)
+        $sql = "select COUNT(distinct Cve.name)
             from InstalledPkg
             inner join PkgCveDef on InstalledPkg.pkgId = PkgCveDef.pkgId
-            inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId
-            left join CveException on (PkgCveDef.pkgId = CveException.pkgId and Cve.name = CveException.cveName)
-            where InstalledPkg.hostId = '". $hostId ."'
-            and CveException.id IS NULL
+            inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+        if($tagged){
+            $sql .= " inner join CveTag on Cve.name = CveTag.cveName";
+        }
+        $sql .= " left join CveException on (PkgCveDef.pkgId = CveException.pkgId and Cve.name = CveException.cveName)
+            where InstalledPkg.hostId = '". $hostId ."'";
+        if($tagged){
+            $sql .= " and CveTag.enabled = 1";
+        }
+        $sql .= " and CveException.id IS NULL
             and PkgCveDef.osGroupId in (" . implode(",", array_map("intval", $osGroupsIds)) . ")";
 
         $cvesCount = $this->getPakiti()->getManager("DbManager")->queryToSingleValue($sql);

@@ -79,6 +79,7 @@ $html->printHeader();
 		<th>#Pkgs to security update</th>
 		<th>#Pkgs to update</th>
 		<th>#CVE</th>
+		<th>#CVE with tag</th>
 	</tr>
 <?php 
   $i = 0;
@@ -94,6 +95,7 @@ $html->printHeader();
 		<td><?php print$report->getNumOfVulnerablePkgsSec()?></td>
 		<td><?php print$report->getNumOfVulnerablePkgsNorm()?></td>
 		<td><?php print$report->getNumOfCves()?></td>
+		<td><?php print$report->getNumOfCvesWithTag()?></td>
 	</tr>
 <?php } ?>
 </table>

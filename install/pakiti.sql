@@ -21,6 +21,7 @@ create table `Report` (
 	`numOfVulnerablePkgsSec` int(10) not null,
 	`numOfVulnerablePkgsNorm` int(10) not null,
 	`numOfCves` int(10) not null,
+	`numOfCvesWithTag` int(10) not null,
 	primary key (`id`)
 )ENGINE=INNODB;
 
