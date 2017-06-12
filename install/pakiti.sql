@@ -17,6 +17,8 @@ create table `Report` (
 	`processedOn` datetime not null,
 	`throughProxy` int(1) not null,
 	`proxyHostname` varchar(63),
+	`hostGroup` varchar(63),
+	`source` varchar(63),
 	`numOfInstalledPkgs` int(10) not null,
 	`numOfVulnerablePkgsSec` int(10) not null,
 	`numOfVulnerablePkgsNorm` int(10) not null,

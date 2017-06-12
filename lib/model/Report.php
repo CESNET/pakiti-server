@@ -36,6 +36,8 @@ class Report {
 	private $_processedOn;
 	private $_throughProxy;
 	private $_proxyHostname = null;
+	private $_hostGroup;
+	private $_source;
 	private $_numOfInstalledPkgs = -1;
 	private $_numOfVulnerablePkgsSec = 0;
 	private $_numOfVulnerablePkgsNorm = 0;
@@ -61,6 +63,14 @@ class Report {
 	
   public function getThroughProxy() {
 	  return $this->_throughProxy;
+	}
+	
+  public function getHostGroup() {
+	  return $this->_hostGroup;
+	}
+	
+  public function getSource() {
+	  return $this->_source;
 	}
 	
   public function getNumOfInstalledPkgs() {
@@ -109,6 +119,14 @@ class Report {
 	
   public function setTroughtProxy($val) {
 	  $this->_throughProxy = $val;
+	}
+
+  public function setHostGroup($val) {
+	  $this->_hostGroup = $val;
+	}
+
+  public function setSource($val) {
+	  $this->_source = $val;
 	}
 	
   public function setNumOfInstalledPkgs($val) {

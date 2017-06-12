@@ -75,6 +75,8 @@ $html->printHeader();
 		<th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "receivedOn")); ?>">Received on</a></th>
 		<th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "processedOn")); ?>">Processed on</a></th>
 		<th>Through proxy</th>
+		<th>HostGroup</th>
+		<th>Source</th>
 		<th>#Installed Pkgs</th>
 		<th>#Pkgs to security update</th>
 		<th>#Pkgs to update</th>
@@ -91,6 +93,8 @@ $html->printHeader();
 		<td><?php print$report->getReceivedOn()?></td>
 		<td><?php print$report->getProcessedOn()?></td>
 		<td><?php print$report->getThroughProxy() == 0 ? "No" : "{$report->getProxyHostname()}" ?></td>
+		<td><?php print$report->getHostGroup()?></td>
+		<td><?php print$report->getSource()?></td>
 		<td><?php print$report->getNumOfInstalledPkgs()?></td>
 		<td><?php print$report->getNumOfVulnerablePkgsSec()?></td>
 		<td><?php print$report->getNumOfVulnerablePkgsNorm()?></td>

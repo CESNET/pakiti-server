@@ -422,10 +422,8 @@ class FeederModule extends DefaultModule
         # Set the initial information about the report (using _pkgs)
         $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
 
-        # Set HostGroup (prefer _report_tag against _report_site)
-        if($this->_report_tag != null){
-            $this->_host->setHostGroupName($this->_report_tag);
-        } else if($this->_report_site != null){
+        # Set HostGroup
+        if($this->_report_site != null){
             $this->_host->setHostGroupName($this->_report_site);
         } else {
             $this->_host->setHostGroupName(Constants::$NA);
@@ -449,6 +447,7 @@ class FeederModule extends DefaultModule
         $this->getPakiti()->getManager("HostsManager")->storeHost($this->_host);
 
         # Assign Host to host group
+        $this->getPakiti()->getManager("HostGroupsManager")->removeHostFromHostGroups($this->_host->getId());
         $this->getPakiti()->getManager("HostGroupsManager")->assignHostToHostGroup($this->_host->getId(), $hostGroup->getId());
     }
 
@@ -469,6 +468,12 @@ class FeederModule extends DefaultModule
         if($this->_report->getNumOfInstalledPkgs() == -1){
             $this->_report->setNumOfInstalledPkgs($this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsCount($this->_host));
         }
+
+        # Set HostGroup
+        $this->_report->setHostGroup($this->_report_site);
+
+        # Set Source
+        $this->_report->setSource($this->_report_tag);
 
         # Set time when report was been processed
         $this->_report->setProcessedOn(time());
