@@ -26,22 +26,13 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
-require(realpath(dirname(__FILE__)) . '/../Html.php');
-
-// Instantiate the HTML module
-$html = new HtmlModule($pakiti);
-
-// Access control
-$html->checkPermission("cve");
-
-$cve = $html->getHttpGetVar("cve");
-$html->addHtmlAttribute("title", "Selected CVE: " . $cve);
-
-//---- Output HTML
-
-$html->printHeader();
 ?>
-<a href="https://bugzilla.redhat.com/show_bug.cgi?id=<?= $cve ?>">Link to the RedHat Bugzilla</a><br/><a
-    href="https://security-tracker.debian.org/tracker/<?= $cve ?>">Link to the Debian Advisories</a>
+
+<?php
+?>
+
+        <div class="text-center">Copyright &copy; 2017, CESNET, <a href="https://github.com/CESNET/pakiti3" target="_blank">Github</a></div>
+    </div>
+</body>
+
+</html>

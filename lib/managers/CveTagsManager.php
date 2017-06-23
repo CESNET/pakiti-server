@@ -70,6 +70,13 @@ class CveTagsManager extends DefaultManager
         return $cveTags;
     }
 
+    public function getCveTagsCount()
+    {
+        Utils::log(LOG_DEBUG, "Getting cveTags count", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("CveTag");
+        return sizeof($dao->getIds());
+    }
+
     public function getCveTagIdByCveNameTagName($cveName, $tagName)
     {
         Utils::log(LOG_DEBUG, "Getting cveTag ID by CVE name[".$cveName."] and Tag name[".$tagName."]", __FILE__, __LINE__);

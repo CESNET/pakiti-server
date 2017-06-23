@@ -94,8 +94,8 @@ if ($url == null) {
                             $cveException = new CveException();
                             $cveException->setCveName($cveExceptionNode->cveName->__toString());
                             $cveException->setReason($cveExceptionNode->reason->__toString());
-                            $cveException->setPkgId($pkgId->__toString());
-                            $cveException->setOsGroupId($osGroupId->__toString());
+                            $cveException->setPkgId($pkgId);
+                            $cveException->setOsGroupId($osGroupId);
                             $pakiti->getManager("CveExceptionsManager")->storeCveException($cveException);
                             array_push($cvesExceptionsIds, $cveException->getId());
                         }

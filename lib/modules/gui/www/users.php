@@ -36,226 +36,266 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("users");
 
-$html->addHtmlAttribute("title", "User management");
 
-/* TEMPORARY SENT FORM */
-switch (Utils::getHttpVar("act")) {
-  case "store":
-    if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_AUTOCREATE || Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
+// Process operations
+switch (Utils::getHttpPostVar("act")) {
+    case "store":
+        if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_AUTOCREATE || Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
+            $html->setError("Cannot create users in " . Config::$AUTHZ_MODE . "mode");
+            break;
+        }
+        $user = new User();
+        $user->setUid(Utils::getHttpPostVar("uid"));
+        $user->setName(Utils::getHttpPostVar("name"));
+        $user->setEmail(Utils::getHttpPostVar("email"));
+        $pakiti->getManager("UsersManager")->storeUser($user);
         break;
-    }
-    $user = new User();
-    $user->setUid(Utils::getHttpPostVar("uid"));
-    $user->setName(Utils::getHttpPostVar("name"));
-    $user->setEmail(Utils::getHttpPostVar("email"));
-    $pakiti->getManager("UsersManager")->storeUser($user);
-    break;
-  case "update":
-    if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
+    case "update":
+        if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
+            $html->setError("Cannot edit users in " . Config::$AUTHZ_MODE . "mode");
+            break;
+        }
+        $id = Utils::getHttpPostVar("id");
+        $admin = Utils::getHttpPostVar("admin");
+        $user = $pakiti->getManager("UsersManager")->getUserById($id);
+        $user->setAdmin($admin == "true");
+        $pakiti->getManager("UsersManager")->storeUser($user);
         break;
-    }
-    $id = Utils::getHttpPostVar("id");
-    $admin = Utils::getHttpPostVar("admin");
-    $user = $pakiti->getManager("UsersManager")->getUserById($id);
-    $user->setAdmin($admin == "true");
-    $pakiti->getManager("UsersManager")->storeUser($user);
-    break;
-  case "delete":
-    if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
+    case "delete":
+        if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
+            $html->setError("Cannot delete users in " . Config::$AUTHZ_MODE . "mode");
+            break;
+        }
+        $id = Utils::getHttpPostVar("id");
+        $pakiti->getManager("UsersManager")->deleteUser($id);
         break;
-    }
-    $id = Utils::getHttpPostVar("id");
-    $pakiti->getManager("UsersManager")->deleteUser($id);
-    break;
-  case "add":
-    $id = Utils::getHttpPostVar("id");
-    $hostId = Utils::getHttpPostVar("hostId");
-    $hostGroupId = Utils::getHttpPostVar("hostGroupId");
-    if ($hostId != -1) {
-        $pakiti->getManager("UsersManager")->assignHostToUser($id, $hostId);
-    }
-    if ($hostGroupId != -1) {
-        $pakiti->getManager("UsersManager")->assignHostGroupToUser($id, $hostGroupId);
-    }
-    break;
-  case "remove":
-    $id = Utils::getHttpPostVar("id");
-    $hostId = Utils::getHttpPostVar("hostId");
-    $hostGroupId = Utils::getHttpPostVar("hostGroupId");
-    if ($hostId != -1) {
-        $pakiti->getManager("UsersManager")->unassignHostToUser($id, $hostId);
-    }
-    if ($hostGroupId != -1) {
-        $pakiti->getManager("UsersManager")->unassignHostGroupToUser($id, $hostGroupId);
-    }
-    break;
-  default:
-    break;
+    case "add":
+        $id = Utils::getHttpPostVar("id");
+        $hostId = Utils::getHttpPostVar("hostId");
+        $hostGroupId = Utils::getHttpPostVar("hostGroupId");
+        if ($hostId != -1) {
+            $pakiti->getManager("UsersManager")->assignHostToUser($id, $hostId);
+        }
+        if ($hostGroupId != -1) {
+            $pakiti->getManager("UsersManager")->assignHostGroupToUser($id, $hostGroupId);
+        }
+        break;
+    case "remove":
+        $id = Utils::getHttpPostVar("id");
+        $hostId = Utils::getHttpPostVar("hostId");
+        $hostGroupId = Utils::getHttpPostVar("hostGroupId");
+        if ($hostId != -1) {
+            $pakiti->getManager("UsersManager")->unassignHostToUser($id, $hostId);
+        }
+        if ($hostGroupId != -1) {
+            $pakiti->getManager("UsersManager")->unassignHostGroupToUser($id, $hostGroupId);
+        }
+        break;
+    default:
+        break;
 }
+
+
+$html->setTitle("User management");
+$html->setMenuActiveItem("users.php");
 
 $users = $pakiti->getManager("UsersManager")->getUsers();
 $hosts = $pakiti->getManager("HostsManager")->getHosts();
 $hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups();
-//---- Output HTML
 
-$html->printHeader();
+// HTML
 ?>
 
-<?php if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_AUTOCREATE && Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) {
-    ?>
 
-<table class="tableList">
-  <tr>
-    <th>Store user</th>
-  </tr>
-  <tr>
-    <td>
-      <form action="" method="post">
-        <label for="uid">UID: </label>
-        <input type="text" name="uid" size="20">
-        &nbsp;&nbsp;
+<?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
 
-        <label for="name">Name: </label>
-        <input type="text" name="name" size="20">
-        &nbsp;&nbsp;
 
-        <label for="email">Email: </label>
-        <input type="text" name="email" size="20">
-        &nbsp;&nbsp;
+<div class="row">
+    <div class="col-md-5"></div>
+    <div class="col-md-2">
+        <?php if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_AUTOCREATE && Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) { ?>
+            <button class="btn btn-success btn-block" type="submit" data-toggle="modal" data-target="#add">Add user</button>
+        <?php } ?>
+    </div>
+    <div class="col-md-5"></div>
+</div>
 
-        <input type="submit" value="Store">
-        <input type="hidden" name="act" value="store" />
-      </form>
-    </td>
-  </tr>
+<br>
+<br>
+
+<table class="table table-hover table-condensed">
+    <thead>
+        <tr>
+            <th>UID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>CreatedAt</th>
+            <th>Admin</th>
+            <th>Hosts</th>
+            <th>HostGroups</th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($users as $user) { ?>
+            <?php $userHosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, -1, $user->getId(), true); ?>
+            <?php $userHostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $user->getId()); ?>
+
+            <tr>
+                <td><?php echo $user->getUid(); ?></td>
+                <td><?php echo $user->getName(); ?></td>
+                <td><?php echo $user->getEmail(); ?></td>
+                <td><?php echo $user->getCreatedAt(); ?></td>
+                <td>
+                    <?php if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) { ?>
+                        <input type="checkbox"<?php if ($user->isAdmin()) echo ' checked'; ?> disabled>
+                    <?php } else { ?>
+                        <input type="checkbox" onClick="
+                            document.form.act.value='update';
+                            document.form.id.value='<?php echo $user->getId(); ?>';
+                            document.form.admin.value=this.checked;
+                            document.form.submit();"<?php if ($user->isAdmin()) echo ' checked'; ?>>
+                    <?php } ?>
+                </td>
+                <td>
+                    <?php foreach ($userHosts as $userHost) { ?>
+                        <a onclick="document.editForm.act.value='remove';
+                            document.editForm.hostGroupId.value='-1';
+                            document.editForm.hostId.value='<?php echo $userHost->getId(); ?>';
+                            document.editForm.id.value='<?php echo $user->getId(); ?>';
+                            document.editForm.submit();" class="pointer"><?php echo $userHost->getHostname(); ?></a><br>
+                    <?php } ?>
+                </td>
+                <td>
+                    <?php foreach ($userHostGroups as $userHostGroup) { ?>
+                        <a onclick="document.editForm.act.value='remove';
+                            document.editForm.hostId.value='-1';
+                            document.editForm.hostGroupId.value='<?php echo $userHostGroup->getId(); ?>';
+                            document.editForm.id.value='<?php echo $user->getId(); ?>';
+                            document.editForm.submit();" class="pointer"><?php echo $userHostGroup->getName(); ?></a><br>
+                    <?php } ?>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-xs btn-success"
+                        onclick="document.editForm.uid.value='<?php echo $user->getUid(); ?>'; document.editForm.id.value='<?php echo $user->getId(); ?>';"
+                        data-toggle="modal" data-target="#edit">Edit</button>
+                </td>
+                <td>
+                    <?php if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) { ?>
+                        <button type="button" class="btn btn-xs btn-danger"
+                            onclick="document.form.act.value='delete'; document.form.id.value='<?php echo $user->getId(); ?>';"
+                            data-toggle="modal" data-target="#myModal">Delete</button>
+                    <?php } ?>
+                </td>
+            </tr>
+        <?php } ?>
+    </tbody>
 </table>
-<br><br>
 
-<?php 
-} ?>
 
-<form action="" name="user" method="post">
-  <input type="hidden" name="act" />
-  <input type="hidden" name="id" />
-  <input type="hidden" name="admin" />
+<form action="" name="form" method="post">
+    <input type="hidden" name="act" />
+    <input type="hidden" name="id" />
+    <input type="hidden" name="admin" />
 </form>
 
-<table class="tableList">
-  <tr>
-    <th>Add permission</th>
-  </tr>
-  <tr>
-    <td>
-      <form action="" name="permission" method="post">
-        <label for="id">User: </label>
-        <select name="id">
-          <option value="-1"></option>
-<?php foreach ($users as $user) {
-    print "<option value=\"".$user->getId()."\">".$user->getUid()."</option>";
-} ?>
-        </select>
-        &nbsp;&nbsp;
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Are you sure to delete this user?</h4>
+            </div>
+            <div class="modal-body text-right">
+                <button type="button" class="btn btn-danger" onclick="document.form.submit();">Delete</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        <label for="hostId">Host: </label>
-        <select name="hostId">
-          <option value="-1"></option>
-<?php foreach ($hosts as $host) {
-    print "<option value=\"".$host->getId()."\">".$host->getHostname()."</option>";
-} ?>
-        </select>
-        &nbsp;&nbsp;
 
-        <label for="hostGroupId">HostGroup: </label>
-        <select name="hostGroupId">
-          <option value="-1"></option>
-<?php foreach ($hostGroups as $hostGroup) {
-    print "<option value=\"".$hostGroup->getId()."\">".$hostGroup->getName()."</option>";
-} ?>
-        </select>
-        &nbsp;&nbsp;
-        <input type="submit" value="Add">
-        <input type="hidden" name="act" value="add" />
-      </form>
-    </td>
-  </tr>
-</table>
-<br><br>
+<div class="modal fade" id="add" tabindex="-1" role="dialog" aria-labelledby="addLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="addLabel">Store user</h4>
+            </div>
+            <div class="modal-body">
+                <form name="addForm" method="post">
+                    <input type="hidden" name="act" value="store">
+                    <div class="form-group">
+                        <label for="uid">UID</label>
+                        <input type="text" class="form-control" name="uid" id="uid">
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" name="name" id="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="text" class="form-control" name="email" id="email">
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-success">Add</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                * If you use an existing UID, the user will be edited.
+            </div>
+        </div>
+    </div>
+</div>
 
-<table class="tableList">
-    <tr>
-        <th>UID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>CreatedAt</th>
-        <th>Admin</th>
-        <th>Hosts</th>
-        <th>HostGroups</th>
-        <th></th>
-    </tr>
-<?php
-  $i = 0;
-  foreach ($users as $user) {
+<div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="editLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editLabel">Edit permissions</h4>
+            </div>
+            <div class="modal-body">
+                <form name="editForm" method="post">
+                    <input type="hidden" name="act" value="add">
+                    <input type="hidden" name="id">
+                    <div class="form-group">
+                        <label for="uid">UID</label>
+                        <input type="text" class="form-control" name="uid" id="uid" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="hostId">Host</label>
+                        <select class="form-control" name="hostId" id="hostId">
+                            <option value="-1" selected></option>
+                            <?php foreach ($hosts as $host) { ?>
+                                <option value="<?php echo $host->getId(); ?>"><?php echo $host->getHostname(); ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="hostGroupId">HostGroup</label>
+                        <select class="form-control" name="hostGroupId" id="hostGroupId">
+                            <option value="-1" selected></option>
+                            <?php foreach ($hostGroups as $hostGroup) { ?>
+                                <option value="<?php echo $hostGroup->getId(); ?>"><?php echo $hostGroup->getName(); ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-success">Add</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                * Click on host or hostgroup to delete permission.
+            </div>
+        </div>
+    </div>
+</div>
 
-      # Prepare assigned hosts to user
-      $hostsArray = array();
-      foreach ($pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, $user->getId(), true) as $host) {
-          $hostsArray[] = "<span class=\"delete-button\" onclick=\"
-            document.permission.act.value='remove';
-            document.permission.hostId.value='".$host->getId()."';
-            document.permission.id.value='".$user->getId()."';
-            document.permission.submit();
-            \" ><a title=\"remove permission\">".$host->getHostname()."</a></span>";
-      }
-      $hosts = implode(", ", $hostsArray);
 
-      # Prepare assigned hostGroups to user
-      $hostGroupsArray = array();
-      foreach ($pakiti->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $user->getId()) as $hostGroup) {
-          $hostGroupsArray[] = "<span class=\"delete-button\" onclick=\"
-            document.permission.act.value='remove';
-            document.permission.hostGroupId.value='".$hostGroup->getId()."';
-            document.permission.id.value='".$user->getId()."';
-            document.permission.submit();
-            \" ><a title=\"remove permission\">".$hostGroup->getName()."</a></span>";
-      }
-      $hostGroups = implode(", ", $hostGroupsArray);
-
-      # Prepare delete button
-      $delete = "";
-      if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) {
-          $delete = "<span class=\"delete-button\" onclick=\"
-            document.user.act.value='delete';
-            document.user.id.value='".$user->getId()."';
-            document.user.submit();
-            \" ><a>Delete</a></span>";
-      }
-
-      # Prepare admin button
-      $admin = "<input type=\"checkbox\" ".(($user->isAdmin()) ? " checked" : "")." disabled>";
-      if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_IMPORT) {
-          $admin = "<input type=\"checkbox\" onClick=\"
-            document.user.act.value='update';
-            document.user.id.value='".$user->getId()."';
-            document.user.admin.value=this.checked;
-            document.user.submit();
-            \"".(($user->isAdmin()) ? " checked" : "").">";
-      }
-
-      $i++;
-      print "
-        <tr class=\"a" . ($i & 1) . "\">
-          <td>".$user->getUid()."</td>
-          <td>".$user->getName()."</td>
-          <td>".$user->getEmail()."</td>
-          <td>".$user->getCreatedAt()."</td>
-          <td>".$admin."</td>
-          <td>".$hosts."</td>
-          <td>".$hostGroups."</td>
-          <td>".$delete."</td>
-        </tr>
-      ";
-  }
-?>
-</table>
-
-<?php $html->printFooter(); ?>
+<?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>

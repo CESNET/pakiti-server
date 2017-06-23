@@ -26,50 +26,34 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
-require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
-require(realpath(dirname(__FILE__)) . '/../Html.php');
-
-// Instantiate the HTML module
-$html = new HtmlModule($pakiti);
-
-// Access control
-$html->checkPermission("archs");
-
-$pageNum = $html->getHttpGetVar("pageNum", 0);
-$pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
-
-$html->addHtmlAttribute("title", "List of all Archs");
-
-$archs = $pakiti->getManager("HostsManager")->getArchs("name", $pageSize, $pageNum);
-$archsCount = sizeof($archs);
-
-//---- Output HTML
-
-$html->printHeader();
-
-# Print table with oses
 ?>
 
-<div class="paging">
-<?php print $html->paging($archsCount, $pageSize, $pageNum) ?>
-</div>
-
-<table class="tableList">
-  <tr>
-    <th>Name</th>
-  </tr>
 <?php
-  $i = 0;
-  foreach ($archs as $arch) {
-    $i++;
-    print "<tr class=\"a" . ($i & 1) . "\"><td>{$arch->getName()}</td></tr>\n";
-  }
+# getNumOfPages
+# getPageNum
+# getQueryString
 ?>
-</table>
 
-<div class="paging">
-<?php print $html->paging($archsCount, $pageSize, $pageNum) ?>
+<div class="text-center">
+    <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm">
+            <?php if ($html->getNumOfPages() > 1) { ?>
+                <li<?php if ($html->getPageNum() <= 0) echo ' class="disabled"'; ?>>
+                    <a href="<?php if ($html->getPageNum() > 0) echo $html->getQueryString(array("pageNum" => $html->getPageNum()-1)); ?>" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <?php for ($i = 0; $i <= $html->getNumOfPages(); $i++) { ?>
+                    <li<?php if ($i == $html->getPageNum()){ echo ' class="active"'; }?>>
+                        <a href="<?php echo $html->getQueryString(array("pageNum" => $i)); ?>"><?php echo $i + 1; ?></a>
+                    <li>
+                <?php } ?>
+                <li<?php if ($html->getPageNum() >= $html->getNumOfPages()-1) echo ' class="disabled"'; ?>>
+                    <a href="<?php if ($html->getPageNum() < $html->getNumOfPages()-1) echo $html->getQueryString(array("pageNum" => $html->getPageNum()+1)); ?>" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            <?php } ?>
+        </ul>
+    </nav>
 </div>
-
-<?php $html->printFooter(); ?>

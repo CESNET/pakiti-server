@@ -36,182 +36,89 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("host");
 
-$userId = $html->getUserId();
-
-$hostId = $html->getHttpGetVar("hostId");
-$view = $html->getHttpGetVar("view");
-if ($view == ""){
-    $view = "installed";
+$host = $pakiti->getManager("HostsManager")->getHostById($html->getHttpGetVar("hostId", -1), $html->getUserId());
+if ($host == null) {
+    $html->fatalError("Host with id " . $id . " doesn't exist or access denied");
+    exit;
 }
 
-$pageNum = $html->getHttpGetVar("pageNum", 0);
-$pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
-$sort = $html->getHttpGetVar("sortBy", "name");
+$html->setTitle("Host: " . $host->getHostname());
 
-$host = null;
-if ($hostId != null) {
-    $host =& $pakiti->getManager("HostsManager")->getHostById($hostId, $userId);
-}
+$report = $html->getPakiti()->getManager("ReportsManager")->getReportById($host->getLastReportId());
+$hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupsByHost($host);
+$cveCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
+$cveWithTagCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true);
+$reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host);
 
-if($host == null){
-    $html->setError("Host with id $id doesn't exist or access denied");
-    $html->printHeader();
-    $html->printFooter();
-}
-
-$html->addHtmlAttribute("title", "Host: " . $host->getHostname());
-
-
-switch ($view) {
-    case "installed":
-        $pkgs =& $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $sort, $pageSize, $pageNum);
-        break;
-    case "cve":
-        $pkgs =& $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($host, $sort, $pageSize, $pageNum);
-        break;
-
-
-}
-$installedPkgsCount = $pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host);
-$reportsCount = $pakiti->getManager("ReportsManager")->getHostReportsCount($host);
-$vulnerablePkgsCount = $pakiti->getManager("CveDefsManager")->getCvesCount($host);
-$report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
-//---- Output HTML
-
-$html->printHeader();
-
+// HTML
 ?>
-<table class="tableDetail">
-    <tr>
-        <td class="header">Operating system</td>
-        <td><?php print $host->getOs()->getName() ?></td>
-    </tr>
-    <tr>
-        <td class="header">Architecture</td>
-        <td><?php print $host->getArch()->getName() ?></td>
-    </tr>
-    <tr>
-        <td class="header">Kernel</td>
-        <td><?php print $host->getKernel() ?></td>
-    </tr>
-    <tr>
-        <td class="header">Domain</td>
-        <td><?php print $host->getDomain()->getName() ?></td>
-    </tr>
-    <tr>
-        <td class="header">Reporter Hostname/IP</td>
-        <td><?php print $host->getReporterHostname() ?>/<?php print $host->getReporterIp() ?></td>
-    </tr>
-    <tr>
-        <td class="header">Installed packages</td>
-        <td><?php print $installedPkgsCount ?></td>
-    </tr>
-    <tr>
-        <td class="header">Last report received on</td>
-        <td><?php print $report->getReceivedOn() ?></td>
-    </tr>
-    <tr>
-        <td class="header">Reports</td>
-        <td><a href="reports.php?hostId=<?php print $host->getId() ?>"><?php print $reportsCount ?></a></td>
-    </tr>
-</table>
-
-<form action="" method="get" name="gform"">
-<tr>
-    <td>View:
-        <select name="view" onchange="gform.submit();">
-            <option value="installed"<?php if ($view == "installed") print " selected"; ?>>Installed packages
-            <option value="cve"<?php if ($view == "cve") print " selected"; ?>>CVEs
-        </select>
-    </td>
-</tr>
-<input type="hidden" name="hostId" value=<?php print $host->getId() ?>>
-</form>
-
-<div class="paging">
-    <?php
-    switch($view){
-        case "cve":
-            print $html->paging($vulnerablePkgsCount, $pageSize, $pageNum);
-            break;
-        case "installed":
-            print $html->paging($installedPkgsCount, $pageSize, $pageNum);
-            break;
-    }
-    ?>
-</div>
 
 
-<table class="tableList">
+<?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
+
+<h1><?php echo $host->getHostname(); ?></h1>
+<ul class="nav nav-tabs">
+    <li role="presentation" class="active"><a href="host.php?hostId=<?php echo $host->getId(); ?>">Detail</a></li>
+    <li role="presentation"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
+    <li role="presentation"><a href="packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
+    <li role="presentation"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
+</ul>
+
+<br><br>
+
+<table class="table table-striped table-condensed">
     <tr>
-        <th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "name")); ?>">Name</a></th>
-        <th width="300"><a href="<?php print $html->getQueryString(array("sortBy" => "version")); ?>">Installed
-                version</a></th>
-        <th><a href="<?php print $html->getQueryString(array("sortBy" => "arch")); ?>">Architecture</a></th>
-        <?php
-        if ($view === "cve") print "<th><a>CVEs</a></th>\n";
-        ?>
-
-    </tr>
-    <?php
-    $i = 0;
-    foreach ($pkgs as $pkg) {
-        $i++;
-        ?>
-        <?php switch ($view) {
-            case "cve": ?>
-                    <tr class="a<?php print ($i & 1) ?>">
-                        <td><?php print$pkg["Pkg"]->getName() ?></td>
-                        <td><?php print$pkg["Pkg"]->getVersionRelease() ?></td>
-                        <td><?php print$pkg["Pkg"]->getArch() ?></td>
-
-                        <td><?php
-                            foreach ($pkg["CVE"] as $cve) {
-                                $tags = $cve->getTag();
-                                if (!empty($tags)) {
-                                    foreach ($tags as $tag) {
-                                        print "<a href=\"cve.php?cve=" . $cve->getName() . "\"><span";
-                                        if ($tag->getTagName() == "Critical" && $tag->isEnabled()) {
-                                            print " class=\"critical_cve\"";
-                                        } elseif ($tag->getTagName() == "High" && $tag->isEnabled()) {
-                                            print " class=\"high_cve\"";
-                                        } else {
-                                            print " class=\"tagged_cve\"";
-                                        }
-
-                                        print ">" . $cve->getName() . " " . "</span></a>";
-                                    }
-                                } else {
-                                    print "<a href=\"cve.php?cve=" . $cve->getName() . "\">";
-                                    print $cve->getName() . " </a>\n";
-                                }
-
-                            }
-                            ?></td>
-                    </tr>
-                <?php break; ?>
-            <?php case "installed": ?>
-                <tr class="a<?php print ($i & 1) ?>">
-                    <td><?php print$pkg->getName() ?></td>
-                    <td><?php print$pkg->getVersionRelease() ?></td>
-                    <td><?php print$pkg->getArch() ?></td>
-                </tr>
-                <?php break; ?>
+        <td>HostGroup</td>
+        <td>
+            <?php foreach ($hostGroups as $hostGroup) { ?> 
+                <a href="hosts.php?hostGroup=<?php echo $hostGroup->getId(); ?>"><?php echo $hostGroup->getName(); ?> </a>
             <?php } ?>
-    <?php } ?>
+        </td>
+    </tr>
+    <tr>
+        <td width="300">Operating system</td>
+        <td><?php echo $host->getOs()->getName(); ?></td>
+    </tr>
+    <tr>
+        <td>Architecture</td>
+        <td><?php echo $host->getArch()->getName(); ?></td>
+    </tr>
+    <tr>
+        <td>Kernel</td>
+        <td><?php echo $host->getKernel(); ?></td>
+    </tr>
+    <tr>
+        <td>Domain</td>
+        <td><?php echo $host->getDomain()->getName(); ?></td>
+    </tr>
+    <tr>
+        <td>Reporter hostname</td>
+        <td><?php echo $host->getReporterHostname(); ?></td>
+    </tr>
+    <tr>
+        <td>Reporter IP</td>
+        <td><?php echo $host->getReporterIp(); ?></td>
+    </tr>
+    <tr>
+        <td>Installed packages</td>
+        <td><a href="packages.php?hostId=<?php echo $host->getId(); ?>"><?php echo $report->getNumOfInstalledPkgs(); ?></a></td>
+    </tr>
+    <tr>
+        <td>Cves</td>
+        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $cveCount; ?></a></td>
+    </tr>
+    <tr>
+        <td>Cves with Tag</td>
+        <td><?php echo $cveWithTagCount; ?></td>
+    </tr>
+    <tr>
+        <td>Last report received on</td>
+        <td><?php echo $report->getReceivedOn(); ?></td>
+    </tr>
+    <tr>
+        <td>Reports</td>
+        <td><a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a></td>
+    </tr>
 </table>
 
-<div class="paging">
-    <?php
-    switch($view){
-        case "cve":
-            print $html->paging($vulnerablePkgsCount, $pageSize, $pageNum);
-            break;
-        case "installed":
-            print $html->paging($installedPkgsCount, $pageSize, $pageNum);
-            break;
-    }
-    ?>
-</div>
-
-<?php $html->printFooter(); ?>
+<?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>

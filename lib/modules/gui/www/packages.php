@@ -43,9 +43,9 @@ if ($host == null) {
 }
 
 $html->setTitle("Host: " . $host->getHostname());
-$html->setNumOfEntities($pakiti->getManager("ReportsManager")->getHostReportsCount($host));
+$html->setNumOfEntities($pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host));
 
-$reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->getSortBy(), $html->getPageSize(), $html->getPageNum());
+$pkgs = $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $html->getSortBy(), $html->getPageSize(), $html->getPageNum());
 
 // HTML
 ?>
@@ -55,8 +55,8 @@ $reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->g
 <h1><?php echo $host->getHostname(); ?></h1>
 <ul class="nav nav-tabs">
     <li role="presentation"><a href="host.php?hostId=<?php echo $host->getId(); ?>">Detail</a></li>
-    <li role="presentation" class="active"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
-    <li role="presentation"><a href="packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
+    <li role="presentation"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
+    <li role="presentation" class="active"><a href="packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
     <li role="presentation"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
 </ul>
 
@@ -68,43 +68,26 @@ $reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->g
     <thead>
         <tr>
             <th width="300">
-                <a href="<?php echo $html->getQueryString(array("sortBy" => "id")); ?>">ID</a>
-                <?php if ($html->getSortBy() == "id") { ?>
+                <a href="<?php echo $html->getQueryString(array("sortBy" => "name")); ?>">Name</a>
+                <?php if ($html->getSortBy() == "name") { ?>
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
                 <?php } ?>
             </th>
-            <th width="300">
-                <a href="<?php echo $html->getQueryString(array("sortBy" => "receivedOn")); ?>">Received on</a>
-                <?php if ($html->getSortBy() == "receivedOn") { ?>
+            <th width="300">Installed version</th>
+            <th>
+                <a href="<?php echo $html->getQueryString(array("sortBy" => "arch")); ?>">Architecture</a>
+                <?php if ($html->getSortBy() == "arch") { ?>
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
                 <?php } ?>
             </th>
-            <th width="300">
-                <a href="<?php echo $html->getQueryString(array("sortBy" => "processedOn")); ?>">Processed on</a>
-                <?php if ($html->getSortBy() == "processedOn") { ?>
-                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
-                <?php } ?>
-            </th>
-            <th>Through proxy</th>
-            <th>HostGroup</th>
-            <th>Source</th>
-            <th>#Installed pkgs</th>
-            <th>#CVE</th>
-            <th>#CVE with tag</th>
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($reports as $report) { ?>
+        <?php foreach ($pkgs as $pkg) { ?>
             <tr>
-                <td><?php echo $report->getId(); ?></td>
-                <td><?php echo $report->getReceivedOn(); ?></td>
-                <td><?php echo $report->getProcessedOn(); ?></td>
-                <td><?php echo $report->getThroughProxy() == 0 ? "No" : $report->getProxyHostname(); ?></td>
-                <td><?php echo $report->getHostGroup(); ?></td>
-                <td><?php echo $report->getSource(); ?></td>
-                <td><?php echo $report->getNumOfInstalledPkgs(); ?></td>
-                <td><?php echo $report->getNumOfCves(); ?></td>
-                <td><?php echo $report->getNumOfCvesWithTag(); ?></td>
+                <td><?php echo $pkg->getName(); ?></td>
+                <td><?php echo $pkg->getVersionRelease(); ?></td>
+                <td><?php echo $pkg->getArch(); ?></td>
             </tr>
         <?php } ?>
     </tbody>
