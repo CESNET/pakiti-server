@@ -203,6 +203,11 @@ class CveDefsManager extends DefaultManager
         return $this->getPakiti()->getDao("Cve")->getCveNames();
     }
 
+    public function getUsedCveNames()
+    {
+        return $this->getPakiti()->getDao("Cve")->getUsedCveNames();
+    }
+
     public function getCvesByName($name)
     {
         $cves = $this->getPakiti()->getDao("Cve")->getCvesByName($name);

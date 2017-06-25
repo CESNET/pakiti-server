@@ -36,85 +36,95 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("oses");
 
-$entries = Utils::getHttpPostVar("entries");
-if ($entries == "") {
-    $entries = 0;
-}
 
-if ($entries > 0) {
-    for ($i = 0; $i < $entries; $i++) {
-        if (Utils::getHttpPostVar("osGroup$i")) {
-            $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById(Utils::getHttpPostVar("osGroup$i"));
-            $osGroup->setRegex(Utils::getHttpPostVar("regex$i"));
+// Process operations
+switch (Utils::getHttpPostVar("act")) {
+    case "update":
+        $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
+        foreach ($osGroups as $osGroup) {
+            $osGroup->setRegex(Utils::getHttpPostVar("regex_" . $osGroup->getId()));
             $pakiti->getManager("OsGroupsManager")->updateOsGroup($osGroup);
         }
-    }
-    $html->setMessage("The changes have been saved.");
+        break;
+    default:
+        break;
 }
 
-$pageNum = $html->getHttpGetVar("pageNum", 0);
-$pageSize = $html->getHttpGetVar("pageSize", HtmlModule::$DEFAULTPAGESIZE);
-$html->addHtmlAttribute("title", "List of all Oses");
-$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups("name");
-$oses = $pakiti->getManager("HostsManager")->getOses("name", $pageSize, $pageNum);
-$osesCount = sizeof($oses);
 
-//---- Output HTML
+$html->setTitle("Oses mapping");
+$html->setMenuActiveItem("oses.php");
 
-$html->printHeader();
+$oses = $pakiti->getManager("HostsManager")->getOses();
+$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
 
-# Print table with oses
+// HTML
 ?>
-<table class="tableList">
-    <tr>
-        <th>OS Name</th>
-        <th>Assigned groups</th>
-        <th></th>
-    </tr>
-    <?php
-    $i = 0;
-    foreach ($oses as $os) {
-        print "<tr class=\"a" . ($i & 1) . "\">\n<td>{$os->getName()}</td>";
-        $actualOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOs($os);
-        print "<td>" . implode(",", array_map(function ($osGroup) {
-                return $osGroup->getName();
-            }, $actualOsGroups)) . "</td>
-    </td>\n
-    </tr>\n";
-        $i++;
-    }
-    ?>
-</table>
+
+
+<?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
+
+
+<div class="row">
+    <div class="col-md-5"></div>
+    <div class="col-md-2">
+        <button class="btn btn-success btn-block" type="submit" data-toggle="modal" data-target="#edit">Edit OS mapping</button>
+    </div>
+    <div class="col-md-5"></div>
 </div>
-<div class="space"></div><h1>List of all OS Groups</h1>
-<form action="" name="osGroups" method="post">
-    <table class="tableList">
+
+<br>
+<br>
+
+<table class="table table-hover table-condensed">
+    <thead>
         <tr>
-            <th>OS Group</th>
-            <th>Regular expression</th>
-            <th></th>
+            <th width="300">Name</th>
+            <th>Os groups</th>
         </tr>
-        <?php
-        $i = 0;
-        foreach ($osGroups as $osGroup) {
-            if ($osGroup->getName() !== "unknown") {
-                print "<tr>
-                <td>{$osGroup->getName()}</td>
+    </thead>
+    <tbody>
+        <?php foreach ($oses as $os) { ?>
+            <tr>
+                <td><?php echo $os->getName(); ?></td>
                 <td>
-                <span class=\"slash\">/</span>
-                <input type=\"text\" name=\"regex$i\" value=\"" . $osGroup->getRegex() . "\" placeholder=\"insert regular expression here\">
-                <span class=\"slash\">/</span>
+                    <?php $osOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOs($os); ?>
+                    <?php foreach ($osOsGroups as $osOsGroup) { ?>
+                        <?php echo $osOsGroup->getName(); ?>
+                    <?php } ?>
                 </td>
+            </tr>
+        <?php } ?>
+    </tbody>
+</table>
 
-                <td><input type=\"hidden\" name=\"osGroup$i\" value=\"" . $osGroup->getId() . "\" /></td>
-            </tr>";
-                $i++;
-            }
-        }
-        ?>
-    </table>
-    <?php print "<td><input type=\"hidden\" name=\"entries\" value=\"" . $i . "\"></td>" ?>
-    <input type="submit" value="Save changes">
-</form>
 
-<?php $html->printFooter(); ?>
+<div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="editLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editLabel">Edit OS mapping</h4>
+            </div>
+            <div class="modal-body">
+                <form name="editForm" method="post">
+                    <input type="hidden" name="act" value="update">
+                    <?php foreach ($osGroups as $osGroup) { ?>
+                        <?php if ($osGroup->getName() !== "unknown") { ?>
+                            <div class="form-group">
+                                <label for="regex_<?php echo $osGroup->getId(); ?>"><?php echo $osGroup->getName(); ?></label>
+                                <input type="text" class="form-control" name="regex_<?php echo $osGroup->getId(); ?>" id="regex_<?php echo $osGroup->getId(); ?>" value="<?php echo $osGroup->getRegex(); ?>" placeholder="insert regular expression here">
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>

@@ -108,6 +108,13 @@ class CveDao
         return $cveNames;
     }
 
+    public function getUsedCveNames()
+    {
+        $sql = "select distinct Cve.name from Cve
+            inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
     public function getAllCves()
     {
         return $this->db->queryObjects(

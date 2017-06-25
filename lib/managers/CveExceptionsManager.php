@@ -78,6 +78,12 @@ class CveExceptionsManager extends DefaultManager
         return $this->getPakiti()->getDao("CveException")->getCvesExceptionsIds();
     }
 
+    public function getCveExceptionIdByCveNamePkgIdOsGroupId($cveName, $pkgId, $osGroupId)
+    {
+        Utils::log(LOG_DEBUG, "Getting CVE exception ID by cveName, pkgId and osGroupId", __FILE__, __LINE__);
+        return $this->getPakiti()->getDao("CveException")->getIdByCveNamePkgIdOsGroupId($cveName, $pkgId, $osGroupId);
+    }
+
     public function getCveExceptionsByPkg(Pkg $pkg)
     {
         $this->getPakiti()->getDao("CveException")->getCveExceptionsByPkgId($pkg->getId());

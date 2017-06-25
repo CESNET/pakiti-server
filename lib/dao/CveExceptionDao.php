@@ -45,7 +45,7 @@ class CveExceptionDao
         $timestamp = new DateTime();
         $this->db->query(
             "insert into `CveException` set
-        pkgId={$exception->getPkgId()},
+        pkgId='" . $this->db->escape($exception->getPkgId()) . "',
       	`reason`='" . $this->db->escape($exception->getReason()) . "',
       	cveName='" . $this->db->escape($exception->getCveName()) . "',
       	osGroupId='" . $this->db->escape($exception->getOsGroupId()) . "',
@@ -84,14 +84,12 @@ class CveExceptionDao
 
     public function getCveExceptionsByCveName($cveName)
     {
-        return $this->db->queryObjects(
-            "select
-    		id as _id, cveName as _cveName, pkgId as _pkgId, osGroupId as _osGroupId, `reason` as _reason, modifier as _modifier, `timestamp` as _timestamp
-      from
-      	CveException
-      where
-        cveName='" . $this->db->escape($cveName) . "'
-        ", "CveException");
+        $sql = "select id as _id, cveName as _cveName, pkgId as _pkgId, osGroupId as _osGroupId, `reason` as _reason, modifier as _modifier, `timestamp` as _timestamp
+            from CveException";
+        if($cveName != null){
+            $sql .= " where cveName='".$this->db->escape($cveName)."'";
+        }
+        return $this->db->queryObjects($sql, "CveException");
     }
 
     public function getById($id)

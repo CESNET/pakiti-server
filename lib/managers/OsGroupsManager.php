@@ -58,7 +58,7 @@ class OsGroupsManager extends DefaultManager{
         return $this->getPakiti()->getDao("OsGroup")->getByName($name);
     }
 
-    public function getOsGroups($orderBy, $pageSize = -1, $pageNum = -1)
+    public function getOsGroups($orderBy = null, $pageSize = -1, $pageNum = -1)
     {
         Utils::log(LOG_DEBUG, "Getting all OS Groups", __FILE__, __LINE__);
         $osGroupsIds =& $this->getPakiti()->getDao("OsGroup")->getOsGroupsIds($orderBy, $pageSize, $pageNum);

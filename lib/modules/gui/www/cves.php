@@ -43,9 +43,8 @@ if ($host == null) {
 }
 
 $html->setTitle("Host: " . $host->getHostname());
-$html->setNumOfEntities($pakiti->getManager("ReportsManager")->getHostReportsCount($host));
 
-$reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->getSortBy(), $html->getPageSize(), $html->getPageNum());
+$pkgs = $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($host);
 
 // HTML
 ?>
@@ -55,61 +54,40 @@ $reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->g
 <h1><?php echo $host->getHostname(); ?></h1>
 <ul class="nav nav-tabs">
     <li role="presentation"><a href="host.php?hostId=<?php echo $host->getId(); ?>">Detail</a></li>
-    <li role="presentation" class="active"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
+    <li role="presentation"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
     <li role="presentation"><a href="packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
-    <li role="presentation"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
+    <li role="presentation" class="active"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
 </ul>
 
 <br><br>
 
-<?php include(realpath(dirname(__FILE__)) . "/../common/pagination.php"); ?>
-
 <table class="table table-hover table-condensed">
     <thead>
         <tr>
-            <th width="300">
-                <a href="<?php echo $html->getQueryString(array("sortBy" => "id")); ?>">ID</a>
-                <?php if ($html->getSortBy() == "id") { ?>
-                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
-                <?php } ?>
-            </th>
-            <th width="300">
-                <a href="<?php echo $html->getQueryString(array("sortBy" => "receivedOn")); ?>">Received on</a>
-                <?php if ($html->getSortBy() == "receivedOn") { ?>
-                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
-                <?php } ?>
-            </th>
-            <th width="300">
-                <a href="<?php echo $html->getQueryString(array("sortBy" => "processedOn")); ?>">Processed on</a>
-                <?php if ($html->getSortBy() == "processedOn") { ?>
-                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
-                <?php } ?>
-            </th>
-            <th>Through proxy</th>
-            <th>HostGroup</th>
-            <th>Source</th>
-            <th>#Installed pkgs</th>
-            <th>#CVE</th>
-            <th>#CVE with tag</th>
+            <th width="300">Name</th>
+            <th width="300">Installed version</th>
+            <th width="200">Architecture</th>
+            <th>CVEs</th>
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($reports as $report) { ?>
+        <?php foreach ($pkgs as $pkg) { ?>
             <tr>
-                <td><?php echo $report->getId(); ?></td>
-                <td><?php echo $report->getReceivedOn(); ?></td>
-                <td><?php echo $report->getProcessedOn(); ?></td>
-                <td><?php echo $report->getThroughProxy() == 0 ? "No" : $report->getProxyHostname(); ?></td>
-                <td><?php echo $report->getHostGroup(); ?></td>
-                <td><?php echo $report->getSource(); ?></td>
-                <td><?php echo $report->getNumOfInstalledPkgs(); ?></td>
-                <td><?php echo $report->getNumOfCves(); ?></td>
-                <td><?php echo $report->getNumOfCvesWithTag(); ?></td>
+                <td><?php echo $pkg["Pkg"]->getName(); ?></td>
+                <td><?php echo $pkg["Pkg"]->getVersionRelease(); ?></td>
+                <td><?php echo $pkg["Pkg"]->getArch(); ?></td>
+                <td>
+                    <?php foreach ($pkg["CVE"] as $cve) { ?>
+                        <a data-container="body"
+                            data-toggle="popover" data-placement="top"
+                            data-content="<a href='https://bugzilla.redhat.com/show_bug.cgi?id=<?php echo $cve->getName(); ?>' target='_blank'>Link to the RedHat Bugzilla</a><br>
+                                <a href='https://security-tracker.debian.org/tracker/<?php echo $cve->getName(); ?>' target='_blank'>Link to the Debian Advisories</a>"
+                            class="pointer<?php if(!empty($cve->getTag())) echo ' text-danger'; ?>"><?php echo $cve->getName(); ?></a>
+                    <?php } ?>
+                </td>
             </tr>
         <?php } ?>
     </tbody>
 </table>
-
-<?php include(realpath(dirname(__FILE__)) . "/../common/pagination.php"); ?>
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>

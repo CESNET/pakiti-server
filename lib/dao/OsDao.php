@@ -69,7 +69,7 @@ class OsDao {
     return $id;
   }
   
-  public function getOsesIds($orderBy, $pageSize, $pageNum) {
+  public function getOsesIds($orderBy = null, $pageSize = -1, $pageNum = -1) {
     $sql = "select id from Os order by name";
     
     if ($pageSize != -1 && $pageNum != -1) {

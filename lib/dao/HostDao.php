@@ -114,7 +114,7 @@ class HostDao {
     return $this->getById($hostId);  
   }
   
-  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $startsWith = null, $userId = -1, $directlyAssignedToUser = false) {
+  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
 
     $select = "distinct Host.id";
     $from = "Host";
@@ -134,11 +134,6 @@ class HostDao {
         $join[] = "left join Arch on Host.archId=Arch.id";
         $order[] = "Arch.name";
         break;
-      case "hostGroup":
-        $join[] = "left join HostHostGroup as g on g.hostId = Host.id";
-        $join[] = "left join HostGroup on g.hostGroupId = HostGroup.id";
-        $order[] = "HostGroup.name";
-        break;
       case null:
         $order[] = "Host.hostname";
         break;
@@ -146,8 +141,13 @@ class HostDao {
         $order[] = "Host.".$this->db->escape($orderBy)."";
     }
 
-    if($startsWith != null) {
-      $where[] = "lower(hostname) like '".$this->db->escape(strtolower($startsWith))."%'";
+    if($search != null) {
+      $where[] = "lower(hostname) like '%".$this->db->escape(strtolower($search))."%'";
+    }
+
+    if($hostGroupId != -1) {
+          $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+          $where[] = "HostHostGroup.hostGroupId = '".$this->db->escape($hostGroupId)."'";
     }
 
     if($userId != -1) {

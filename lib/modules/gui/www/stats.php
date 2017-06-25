@@ -27,13 +27,6 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-$NAMES_DEFINITIONS = array (
-    "savedReports"      => "Number of reports which were saved to database",
-    "unsavedReports"    => "Number of reports which weren't saved to database",
-    "checkedPkgs"       => "Number of all packages from reports",
-    "sameReports"       => "Number of reports when host didn't send any new data"
-);
-
 require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
 require(realpath(dirname(__FILE__)) . '/../Html.php');
 
@@ -43,27 +36,49 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("stats");
 
-$html->addHtmlAttribute("title", "Statistics");
+$html->setTitle("Statistics");
+$html->setMenuActiveItem("stats.php");
+
 $stats = $pakiti->getManager("StatsManager")->listAll();
 
-//---- Output HTML
+$NAMES_DEFINITIONS = array (
+    "savedReports"      => "Number of reports which were saved to database",
+    "unsavedReports"    => "Number of reports which weren't saved to database",
+    "checkedPkgs"       => "Number of all packages from reports",
+    "sameReports"       => "Number of reports when host didn't send any new data"
+);
 
-$html->printHeader();
-
-# Print table with oses
+// HTML
 ?>
-<table class="tableList">
-    <tr>
-        <th>Name</th>
-        <th>Value</th>
-        <th></th>
-    </tr>
-    <?php
-    $i = 0;
-    foreach ($stats as $stat) {
-        print "<tr class=\"a" . ($i & 1) . "\">\n<td>{$NAMES_DEFINITIONS[$stat->getName()]}</td><td>{$stat->getValue()}</td></tr>\n";
-        $i++;
-    }
-    ?>
+
+
+<?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
+
+<div class="row">
+    <div class="col-md-5"></div>
+    <div class="col-md-2"></div>
+    <div class="col-md-5"></div>
+</div>
+
+<br>
+<br>
+
+<table class="table table-hover table-condensed">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($stats as $stat) { ?>
+            <tr>
+                <td><?php echo $NAMES_DEFINITIONS[$stat->getName()]; ?></td>
+                <td><?php echo $stat->getValue(); ?></td>
+            </tr>
+        <?php } ?>
+    </tbody>
 </table>
-<?php $html->printFooter(); ?>
+
+
+<?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>

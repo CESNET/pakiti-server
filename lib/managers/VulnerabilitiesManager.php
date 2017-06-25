@@ -60,7 +60,7 @@ class VulnerabilitiesManager extends DefaultManager
      * @throws Exception
      */
 
-    public function getVulnerablePkgsWithCve(Host &$host, $orderBy = "name", $pageSize = -1, $pageNum = -1)
+    public function getVulnerablePkgsWithCve(Host &$host)
     {
         if (($host == null) || ($host->getId() == -1)) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);

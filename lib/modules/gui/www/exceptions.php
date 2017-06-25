@@ -34,138 +34,203 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 $html = new HtmlModule($pakiti);
 
 // Access control
-$html->checkPermission("cveExceptions");
+$html->checkPermission("exceptions");
 
-$entries = Utils::getHttpPostVar("entries");
-if ($entries == "") {
-    $entries = 0;
-}
 
-$exp_id = Utils::getHttpPostVar("exp_id");
-if ($exp_id != "") {
-    $exp = $pakiti->getManager("CveExceptionsManager")->getCveExceptionById($exp_id);
-    $pakiti->getManager("CveExceptionsManager")->removeCveException($exp);
-}
-
-$selectedCveName = Utils::getHttpGetVar("cve-name");
-$cveExceptions = array();
-
-$cveNames = $pakiti->getManager("CveDefsManager")->getCveNames();
-$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
-
-if ($entries > 0) {
-    for ($i = 0; $i < $entries; $i++) {
-        if (Utils::getHttpPostVar("exception$i") !== null) {
-            $data = explode(' ', Utils::getHttpPostVar("exception$i"));
-            # data[0] - pkgId
-            # data[1] - osGroupId
-            $exception = new CveException();
-            $exception->setCveName($selectedCveName);
-            $exception->setPkgId($data[0]);
-            $exception->setOsGroupId($data[1]);
-            $exception->setReason(Utils::getHttpPostVar("reason$i"));
-            $exception->setModifier("");
-            $pakiti->getManager("CveExceptionsManager")->storeCveException($exception);
-        }
-    }
-}
-
-if ($selectedCveName != "") {
-    $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsByCveName($selectedCveName);
-} else {
-    $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCvesExceptions();
-}
-
-$html->printHeader(); ?>
-    <form action="" method="get" name="cve_form">
-        <p style="width:200px; margin:0 auto;">
-            <label for="cve-name">CVE: </label>
-            <select name="cve-name" onchange="cve_form.submit();">
-                <?php
-
-                print "<option value=\"\"";
-
-                if ($selectedCveName == "") print " selected";
-                print ">No Cve selected" . "</option>";
-
-                foreach ($cveNames as $cveName) {
-                    print "<option value=\"" . $cveName . "\"";
-                    if ($selectedCveName == $cveName) print " selected";
-                    print ">" . $cveName . "</option>\n";
-                } ?>
-            </select>
-
-        </p>
-    </form>
-    <label><?php if($selectedCveName != ""){ print "Selected CVE:"; } else { print "All CVE Exceptions"; }; ?>
-            <span style="font-weight: bold;">
-            <?php print $selectedCveName ?>
-        </span>
-    </label>
-    <form action="" method="post" name="exception_form">
-        <table class="tableDetail">
-            <tr>
-                <th class="header">CVE</th>
-                <th class="header">Package</th>
-                <th class="header">Reason</th>
-                <th class="header">Modifier</th>
-                <th class="header">Timestamp</th>
-                <th class="header">Action</th>
-            </tr>
-            <?php
-            foreach ($cveExceptions as $cveException) {
-                    $pkg = $pakiti->getManager("PkgsManager")->getPkgById($cveException->getPkgId());
-                    $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById($cveException->getOsGroupId());
-                    print "<tr>";
-                    print "<td>" . $cveException->getCveName() . "</td>";
-                    print "<td>" . $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName() . "</td>";
-                    print "<td>" . $cveException->getReason() . "</td>";
-                    print "<td>" . $cveException->getModifier() . "</td>";
-                    print "<td>" . $cveException->getTimestamp() . "</td>";
-                print "<td><span style='color: #002BFF; font-weight: bold; cursor: pointer;' name=\"remove\" value=\"" . $cveException->getId() . "\" onclick=\"document.getElementById('exp_id').value=" . $cveException->getId() . "; exception_form.submit()\" ><a>[remove]</a></span> </td>";
-                    print "</tr>";
-                }
-            ?>
-        </table>
-
-        <?php
-         if ($selectedCveName != ""){
-        ?>
-        <br><br>
-        <table class="tableDetail">
-            <tr>
-                <th class="headerCheckBox"></th>
-                <th class="header">Installed versions</th>
-                <th class="header">Reason</th>
-            </tr>
-            <?php
-            $i = 0;
-            foreach ($osGroups as $osGroup) {
-                $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroup($selectedCveName, $osGroup);
-                foreach ($pkgs as $pkg) {
-                    print "<tr>
-            <td>
-                <input name=\"exception" . $i . "\" id=\"exception" . $i . "\" value=\"" . $pkg->getId() . " " . $osGroup->getId() . "\" type=\"checkbox\">
-            </td>
-            <td>
-                " . $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName() . "
-            </td>
-            <td>
-                <input type=\"text\" name=\"reason" . $i . "\" size=\"50\" onKeyUp=\"document.getElementById('exception" . $i . "').checked = true\">
-
-            </td></tr>";
-                    $i++;
-                }
+// Process operations
+switch (Utils::getHttpPostVar("act")) {
+    case "create":
+        $cveName = Utils::getHttpGetVar("cveName");
+        $ids = Utils::getHttpPostVar("ids");
+        if ($cveName != "N/A" && $ids != "N/A") {
+            @list ($pkgId, $osGroupId) = explode(' ', Utils::getHttpPostVar("ids"));
+            // Check if exists
+            $id = $pakiti->getManager("CveExceptionsManager")->getCveExceptionIdByCveNamePkgIdOsGroupId($cveName, $pkgId, $osGroupId);
+            if ($id == -1) {
+                $exception = new CveException();
+                $exception->setCveName($cveName);
+                $exception->setPkgId($pkgId);
+                $exception->setOsGroupId($osGroupId);
+                $exception->setReason(Utils::getHttpPostVar("reason"));
+                $exception->setModifier($html->getUsername());
+                $pakiti->getManager("CveExceptionsManager")->storeCveException($exception);
+            } else {
+                $html->setError("CveException already exists");
             }
-            print "<td><input type=\"hidden\" name=\"entries\" value=\"" . $i . "\"></td>
-            </table>";
-            print "<input type=\"hidden\" id=\"exp_id\" name=\"exp_id\" value=\"\">";
-            print "<input type=\"hidden\" id=\"cve-name\" name=\"cve-name\" value=\"" . $selectedCveName . "\">";
-            ?>
-            <button type="button" onclick="exception_form.submit();">Save changes</button>
-        <?php
         }
-        ?>
-    </form>
+        break;
+    case "delete":
+        $id = Utils::getHttpPostVar("id");
+        $cveTag = $pakiti->getManager("CveExceptionsManager")->getCveExceptionById($id);
+        if ($cveTag != null) {
+            $pakiti->getManager("CveExceptionsManager")->removeCveExceptionById($id);
+        } else {
+            $html->setError("CveEexception [" . $id . "] doesn't exists");
+        }
+        break;
+    default:
+        break;
+}
 
-<?php $html->printFooter(); ?>
+
+$html->setTitle("CVE Exceptions");
+$html->setMenuActiveItem("exceptions.php");
+
+
+$selectedCveName = Utils::getHttpGetVar("cveName", null);
+
+$cveNames = $pakiti->getManager("CveDefsManager")->getUsedCveNames();
+$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
+$cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsByCveName($selectedCveName);
+
+// HTML
+?>
+
+
+<?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
+
+
+<div class="row">
+    <div class="col-md-3"></div>
+    <div class="col-md-2"></div>
+    <div class="col-md-2">
+        <?php if($selectedCveName != null) { ?>
+            <button class="btn btn-success btn-block" type="submit" data-toggle="modal" data-target="#add">Add CVE exception</button>
+        <?php } ?>
+    </div>
+    <div class="col-md-2"></div>
+    <div class="col-md-3">
+        <div class="text-right">
+            <div class="dropdown">
+                <button class="btn btn-default dropdown-toggle btn-block" type="button" id="cveNames" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                    <div class="text-left">
+                        <?php echo ($selectedCveName != null) ? $selectedCveName : "All CVEs"; ?> (<?php echo sizeof($cveExceptions); ?> exception<?php if(sizeof($cveExceptions) != 1) echo 's'; ?>)
+                        <span class="caret"></span>
+                    </div>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right col-xs-12" aria-labelledby="cveNames">
+                    <?php if ($selectedCveName != null) { ?>
+                        <li>
+                            <a href="?">All CVEs</a>
+                        </li>
+                    <?php } ?>
+                    <?php foreach ($cveNames as $cveName) { ?>
+                        <?php if ($cveName != $selectedCveName) { ?>
+                            <li>
+                                <a href="<?php echo $html->getQueryString(array("cveName" => $cveName)); ?>">
+                                    <?php echo $cveName; ?>
+                                </a>
+                            </li>
+                        <?php } ?>
+                    <?php } ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br>
+<br>
+
+<table class="table table-hover table-condensed">
+    <thead>
+        <tr>
+            <th>CVE</th>
+            <th>Package</th>
+            <th>Reason</th>
+            <th>Modifier</th>
+            <th>Timestamp</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($cveExceptions as $cveException) { ?>
+            <?php $pkg = $pakiti->getManager("PkgsManager")->getPkgById($cveException->getPkgId()); ?>
+            <?php $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById($cveException->getOsGroupId()); ?>
+            <tr>
+                <td>
+                    <a data-container="body"
+                        data-toggle="popover" data-placement="top"
+                        data-content="<a href='https://bugzilla.redhat.com/show_bug.cgi?id=<?php echo $cveException->getCveName(); ?>' target='_blank'>Link to the RedHat Bugzilla</a><br>
+                            <a href='https://security-tracker.debian.org/tracker/<?php echo $cveException->getCveName(); ?>' target='_blank'>Link to the Debian Advisories</a>"
+                        class="pointer"><?php echo $cveException->getCveName(); ?></a>
+                </td>
+                <td><?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName(); ?></td>
+                <td><?php echo $cveException->getReason(); ?></td>
+                <td><?php echo $cveException->getModifier(); ?></td>
+                <td><?php echo $cveException->getTimestamp(); ?></td>
+                <td>
+                    <button type="button" class="btn btn-xs btn-danger"
+                        onclick="document.form.act.value='delete'; document.form.id.value='<?php echo $cveException->getId(); ?>';"
+                        data-toggle="modal" data-target="#myModal">Delete</button>
+                </td>
+            </tr>
+        <?php } ?>
+    </tbody>
+</table>
+
+
+<form action="" name="form" method="post">
+    <input type="hidden" name="act" />
+    <input type="hidden" name="id" />
+</form>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Are you sure to delete this CVE exception?</h4>
+            </div>
+            <div class="modal-body text-right">
+                <button type="button" class="btn btn-danger" onclick="document.form.submit();">Delete</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if($selectedCveName != null) { ?>
+    <div class="modal fade" id="add" tabindex="-1" role="dialog" aria-labelledby="addLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addLabel">Add CVE exception</h4>
+                </div>
+                <div class="modal-body">
+                    <form name="addForm" method="post">
+                        <input type="hidden" name="act" value="create">
+                        <div class="form-group">
+                            <label for="cveName">CVE</label>
+                            <input type="text" class="form-control" name="cveName" id="cveName" value="<?php echo $selectedCveName; ?>" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="ids">Pkg</label>
+                            <select class="form-control" name="ids" id="ids">
+                                <option value="N/A" selected></option>
+                                <?php foreach ($osGroups as $osGroup) { ?>
+                                    <?php $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroup($selectedCveName, $osGroup); ?>
+                                    <?php foreach ($pkgs as $pkg) { ?>
+                                        <option value="<?php echo $pkg->getId() . ' ' . $osGroup->getId(); ?>"><?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName(); ?></option>
+                                    <?php } ?>
+                                <?php } ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reason">Reason</label>
+                            <input type="text" class="form-control" name="reason" id="reason">
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="btn btn-success">Add</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php } ?>
+
+
+<?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>
