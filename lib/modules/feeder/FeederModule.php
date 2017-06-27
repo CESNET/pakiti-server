@@ -33,7 +33,7 @@
  */
 class FeederModule extends DefaultModule
 {
-    private $_version;
+    private $_protocolVersion;
     private $_reportProcessMode;
 
     private $_report;
@@ -58,18 +58,23 @@ class FeederModule extends DefaultModule
         $this->_host = new Host();
         $this->_report = new Report();
 
-        # Get the version of the client
-        if (($this->_version = Utils::getHttpVar(Constants::$REPORT_VERSION)) == null) {
-            //TODO Change version
-            //Throw exception if null
-            $this->_version = "cern_1";
+        /*
+          Get the version of the protocol used by the client:
+          version 4 == format used by legacy Pakiti2 clients
+          version 5 == format introduced to support wLCG middleware reporter
+        */
+        $this->_protocolVersion = Utils::getHttpVar(Constants::$PROTOCOL_VERSION);
+        if ($this->_protocolVersion === NULL) {
+            $this->_protocolVersion = Utils::getHttpVar(Constants::$REPORT_VERSION); /* backwards compatibility with pakiti2 clients */
+            if ($this->_protocolVersion === NULL)
+                $this->_protocolVersion = "5";
         }
 
         $this->_reportProcessMode = Constants::$STORE_ONLY;
 
         $mode = Utils::getHttpVar(Constants::$PROTOCOL_PROCESSING_MODE);
         if ($mode === NULL)
-            $mode = Utils::getHttpVar(Constants::$REPORT_REPORT);
+            $mode = Utils::getHttpVar(Constants::$REPORT_REPORT); /* backwards compatibility with pakiti2 clients */
 
         if ($mode != NULL) {
             if ($mode == "0")
@@ -90,7 +95,7 @@ class FeederModule extends DefaultModule
         $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
 
         # Map variables in the report to the internal variables
-        $this->doReportMapping($this->_version);
+        $this->doReportMapping($this->_protocolVersion);
 
         # Set Received time
         $this->_report->setReceivedOn(time());
@@ -121,7 +126,7 @@ class FeederModule extends DefaultModule
             $this->_report->setTroughtProxy(Constants::$HOST_IS_NOT_PROXY);
         }
 
-        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ", reporterIp=" . $this->_host->getReporterIp() . ", clientVersion=" . $this->_version . "]", __FILE__, __LINE__);
+        Utils::log(LOG_INFO, "Report from [reporterHost=" . $this->_host->getReporterHostname() . ", reporterIp=" . $this->_host->getReporterIp() . ", clientVersion=" . $this->_protocolVersion . "]", __FILE__, __LINE__);
     }
 
     public function getResult()
@@ -171,10 +176,9 @@ class FeederModule extends DefaultModule
     /*
      * Maps variables from the reports (depends on the report version) onto the local variables
      */
-    private function doReportMapping($version)
+    private function doReportMapping($protocol_version)
     {
-        switch ($version) {
-            # Legacy Pakiti client
+        switch ($protocol_version) {
             case "4":
                 $this->_report_hostname = Utils::getHttpVar(Constants::$REPORT_HOSTNAME);
                 $this->_report_ip = Utils::getHttpVar(Constants::$REPORT_IP);
@@ -190,7 +194,8 @@ class FeederModule extends DefaultModule
                 # FIXME, we need set is in a changelog
                 $this->_report_pkgs_format = $this->_report_type == "rpm" ? "space" : "dash";
                 break;
-            default: // cern_1
+
+            case "5":
                 # Example of the report:
                 ##
                 #ip: 128.142.145.197
@@ -286,6 +291,9 @@ class FeederModule extends DefaultModule
                 fclose($handle);
                 unlink($tmpFileOut);
                 break;
+
+            default:
+                throw new Exception("Unsupported protocol version sent by the client ($protocol_version)");
         }
     }
 
@@ -423,7 +431,7 @@ class FeederModule extends DefaultModule
         $this->_host->setType($this->_report_type);
         
         # Parse the packages list
-        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_host->getType(), $this->_host->getKernel(), $this->_version);
+        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_host->getType(), $this->_host->getKernel(), $this->_protocolVersion);
 
         # Guess DomainName
         $this->_host->setDomainName($this->guessDomain($this->_host->getHostname()));
@@ -560,7 +568,7 @@ class FeederModule extends DefaultModule
             Utils::log(LOG_ERR, "Cannot create the file, trying again ($count attempts left)", __FILE__, __LINE__);
         }
 
-        switch ($this->_version) {
+        switch ($this->_protocolVersion) {
             case "4":
                 # Prepare the header
                 $header = Constants::$REPORT_TYPE . "=\"" . $this->_report_type . "\"," .
@@ -570,7 +578,6 @@ class FeederModule extends DefaultModule
                     Constants::$REPORT_KERNEL . "=\"" . $this->_report_kernel . "\"," .
                     Constants::$REPORT_ARCH . "=\"" . $this->_report_arch . "\"," .
                     Constants::$REPORT_SITE . "=\"" . $this->_report_site . "\"," .
-                    Constants::$REPORT_VERSION . "=\"" . $this->_version . "\"," .
                     Constants::$REPORT_TIMESTAMP . "=\"" . $timestamp . "\"" .
                     "\n";
 
@@ -646,7 +653,7 @@ class FeederModule extends DefaultModule
     /*
      * Parse the long string containing list of installed packages.
      */
-    protected function parsePkgs($pkgs, $type, $kernel, $version)
+    protected function parsePkgs($pkgs, $type, $kernel, $protocol_version)
     {
         Utils::log(LOG_DEBUG, "Parsing packages", __FILE__, __LINE__);
         $parsedPkgs = array();
@@ -656,7 +663,7 @@ class FeederModule extends DefaultModule
         # Go throught the string, each entry is separated by the new line
         $tok = strtok($pkgs, "\n");
         while ($tok !== FALSE) {
-            switch ($version) {
+            switch ($protocol_version) {
                 case "4":
                     if(preg_match("/'(.*)' '(.*)' '(.*)' '(.*)'/", $tok, $entries) == 1){
                         $pkgName = $entries[1];
@@ -673,7 +680,7 @@ class FeederModule extends DefaultModule
                         @list ($pkgVersion, $pkgRelease) = explode('-', $pkgVersion);
                     }
                     break;
-                default: //cern_1
+                case "5":
                     if(preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries) == 1){
                         $pkgName = $entries[1];
                         $pkgVersion = $entries[2];
@@ -688,6 +695,8 @@ class FeederModule extends DefaultModule
                         Utils::log(LOG_INFO, "Package [" . $tok . "] cannot be parsed (omitted)!" , __FILE__, __LINE__);
                     }
                     break;
+                default:
+                    throw new Exception("Unsupported protocol version sent by the client ($protocol_version)");
             }
 
             ## Remove blacklisted packages
@@ -848,7 +857,7 @@ class FeederModule extends DefaultModule
     }
 
     /*
-     * Compute hash of the report header (hostname, ip, version, kernel, ...)
+     * Compute hash of the report header (hostname, ip, kernel, ...)
      */
     protected function computeReportHeaderHash()
     {

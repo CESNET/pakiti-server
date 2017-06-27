@@ -26,6 +26,8 @@ use constant COMMANDS => qw(
     curl dpkg-query hostname lsb_release openssl pkg rpm uname wget
 );
 
+use constant PROTOCOL_VERSION => "5";
+
 #
 # global variables
 #
@@ -357,9 +359,11 @@ sub send_report ($) {
     # The caller may specify additional information that doesn't describe the
     # actual patch state but may be useful for the processing. Options recognized
     # as such are sent in the query string.
-    for my $key (qw(mode)){
+    for my $key (qw(mode)) {
         push(@pairs, join('=', $key, $Option{$key})) if $Option{$key};
     }
+    push(@pairs, "protocol=" . PROTOCOL_VERSION);
+
     $url = "$Option{url}";
     $url = $url . '?' . join('&', @pairs) if @pairs;
     ## no critic 'InputOutput::ProhibitBacktickOperators'

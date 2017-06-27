@@ -109,6 +109,7 @@ final class Constants {
 
   # Additional information sent by the client
   public static $PROTOCOL_PROCESSING_MODE = "mode"; /* should obsolete the 'report' entry above */
+  public static $PROTOCOL_VERSION = "protocol";
   
   # What the server has to do with the report (the mode of processing)
   public static $STORE_ONLY = "store-only";
