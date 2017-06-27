@@ -67,7 +67,7 @@ class FeederModule extends DefaultModule
 
         $this->_reportProcessMode = Constants::$STORE_ONLY;
 
-        $mode = Utils::getHttpVar(Constants::$REPORT_MODE);
+        $mode = Utils::getHttpVar(Constants::$PROTOCOL_PROCESSING_MODE);
         if ($mode === NULL)
             $mode = Utils::getHttpVar(Constants::$REPORT_REPORT);
 
