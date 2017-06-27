@@ -34,7 +34,7 @@
 class FeederModule extends DefaultModule
 {
     private $_version;
-    private $_processReportType;
+    private $_reportProcessMode;
 
     private $_report;
     private $_host;
@@ -65,9 +65,24 @@ class FeederModule extends DefaultModule
             $this->_version = "cern_1";
         }
 
-        $this->_processReportType = Utils::getHttpVar(Constants::$REPORT_REPORT);
-        if ($this->_processReportType != Constants::$STORE_ONLY && $this->_processReportType != Constants::$STORE_AND_REPORT && $this->_processReportType != Constants::$REPORT_ONLY) {
-            $this->_processReportType = Constants::$STORE_ONLY;
+        $this->_reportProcessMode = Constants::$STORE_ONLY;
+
+        $mode = Utils::getHttpVar(Constants::$REPORT_MODE);
+        if ($mode === NULL)
+            $mode = Utils::getHttpVar(Constants::$REPORT_REPORT);
+
+        if ($mode != NULL) {
+            if ($mode == "0")
+                $mode = Constants::$STORE_ONLY;
+            elseif ($mode == "1")
+                $mode = Constants::$STORE_AND_REPORT;
+            elseif ($mode == "2")
+                $mode = Constants::$REPORT_ONLY;
+
+            if (! in_array($mode, array(Constants::$STORE_ONLY, Constants::$STORE_AND_REPORT, Constants::$REPORT_ONLY)))
+                throw new Exception("Unsupported processing mode requested ('" . $mode . "')");
+
+            $this->_reportProcessMode = $mode;
         }
 
         # Get the hostname and ip of the reporting machine (could be a NAT machine)
@@ -115,10 +130,10 @@ class FeederModule extends DefaultModule
             return;
         }
 
-        if($this->_processReportType == Constants::$STORE_ONLY){
+        if($this->_reportProcessMode == Constants::$STORE_ONLY){
             return "";
         }
-        if($this->_processReportType == Constants::$REPORT_ONLY){
+        if($this->_reportProcessMode == Constants::$REPORT_ONLY){
             $os = $this->_host->getOsName();
             $pkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $this->_pkgs);
         } else {
@@ -279,7 +294,7 @@ class FeederModule extends DefaultModule
      */
     public function processReport()
     {
-        if($this->_processReportType != Constants::$REPORT_ONLY){
+        if($this->_reportProcessMode != Constants::$REPORT_ONLY){
 
             # If host want save report to database
             if(!$this->isHostSentNewData()){

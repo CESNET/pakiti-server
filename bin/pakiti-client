@@ -336,7 +336,7 @@ sub encrypt_report ($) {
 
 sub send_report ($) {
     my($report) = @_;
-    my($data, @command, $output);
+    my($data, @command, $output, $url, @pairs);
 
     $TempDir ||= tempdir(CLEANUP => 1);
     $data = "$TempDir/data";
@@ -354,8 +354,16 @@ sub send_report ($) {
     } else {
         die("$Script: cannot send to $Option{url}: curl/wget not installed\n");
     }
+    # The caller may specify additional information that doesn't describe the
+    # actual patch state but may be useful for the processing. Options recognized
+    # as such are sent in the query string.
+    for my $key (qw(mode)){
+        push(@pairs, join('=', $key, $Option{$key})) if $Option{$key};
+    }
+    $url = "$Option{url}";
+    $url = $url . '?' . join('&', @pairs) if @pairs;
     ## no critic 'InputOutput::ProhibitBacktickOperators'
-    $output = qx(@command $Option{url} 2>&1);
+    $output = qx(@command "$url" 2>&1);
     if ($output =~ /$Option{expect}$/ and $? == 0) {
         print(STDERR "report successfully sent\n") if -t STDERR;
         print $output if $output;
@@ -417,6 +425,7 @@ sub init () {
         "host"     => "=s",
         "input"    => "|i=s",
         "manual"   => "|m",
+        "mode"     => "=s",
         "debug"    => "|d",
         "output"   => "|o=s",
         "rndsleep" => "|r=i",
@@ -602,6 +611,10 @@ set the path of the C<lsb_release> command to use
 =item B<--manual>, B<-m>
 
 show this manual
+
+=item B<--mode> I<STRING>
+
+the mode that determines how the report should be processed by the server
 
 =item B<--debug>, B<-d>
 

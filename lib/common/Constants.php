@@ -106,8 +106,11 @@ final class Constants {
   public static $REPORT_TIMESTAMP = "timestamp";
   public static $REPORT_LAST_HEADER_HASH = "lastReportHeaderHash";
   public static $REPORT_LAST_PKGS_HASH = "lastReportPkgsHash";
+
+  # Additional information sent by the client
+  public static $REPORT_MODE = "mode"; /* should obsolete the 'report' entry above */
   
-  # What the server has to do with the report
+  # What the server has to do with the report (the mode of processing)
   public static $STORE_ONLY = "store-only";
   public static $STORE_AND_REPORT = "store-and-report";
   public static $REPORT_ONLY = "report-only";
