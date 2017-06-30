@@ -153,7 +153,7 @@ $hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroup
             <?php $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupsByHost($host); ?>
             <?php $cveCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host); ?>
             <?php $cveWithTagCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true); ?>
-            <?php $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host); ?>
+            <?php $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host->getId()); ?>
 
             <tr>
                 <td>
