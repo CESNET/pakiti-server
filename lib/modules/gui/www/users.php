@@ -160,20 +160,22 @@ $hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups();
                 </td>
                 <td>
                     <?php foreach ($userHosts as $userHost) { ?>
+                        <a href="host.php?hostId=<?php echo $userHost->getId(); ?>"><?php echo $userHost->getHostname(); ?></a>
                         <a onclick="document.editForm.act.value='remove';
                             document.editForm.hostGroupId.value='-1';
                             document.editForm.hostId.value='<?php echo $userHost->getId(); ?>';
                             document.editForm.id.value='<?php echo $user->getId(); ?>';
-                            document.editForm.submit();" class="pointer"><?php echo $userHost->getHostname(); ?></a><br>
+                            document.editForm.submit();" class="pointer text-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a><br>
                     <?php } ?>
                 </td>
                 <td>
                     <?php foreach ($userHostGroups as $userHostGroup) { ?>
+                        <a href="hosts.php?hostGroupId=<?php echo $userHostGroup->getId(); ?>"><?php echo $userHostGroup->getName(); ?></a>
                         <a onclick="document.editForm.act.value='remove';
                             document.editForm.hostId.value='-1';
                             document.editForm.hostGroupId.value='<?php echo $userHostGroup->getId(); ?>';
                             document.editForm.id.value='<?php echo $user->getId(); ?>';
-                            document.editForm.submit();" class="pointer"><?php echo $userHostGroup->getName(); ?></a><br>
+                            document.editForm.submit();" class="pointer text-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a><br>
                     <?php } ?>
                 </td>
                 <td>
