@@ -153,7 +153,7 @@ $tagNames = Config::$TAGS;
                     <input type="checkbox" onClick="document.form.act.value='update'; document.form.id.value='<?php echo $cveTag->getId(); ?>';
                         document.form.enabled.value=this.checked; document.form.submit();"<?php if ($cveTag->isEnabled()) echo ' checked'; ?>>
                 </td>
-                <td><?php echo $cveTag->getCveName(); ?></td>
+                <td><a href="cve.php?cveName=<?php echo $cveTag->getCveName(); ?>"><?php echo $cveTag->getCveName(); ?></a></td>
                 <td><?php echo $cveTag->getTagName(); ?></td>
                 <td><?php echo $cveTag->getReason(); ?></td>
                 <td><a href="<?php echo $cveTag->getInfoUrl(); ?>" target='_blank'><?php echo $cveTag->getInfoUrl(); ?></a></td>
