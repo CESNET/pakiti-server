@@ -99,19 +99,16 @@ class CveDao
 
     public function getCveNames()
     {
-        $sql = "select DISTINCT name from Cve"; //TODO remove limit
-        $cveNamesDb =& $this->db->queryToMultiRow($sql);
-        $cveNames = array();
-        foreach ($cveNamesDb as $cveNameDb) {
-            array_push($cveNames, $cveNameDb["name"]);
-        }
-        return $cveNames;
+        $sql = "select distinct Cve.name from Cve
+            order by Cve.name DESC";
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
 
     public function getUsedCveNames()
     {
         $sql = "select distinct Cve.name from Cve
-            inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId";
+            inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId
+            order by Cve.name DESC";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
