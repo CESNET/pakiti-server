@@ -124,6 +124,9 @@ class HostDao {
     $limit = null;
     $offset = null;
 
+    # tmpJoin variable indicates whether HostHostGroup table is joined
+    $tmpJoin = false;
+
     // Because os and arch are ids to other tables, we have to do different sorting
     switch ($orderBy) {
       case "os":
@@ -147,6 +150,7 @@ class HostDao {
 
     if($hostGroupId != -1) {
           $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+          $tmpJoin = true;
           $where[] = "HostHostGroup.hostGroupId = '".$this->db->escape($hostGroupId)."'";
     }
 
@@ -156,7 +160,9 @@ class HostDao {
       if ($directlyAssignedToUser) {
           $where[] = "UserHost.userId = $userId";
       } else {
-          $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+          if (!$tmpJoin) {
+              $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+          }
           $join[] = "left join UserHostGroup on HostHostGroup.hostGroupId = UserHostGroup.hostGroupId";
           $where[] = "(UserHostGroup.userId = $userId or UserHost.userId = $userId)";
       }
