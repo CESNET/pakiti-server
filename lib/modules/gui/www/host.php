@@ -71,7 +71,7 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
         <td>HostGroup</td>
         <td>
             <?php foreach ($hostGroups as $hostGroup) { ?> 
-                <a href="hosts.php?hostGroup=<?php echo $hostGroup->getId(); ?>"><?php echo $hostGroup->getName(); ?> </a>
+                <a href="hosts.php?hostGroupId=<?php echo $hostGroup->getId(); ?>"><?php echo $hostGroup->getName(); ?> </a>
             <?php } ?>
         </td>
     </tr>
@@ -109,7 +109,7 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td>Cves with Tag</td>
-        <td><?php echo $cveWithTagCount; ?></td>
+        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $cveWithTagCount; ?></a></td>
     </tr>
     <tr>
         <td>Last report received on</td>

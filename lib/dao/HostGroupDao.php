@@ -31,167 +31,109 @@
  * @author Michal Prochazka
  * @author Jakub Mlcak
  */
-class HostGroupDao {
-  private $db;
-  
-  public function __construct(DbManager &$dbManager) {
-    $this->db = $dbManager;  
-  }
-  
-  public function create(HostGroup &$hostGroup) {
-    Utils::log(LOG_DEBUG, "Creating [hostGroup=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
-    $this->db->query(
-      "insert into HostGroup set
-      	name='".$this->db->escape($hostGroup->getName())."'");
-    
-    # Set the newly assigned id
-    $hostGroup->setId($this->db->getLastInsertedId());
-  }
-  
-  public function getById($id, $userId = -1) {
-    if (!is_numeric($id)) return null;
+class HostGroupDao
+{
+    private $db;
 
-    if($userId != -1){
-      $join = "inner join UserHostGroup on HostGroup.id = UserHostGroup.hostGroupId";
-      $conditions = "UserHostGroup.userId = $userId and";
-    } else {
-      $join = "";
-      $conditions = "";
-    }
-    
-    return $this->db->queryObject("
-      select id as _id, name as _name
-      from HostGroup
-      $join
-      where
-      $conditions
-      id = $id
-    ", "HostGroup");
-  }
-  
-  public function getByName($name) {
-    return $this->getBy($name, "name");
-  }
-
-  public function getByHostId($hostId) {
-    $sql = "select HostGroup.id as _id, HostGroup.name as _name
-      from HostHostGroup
-      inner join HostGroup on HostHostGroup.hostGroupId = HostGroup.id
-      where HostHostGroup.hostId=$hostId";
-    return $this->db->queryObjects($sql, "HostGroup");
-  }
-  
-  public function getIdByName($name) {
-    $id = $this->db->queryToSingleValue(
-    	"select 
-    		id
-      from 
-      	HostGroup 
-      where
-      	name='".$this->db->escape($name)."'");
-    if ($id == null) {
-      return -1;
-    }
-    return $id;
-  }
-  
-  public function getHostGroupsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $userId = -1) {
-    $sql = "select HostGroup.id as _id from HostGroup";
-    
-    if($userId != -1){
-      $sql .= " inner join UserHostGroup on HostGroup.id = UserHostGroup.hostGroupId where UserHostGroup.userId = $userId";
-    }
-    
-    if($orderBy == null) {
-      $sql .= " order by HostGroup.name";
-    } else {
-      $sql .= " order by HostGroup.$orderBy";
-    }
-    
-    if ($pageSize != -1 && $pageNum != -1) {
-      $offset = $pageSize*$pageNum;
-      $sql .= " limit $offset,$pageSize";
-    }
-    
-    return $this->db->queryToSingleValueMultiRow($sql);
-  }
-
-  public function getHostGroupsCount() {
-    $sql = "select count(id) from HostGroup";
-    
-    return $this->db->queryToSingleValue($sql);
-  }
-
-  public function getHostsCount($hostGroupId) {
-    $sql = "select count(hostId) from HostHostGroup where hostGroupId=$hostGroupId";
-    
-    return $this->db->queryToSingleValue($sql);
-  }
-
-  public function getHostsIds($hostGroupId, $orderBy, $pageSize, $pageNum) {  
-    // Because os and arch are ids to other tables, we have to do different sorting
-
-     switch ($orderBy) {
-      case "os":
-        $sql = "select HostHostGroup.hostId from Host, Os, HostHostGroup where Host.osId=Os.id and HostHostGroup.hostId=Host.id and HostHostGroup.hostGroupId=$hostGroupId order by Os.name";
-        break;
-      case "arch":
-        $sql = "select HostHostGroup.hostId from Host, Arch, HostHostGroup where Host.archId=Arch.id and HostHostGroup.hostId=Host.id and HostHostGroup.hostGroupId=$hostGroupId order by Arch.name";
-        break;
-      case "kernel":
-        $sql = "select HostHostGroup.hostId from Host, HostHostGroup where HostHostGroup.hostId=Host.id and HostHostGroup.hostGroupId=$hostGroupId order by Host.kernel";
-        break; default:
-        $sql = "select HostHostGroup.hostId from HostHostGroup, Host where HostHostGroup.hostId=Host.id and HostHostGroup.hostGroupId=$hostGroupId order by Host.hostname";
+    public function __construct(DbManager &$dbManager)
+    {
+        $this->db = $dbManager;
     }
 
-    if ($pageSize != -1 && $pageNum != -1) {
-      $offset = $pageSize*$pageNum;
-      $sql .= " limit $offset,$pageSize";
+    public function create(HostGroup &$hostGroup)
+    {
+        $sql = "insert into HostGroup set
+            name='".$this->db->escape($hostGroup->getName())."',
+            url='".$this->db->escape($hostGroup->getUrl())."',
+            contact='".$this->db->escape($hostGroup->getContact())."',
+            note='".$this->db->escape($hostGroup->getNote())."'";
+        $this->db->query($sql);
+
+        # Set the newly assigned id
+        $hostGroup->setId($this->db->getLastInsertedId());
     }
 
-    return $this->db->queryToSingleValueMultiRow($sql);
-  }
-
-  public function update(HostGroup &$hostGroup) {
-    Utils::log(LOG_DEBUG, "Updating [hostGroup=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
-    $this->db->query(
-      "update HostGroup set
-      	name='".$this->db->escape($hostGroup->getName())."
-      where id=".$hostGroup->getId());
-  }
-  
-  public function delete(HostGroup &$hostGroup) {
-    Utils::log(LOG_DEBUG, "Deleting [hostGroup=" . $hostGroup->getName() . "]", __FILE__, __LINE__);
-    $this->db->query(
-      "delete from HostGroup where id=".$hostGroup->getId());
-  }
-  
-  public function removeHostFromHostGroups($hostId) {
-     $this->db->query(
-      "delete from HostHostGroup where hostId={$hostId}"); 
-  }
-  
-	 /*
-   * We can get the data by ID or name
-   */
-  protected function getBy($value, $type) {
-    $where = "";
-    if ($type == "id") {
-      $where = "id=".$this->db->escape($value);
-    } else if ($type == "name") {
-      $where = "name='".$this->db->escape($value)."'";
-    } else {
-      throw new Exception("Undefined type of the getBy");
+    public function update(HostGroup &$hostGroup)
+    {
+        $sql = "update HostGroup set
+            name='".$this->db->escape($hostGroup->getName())."',
+            url='".$this->db->escape($hostGroup->getUrl())."',
+            contact='".$this->db->escape($hostGroup->getContact())."',
+            note='".$this->db->escape($hostGroup->getNote())."'
+            where id='".$this->db->escape($hostGroup->getId())."'";
+        $this->db->query($sql);
     }
-    return $this->db->queryObject(
-    	"select 
-    		id as _id,
-		name as _name
-      from 
-      	HostGroup 
-      where
-      	$where"
-      , "HostGroup");
-  }
+
+    public function getById($id, $userId = -1)
+    {
+        $select = "id as _id, name as _name, url as _url, contact as _contact, note as _note";
+        $from = "HostGroup";
+        $join = null;
+        $where[] = "id='".$this->db->escape($id)."'";
+
+        if ($userId != -1) {
+            $join[] = "inner join UserHostGroup on HostGroup.id = UserHostGroup.hostGroupId";
+            $where[] = "UserHostGroup.userId = '".$this->db->escape($id)."'";
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where);
+        return $this->db->queryObject($sql, "HostGroup");
+    }
+
+    public function getIdsByHostId($hostId)
+    {
+        $sql = "select HostGroup.id from HostHostGroup
+            inner join HostGroup on HostHostGroup.hostGroupId = HostGroup.id
+            where HostHostGroup.hostId = '".$this->db->escape($hostId)."'";
+        return $this->db->queryToSingleValueMultiRow($sql, "HostGroup");
+    }
+
+    public function getIdByName($name)
+    {
+        $sql = "select id from HostGroup 
+            where name='".$this->db->escape($name)."'";
+        $id = $this->db->queryToSingleValue($sql);
+        return ($id == null) ? -1 : $id;
+    }
+
+    public function getHostGroupsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $userId = -1)
+    {
+        $select = "HostGroup.id";
+        $from = "HostGroup";
+        $join = null;
+        $where = null;
+        $order = "HostGroup.name";
+        $limit = null;
+        $offset = null;
+
+        if ($orderBy != null) {
+            $order = "HostGroup.".$this->db->escape($orderBy)."";
+        }
+
+        if ($userId != -1) {
+            $join[] = "inner join UserHostGroup on HostGroup.id = UserHostGroup.hostGroupId";
+            $where[] = "UserHostGroup.userId = '".$this->db->escape($userId)."'";
+        }
+
+        if ($pageSize != -1 && $pageNum != -1) {
+            $limit = $pageSize;
+            $offset = $pageSize * $pageNum;
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function delete($id)
+    {
+        $sql = "delete from HostGroup
+            where id = '".$this->db->escape($id)."'";
+        $this->db->query($sql);
+    }
+
+    public function removeHostFromHostGroups($hostId)
+    {
+        $sql = "delete from HostHostGroup where hostId = '".$this->db->escape($hostId)."'";
+        $this->db->query($sql);
+    }
 }
-?>

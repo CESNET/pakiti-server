@@ -61,6 +61,9 @@ create table `Domain` (
 create table `HostGroup` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
+	`url` varchar(63) not null,
+	`contact` varchar(63) not null,
+	`note` varchar(63) not null,
 	primary key (`id`),
 	unique key `name` (`name`)
 )ENGINE=INNODB;
