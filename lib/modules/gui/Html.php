@@ -167,7 +167,7 @@ class HTMLModule extends DefaultModule
 
     public function getNumOfPages()
     {
-        return $this->_numOfEntities / $this->getPageSize();
+        return ceil($this->_numOfEntities / $this->getPageSize());
     }
 
     // Header
