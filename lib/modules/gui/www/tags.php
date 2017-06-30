@@ -143,11 +143,13 @@ $tagNames = Config::$TAGS;
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
                 <?php } ?>
             </th>
+            <th>#CVE Exceptions</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         <?php foreach ($cveTags as $cveTag) { ?>
+            <?php $cveTagExceptionsCount = $html->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsCountByCveName($cveTag->getCveName()); ?>
             <tr>
                 <td>
                     <input type="checkbox" onClick="document.form.act.value='update'; document.form.id.value='<?php echo $cveTag->getId(); ?>';
@@ -159,6 +161,7 @@ $tagNames = Config::$TAGS;
                 <td><a href="<?php echo $cveTag->getInfoUrl(); ?>" target='_blank'><?php echo $cveTag->getInfoUrl(); ?></a></td>
                 <td><?php echo $cveTag->getModifier(); ?></td>
                 <td><?php echo $cveTag->getTimestamp(); ?></td>
+                <td><a href="exceptions.php?cveName=<?php echo $cveTag->getCveName(); ?>"><?php echo $cveTagExceptionsCount; ?></a></td>
                 <td>
                     <button type="button" class="btn btn-xs btn-danger"
                         onclick="document.form.act.value='delete'; document.form.id.value='<?php echo $cveTag->getId(); ?>';"

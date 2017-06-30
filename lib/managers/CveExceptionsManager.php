@@ -94,6 +94,11 @@ class CveExceptionsManager extends DefaultManager
         return $this->getPakiti()->getDao("CveException")->getCveExceptionsByCveName($cveName);
     }
 
+    public function getCveExceptionsCountByCveName($cveName = null)
+    {
+        return $this->getPakiti()->getDao("CveException")->getCveExceptionsCountByCveName($cveName);
+    }
+
     # remove also all associated Exceptions
     public function removeCveException(CveException $exception)
     {
