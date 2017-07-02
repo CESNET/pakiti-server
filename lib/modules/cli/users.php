@@ -70,18 +70,25 @@ switch ($opt["c"]) {
     if (isset($opt["admin"])) {
         $user->setAdmin(true);
     }
-    $pakiti->getManager("UsersManager")->storeUser($user);
+    if ($pakiti->getManager("UsersManager")->storeUser($user)) {
+        die("user was created\n");
+    } else {
+        die("user was updated\n");
+    }
     break;
 
   # delete user
   case "delete":
-    $user = new User();
-    if (!isset($opt["uid"])) {
-        $user = $pakiti->getManager("UsersManager")->getUserByUid($opt["uid"]);
+    if (isset($opt["uid"])) {
+        $id = $pakiti->getManager("UsersManager")->getUserIdByUid($opt["uid"]);
     } else {
         die("required option uid is missing\n");
     }
-    $pakiti->getManager("UsersManager")->deleteUser($user->getId());
+    if ($pakiti->getManager("UsersManager")->deleteUser($id)) {
+        die("user was deleted\n");
+    } else {
+        die("user wasn't deleted\n");
+    }
     break;
 
   # list users
@@ -94,7 +101,7 @@ switch ($opt["c"]) {
     break;
 
   default:
-    die("option -c has unknown value");
+    die("option -c has unknown value\n");
     break;
 }
 

@@ -95,6 +95,7 @@ class UserDao
         $sql = "delete from User
             where id='".$this->db->escape($id)."'";
         $this->db->query($sql);
+        return $this->db->getNumberOfAffectedRows();
     }
 
     public function assignHostToUser($userId, $hostId)
