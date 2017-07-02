@@ -36,6 +36,9 @@
 final class Config
 {
 
+    # Name of this Pakiti instance
+    public static $PAKITI_NAME = "Pakiti";
+
     # Pakiti operational mode
     #   1 - Synchronous mode - process clients reports immediatelly, useful for small deployments with < 1000 hosts
     #   2 - Asynchronous mode - process clients reports from the queue, needed in the deployments with > 1000 hosts

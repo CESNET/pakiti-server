@@ -44,6 +44,7 @@ foreach($cveExceptions as $cveException){
     $cveExceptionNode = $xml->addChild("cveException");
     $cveExceptionNode->addChild("cveName", $cveException->getCveName());
     $cveExceptionNode->addChild("reason", $cveException->getReason());
+    $cveExceptionNode->addChild("modifier", Config::$PAKITI_NAME);
     $pkg = $pkgDao->getById($cveException->getPkgId());
     $pkgNode = $cveExceptionNode->addChild("pkg");
     $pkgNode->addChild("name", $pkg->getName());
