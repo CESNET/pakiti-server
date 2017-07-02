@@ -131,4 +131,11 @@ class HostGroupsManager extends DefaultManager {
     $this->getPakiti()->getDao("HostGroup")->removeHostFromHostGroups($hostId);
   }
 
+  public function deleteHostGroup($id)
+  {
+    Utils::log(LOG_DEBUG, "Deleting hostGroup[$id]", __FILE__, __LINE__);
+    $dao = $this->getPakiti()->getDao("HostGroup");
+    return $dao->delete($id);
+  }
+
 }

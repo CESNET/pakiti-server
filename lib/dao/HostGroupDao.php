@@ -129,6 +129,7 @@ class HostGroupDao
         $sql = "delete from HostGroup
             where id = '".$this->db->escape($id)."'";
         $this->db->query($sql);
+        return $this->db->getNumberOfAffectedRows();
     }
 
     public function removeHostFromHostGroups($hostId)
