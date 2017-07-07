@@ -51,7 +51,7 @@ final class Config
     public static $AUTHZ_MODE = "none";
 
     # Name of _SERVER variables for authorization
-    public static $AUTHZ_UID = "epuid";
+    public static $AUTHZ_UID = "REMOTE_USER";
     public static $AUTHZ_NAME = "cn";
     public static $AUTHZ_EMAIL = "mail";
 
