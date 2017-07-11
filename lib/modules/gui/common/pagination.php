@@ -34,6 +34,26 @@
 # getQueryString
 ?>
 
+<?php
+    # Calculate start and end pagination
+    $long = 10;
+    if($html->getPageNum() - 6 > 0){
+        $long -= 2;
+        $start = $html->getPageNum() - 3;
+    } else {
+        $start = 0;
+    }
+
+    if($start + $long < $html->getNumOfPages() - 1){
+        $long -= 2;
+        $end = $start + $long;
+    } else {
+        $end = $html->getNumOfPages() - 1;
+        if ($end - 10 > 0) {
+            $start = $end - 8;
+        }
+    }
+?>
 <div class="text-center">
     <nav aria-label="Page navigation">
         <ul class="pagination pagination-sm">
@@ -43,10 +63,22 @@
                         <span aria-hidden="true">&laquo;</span>
                     </a>
                 </li>
-                <?php for ($i = 0; $i <= $html->getNumOfPages(); $i++) { ?>
+                <?php if ($start > 0) { ?>
+                    <li><a href="<?php echo $html->getQueryString(array("pageNum" => 0)); ?>">1</a></li>
+                <?php } ?>
+                <?php if ($start > 1) { ?>
+                    <li><span>...</span></li>
+                <?php } ?>
+                <?php for ($i = $start; $i <= $end; $i++) { ?>
                     <li<?php if ($i == $html->getPageNum()){ echo ' class="active"'; }?>>
                         <a href="<?php echo $html->getQueryString(array("pageNum" => $i)); ?>"><?php echo $i + 1; ?></a>
-                    <li>
+                    </li>
+                <?php } ?>
+                <?php if ($end < $html->getNumOfPages() - 2) { ?>
+                    <li><span>...</span></li>
+                <?php } ?>
+                <?php if ($end < $html->getNumOfPages() - 1) { ?>
+                    <li><a href="<?php echo $html->getQueryString(array("pageNum" => $html->getNumOfPages() - 1)); ?>"><?php echo $html->getNumOfPages(); ?></a></li>
                 <?php } ?>
                 <li<?php if ($html->getPageNum() >= $html->getNumOfPages()-1) echo ' class="disabled"'; ?>>
                     <a href="<?php if ($html->getPageNum() < $html->getNumOfPages()-1) echo $html->getQueryString(array("pageNum" => $html->getPageNum()+1)); ?>" aria-label="Next">
