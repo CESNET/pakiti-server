@@ -168,6 +168,30 @@ class VulnerabilitiesManager extends DefaultManager
         return $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroupsIds);
     }
 
+    /**
+     * Return array of Vulnerabilities by Cve name and OsGroupId
+     * @param $cveName
+     * @param $osGroupId
+     * @return array
+     */
+    public function getVulnerabilitiesByCveName($cveName)
+    {
+        Utils::log(LOG_DEBUG, "Searching for vulnerabilities by CVE name [" . $cveName . "]", __FILE__, __LINE__);
+
+        $cves = $this->getPakiti()->getDao("Cve")->getCvesByName($cveName);
+        if (empty($cves)) {
+            return array();
+        }
+
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIds();
+
+        $cveDefsIds = array_map(function ($cve) {
+            return $cve->getCveDefId();
+        }, $cves);
+
+        return $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroupsIds);
+    }
+
 
     /*
      * Compare packages version based on type of packages

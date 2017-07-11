@@ -149,11 +149,7 @@ $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsBy
             <?php $osGroup = $pakiti->getManager("OsGroupsManager")->getOsGroupById($cveException->getOsGroupId()); ?>
             <tr>
                 <td>
-                    <a data-container="body"
-                        data-toggle="popover" data-placement="top"
-                        data-content="<a href='https://bugzilla.redhat.com/show_bug.cgi?id=<?php echo $cveException->getCveName(); ?>' target='_blank'>Link to the RedHat Bugzilla</a><br>
-                            <a href='https://security-tracker.debian.org/tracker/<?php echo $cveException->getCveName(); ?>' target='_blank'>Link to the Debian Advisories</a>"
-                        class="pointer"><?php echo $cveException->getCveName(); ?></a>
+                    <a href="cve.php?cveName=<?php echo $cveException->getCveName(); ?>"><?php echo $cveException->getCveName(); ?></a>
                 </td>
                 <td><?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName(); ?></td>
                 <td><?php echo $cveException->getReason(); ?></td>

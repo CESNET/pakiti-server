@@ -34,56 +34,52 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 $html = new HtmlModule($pakiti);
 
 // Access control
-$html->checkPermission("host");
+$html->checkPermission("cve");
 
-$host = $pakiti->getManager("HostsManager")->getHostById($html->getHttpGetVar("hostId", -1), $html->getUserId());
-if ($host == null) {
-    $html->fatalError("Host with id " . $id . " doesn't exist or access denied");
-    exit;
-}
 
-$html->setTitle("Host: " . $host->getHostname());
+$html->setTitle("CVE");
 
-$pkgs = $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($host);
+$cveName = Utils::getHttpGetVar("cveName", null);
+$vulnerabilities = $html->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveName($cveName);
 
 // HTML
 ?>
 
+
 <?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
 
-<h1><?php echo $host->getHostname(); ?></h1>
-<ul class="nav nav-tabs">
-    <li role="presentation"><a href="host.php?hostId=<?php echo $host->getId(); ?>">Detail</a></li>
-    <li role="presentation"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
-    <li role="presentation"><a href="packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
-    <li role="presentation" class="active"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
-</ul>
+<h1><?php echo $cveName; ?></h1>
 
+<br><br>
+<a href="https://bugzilla.redhat.com/show_bug.cgi?id=<?php echo $cveName ?>" target="_blank">Link to the RedHat Bugzilla</a><br>
+<a href="https://security-tracker.debian.org/tracker/<?php echo $cveName ?>" target="_blank">Link to the Debian Advisories</a>
 <br><br>
 
 <table class="table table-hover table-condensed">
     <thead>
         <tr>
-            <th width="300">Name</th>
-            <th width="300">Installed version</th>
-            <th width="200">Architecture</th>
-            <th>CVEs</th>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Release</th>
+            <th>Architecture</th>
+            <th>OsGroup</th>
+            <th>Operator</th>
         </tr>
     </thead>
     <tbody>
-        <?php foreach ($pkgs as $pkg) { ?>
+        <?php foreach ($vulnerabilities as $vulnerability) { ?>
+            <?php $vulnerabilityOsGroup = $html->getPakiti()->getManager("OsGroupsManager")->getOsGroupById($vulnerability->getOsGroupId()); ?>
             <tr>
-                <td><?php echo $pkg["Pkg"]->getName(); ?></td>
-                <td><?php echo $pkg["Pkg"]->getVersionRelease(); ?></td>
-                <td><?php echo $pkg["Pkg"]->getArch(); ?></td>
-                <td>
-                    <?php foreach ($pkg["CVE"] as $cve) { ?>
-                        <a href="cve.php?cveName=<?php echo $cve->getName(); ?>"<?php if(!empty($cve->getTag())) echo ' class="text-danger"'; ?>><?php echo $cve->getName(); ?></a>
-                    <?php } ?>
-                </td>
+                <td><?php echo $vulnerability->getName(); ?></td>
+                <td><?php echo $vulnerability->getVersion(); ?></td>
+                <td><?php echo $vulnerability->getRelease(); ?></td>
+                <td><?php echo $vulnerability->getArch(); ?></td>
+                <td><?php echo $vulnerabilityOsGroup->getName(); ?></td>
+                <td><?php echo $vulnerability->getOperator(); ?></td>
             </tr>
         <?php } ?>
     </tbody>
 </table>
+
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>
