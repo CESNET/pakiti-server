@@ -131,6 +131,11 @@ class HTMLModule extends DefaultModule
         }
     }
 
+    public function permission($source)
+    {
+        return $this->_acl->permission($source);
+    }
+
     public function getUserId()
     {
         return $this->_acl->getUserId();
@@ -173,15 +178,29 @@ class HTMLModule extends DefaultModule
     // Header
     public function getMenuItems()
     {
-        return array(
-            "hosts.php" => "Hosts",
-            "oses.php" => "Oses",
-            "vds.php" => "VDS",
-            "tags.php" => "Tags",
-            "exceptions.php" => "Exceptions",
-            "users.php" => "Users",
-            "stats.php" => "Statistics"
-        );
+        $menu = array();
+        if ($this->permission("hosts")) {
+            $menu["hosts.php"] = "Hosts";
+        }
+        if ($this->permission("oses")) {
+            $menu["oses.php"] = "Oses";
+        }
+        if ($this->permission("vds")) {
+            $menu["vds.php"] = "VDS";
+        }
+        if ($this->permission("tags")) {
+            $menu["tags.php"] = "CVE Tags";
+        }
+        if ($this->permission("exceptions")) {
+            $menu["exceptions.php"] = "Exceptions";
+        }
+        if ($this->permission("users")) {
+            $menu["users.php"] = "Users";
+        }
+        if ($this->permission("stats")) {
+            $menu["stats.php"] = "Statistics";
+        }
+        return $menu;
     }
 
     public function setMenuActiveItem($value)
