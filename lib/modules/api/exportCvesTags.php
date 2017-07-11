@@ -44,7 +44,7 @@ foreach($cveTags as $cveTag){
     $cveTagNode->addChild("reason", $cveTag->getReason());
     $cveTagNode->addChild("infoUrl", $cveTag->getInfoUrl());
     $cveTagNode->addChild("enabled", $cveTag->isEnabled());
-    $cveTagNode->addChild("modifier", $cveTag->getModifier());
+    $cveTagNode->addChild("modifier", Config::$PAKITI_NAME);
     $cveTagNode->addChild("timestamp", $cveTag->getTimestamp());
 }
 
