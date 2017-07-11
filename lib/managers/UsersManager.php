@@ -65,6 +65,13 @@ class UsersManager extends DefaultManager
         return $dao->getUserById($id);
     }
 
+    public function getUserIdByUid($uid)
+    {
+        Utils::log(LOG_DEBUG, "Getting user ID by UID", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("User");
+        return $dao->getUserIdByUid($uid);
+    }
+
     public function getUserById($id)
     {
         Utils::log(LOG_DEBUG, "Getting user by ID", __FILE__, __LINE__);
