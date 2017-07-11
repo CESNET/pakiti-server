@@ -89,6 +89,7 @@ class CveExceptionDao
         if($cveName != null){
             $sql .= " where cveName='".$this->db->escape($cveName)."'";
         }
+        $sql .= " order by cveName DESC";
         return $this->db->queryObjects($sql, "CveException");
     }
 

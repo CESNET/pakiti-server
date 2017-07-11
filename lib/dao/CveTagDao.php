@@ -75,7 +75,7 @@ class CveTagDao
         $from = "CveTag";
         $join = null;
         $where = null;
-        $order = "CveTag.cveName";
+        $order = "CveTag.cveName DESC";
         $limit = null;
         $offset = null;
 
