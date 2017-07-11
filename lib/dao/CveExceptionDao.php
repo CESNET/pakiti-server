@@ -93,6 +93,15 @@ class CveExceptionDao
         return $this->db->queryObjects($sql, "CveException");
     }
 
+    public function getCveExceptionsCountByCveName($cveName)
+    {
+        $sql = "select count(id) from CveException";
+        if($cveName != null){
+            $sql .= " where cveName='".$this->db->escape($cveName)."'";
+        }
+        return $this->db->queryToSingleValue($sql);
+    }
+
     public function getById($id)
     {
         if (!is_numeric($id)) return null;
