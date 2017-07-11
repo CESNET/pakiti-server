@@ -43,7 +43,7 @@ if ($host == null) {
 }
 
 $html->setTitle("Host: " . $host->getHostname());
-$html->setNumOfEntities($pakiti->getManager("ReportsManager")->getHostReportsCount($host));
+$html->setNumOfEntities($pakiti->getManager("ReportsManager")->getHostReportsCount($host->getId()));
 
 $reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->getSortBy(), $html->getPageSize(), $html->getPageNum());
 

@@ -77,9 +77,9 @@ class ReportsManager extends DefaultManager {
   /*
    * Get all host reports count
    */
-  public function getHostReportsCount(Host &$host) {
-    Utils::log(LOG_DEBUG, "Getting the count of all reports for host [hostname={$host->getHostname()}]", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("Report")->getHostReportsIdsCount($host->getId()); 
+  public function getHostReportsCount($hostId = -1) {
+    Utils::log(LOG_DEBUG, "Getting the count of all reports for host ID[".$hostId."]", __FILE__, __LINE__);
+    return $this->getPakiti()->getDao("Report")->getHostReportsCount($hostId); 
   }
 
   

@@ -196,5 +196,10 @@ class PkgDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
+    public function getPkgsCount(){
+        $sql = "select count(id) from Pkg";
+        return $this->db->queryToSingleValue($sql);
+    }
+
 }
 ?>

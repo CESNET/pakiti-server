@@ -137,6 +137,11 @@ class PkgsManager extends DefaultManager {
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
   }
 
+  public function getPkgsCount(){
+    Utils::log(LOG_DEBUG, "Getting packages count", __FILE__, __LINE__);
+    return $this->getPakiti()->getDao("Pkg")->getPkgsCount();
+  }
+
   public function getPkgId($name, $version, $release, $arch, $type)
   {
     if ((!isset($name)) || !isset($version) || !isset($release) || !isset($arch)) {

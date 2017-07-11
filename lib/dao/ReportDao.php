@@ -144,9 +144,12 @@ class ReportDao {
     return $this->db->queryToSingleValueMultiRow($sql);
   }
  
-  public function getHostReportsIdsCount($hostId) {
-    $sql = "select count(id) from Report left join ReportHost on Report.id=ReportHost.reportId where ReportHost.hostId=$hostId";
-   
+  public function getHostReportsCount($hostId = -1) {
+    $sql = "select count(id) from Report";
+    if ($hostId != -1) {
+        $sql .= " left join ReportHost on Report.id=ReportHost.reportId
+          where ReportHost.hostId='".$this->db->escape($hostId)."'";
+    }
     return $this->db->queryToSingleValue($sql);
   }
 

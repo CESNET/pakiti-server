@@ -48,7 +48,7 @@ $report = $html->getPakiti()->getManager("ReportsManager")->getReportById($host-
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupsByHost($host);
 $cveCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
 $cveWithTagCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true);
-$reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host);
+$reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host->getId());
 
 // HTML
 ?>
