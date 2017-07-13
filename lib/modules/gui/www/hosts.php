@@ -36,6 +36,7 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("hosts");
 
+$selectedHostGroupId = $html->getHttpGetVar("hostGroupId", -1);
 
 // Process operations
 switch (Utils::getHttpPostVar("act")) {
@@ -47,17 +48,29 @@ switch (Utils::getHttpPostVar("act")) {
         $html->setError("Cannot delete host, host with id " . $hostId . " doesn't exist or access denied");
     }
     break;
+  case "edit":
+    $hostGroup = $pakiti->getManager("HostGroupsManager")->getHostGroupById(Utils::getHttpPostVar("id"), $html->getUserId());
+    if ($hostGroup != null) {
+        $hostGroup->setName(Utils::getHttpPostVar("name"));
+        $hostGroup->setUrl(Utils::getHttpPostVar("url"));
+        $hostGroup->setContact(Utils::getHttpPostVar("contact"));
+        $hostGroup->setNote(Utils::getHttpPostVar("note"));
+        $pakiti->getManager("HostGroupsManager")->storeHostGroup($hostGroup);
+    } else {
+        $html->setError("Cannot delete hostGroup, hostGroup with id " . $hostId . " doesn't exist or access denied");
+    }
+    break;
 }
 
 
 $html->setTitle("List of hosts");
 $html->setMenuActiveItem("hosts.php");
-$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($html->getHttpGetVar("search", null), $html->getHttpGetVar("hostGroupId", -1), $html->getUserId()));
+$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($html->getHttpGetVar("search", null), $selectedHostGroupId, $html->getUserId()));
 
-$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $html->getHttpGetVar("search", null), $html->getHttpGetVar("hostGroupId", -1), $html->getUserId());
+$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $html->getHttpGetVar("search", null), $selectedHostGroupId, $html->getUserId());
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $html->getUserId());
-$hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroups[] = $hostGroup;
-
+$hostGroupTmp = new HostGroup(); $hostGroupTmp->setName("All host groups"); $hostGroups[] = $hostGroupTmp;
+$selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupById($selectedHostGroupId);
 // HTML
 ?>
 
@@ -68,7 +81,7 @@ $hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroup
 <div class="row">
     <div class="col-md-3">
         <form>
-            <input type="hidden" name="hostGroupId" value="<?php echo $html->getHttpGetVar("hostGroupId", -1); ?>" />
+            <input type="hidden" name="hostGroupId" value="<?php echo $selectedHostGroupId; ?>" />
             <div class="input-group">
                 <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php echo $html->getHttpGetVar("search", ""); ?>">
                 <span class="input-group-btn">
@@ -79,13 +92,19 @@ $hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroup
             </div>
         </form>
     </div>
-    <div class="col-md-6"></div>
+    <div class="col-md-2"></div>
+    <div class="col-md-2">
+        <?php if($selectedHostGroupId != -1) { ?>
+            <button class="btn btn-success btn-block" type="submit" data-toggle="modal" data-target="#edit">Edit host group</button>
+        <?php } ?>
+    </div>
+    <div class="col-md-2"></div>
     <div class="col-md-3">
         <div class="text-right">
             <div class="dropdown">
                 <button class="btn btn-default dropdown-toggle btn-block" type="button" id="hostGroups" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
-                    <?php if ($hostGroup->getId() == $html->getHttpGetVar("hostGroupId", -1)) { ?>
+                    <?php if ($hostGroup->getId() == $selectedHostGroupId) { ?>
                         <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, $hostGroup->getId(), $html->getUserId()); ?>
                             <div class="text-left"><?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
                         <?php } ?>
@@ -94,7 +113,7 @@ $hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroup
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right col-xs-12" aria-labelledby="hostGroups">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
-                        <?php if ($hostGroup->getId() != $html->getHttpGetVar("hostGroupId", -1)) { ?>
+                        <?php if ($hostGroup->getId() != $selectedHostGroupId) { ?>
                             <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, $hostGroup->getId(), $html->getUserId()); ?>
                             <li>
                                 <a href="<?php echo $html->getQueryString(array("hostGroupId" => $hostGroup->getId())); ?>">
@@ -108,6 +127,16 @@ $hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroup
         </div>
     </div>
 </div>
+
+<?php if($selectedHostGroup != null) { ?>
+    <div class="row">
+        <div class="col-md-12 text-right">
+            <?php echo ($selectedHostGroup->getUrl() != "") ? '<a href="'.$selectedHostGroup->getUrl() . '" target="_blank">'.$selectedHostGroup->getUrl() . '</a><br>' : '' ?>
+            <?php echo ($selectedHostGroup->getContact() != "") ? $selectedHostGroup->getContact() . "<br>" : "" ?>
+            <?php echo ($selectedHostGroup->getNote() != "") ? $selectedHostGroup->getNote() . "<br>" : "" ?>
+        </div>
+    </div>
+<?php } ?>
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/pagination.php"); ?>
 
@@ -176,7 +205,7 @@ $hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroup
                     <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $cveCount; ?></a>
                 </td>
                 <td>
-                    <span<?php if ($cveWithTagCount > 0) echo ' class="text-danger"'; ?>><?php echo $cveWithTagCount; ?></span>
+                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"<?php if ($cveWithTagCount > 0) echo ' class="text-danger"'; ?>><?php echo $cveWithTagCount; ?></a>
                 </td>
                 <td>
                     <a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>
@@ -217,5 +246,47 @@ $hostGroup = new HostGroup(); $hostGroup->setName("All host groups"); $hostGroup
     </div>
 </div>
 
+<?php if($selectedHostGroup != null) { ?>
+    <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="editLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="editLabel">Edit host groupp</h4>
+                </div>
+                <div class="modal-body">
+                    <form name="editForm" method="post">
+                        <input type="hidden" name="act" value="edit">
+                        <input type="hidden" name="id" value="<?php echo $selectedHostGroupId; ?>">
+                        <input type="hidden" name="name" value="<?php echo $selectedHostGroup->getName(); ?>">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" class="form-control" id="name" value="<?php echo $selectedHostGroup->getName(); ?>" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label for="url">URL</label>
+                            <input type="text" class="form-control" name="url" id="url" value="<?php echo $selectedHostGroup->getUrl(); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="contact">Contact</label>
+                            <input type="text" class="form-control" name="contact" id="contact" value="<?php echo $selectedHostGroup->getContact(); ?>">
+                        </div>
+                        <div class="form-group">
+                            <label for="note">Note</label>
+                            <input type="text" class="form-control" name="note" id="note" value="<?php echo $selectedHostGroup->getNote(); ?>">
+                        </div>
+                        <div class="text-right">
+                            <button type="submit" class="btn btn-success">Save</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    * Click on host or hostgroup to delete permission.
+                </div>
+            </div>
+        </div>
+    </div>
+<?php } ?>
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>
