@@ -80,6 +80,8 @@ create table `Host` (
 	`osId` integer(10) not null,
 	`archId` integer(10) not null,
 	`domainId` integer(10) not null,
+	`numOfCves` int(10) not null,
+	`numOfCvesWithTag` int(10) not null,
 	`lastReportId` integer(10),
 	`lastReportHeaderHash` char(32),
 	`lastReportPkgsHash` char(32),

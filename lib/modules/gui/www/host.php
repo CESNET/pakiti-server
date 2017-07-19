@@ -46,8 +46,6 @@ $html->setTitle("Host: " . $host->getHostname());
 
 $report = $html->getPakiti()->getManager("ReportsManager")->getReportById($host->getLastReportId());
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupsByHost($host);
-$cveCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
-$cveWithTagCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true);
 $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host->getId());
 
 // HTML
@@ -105,11 +103,11 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td>Cves</td>
-        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $cveCount; ?></a></td>
+        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a></td>
     </tr>
     <tr>
         <td>Cves with Tag</td>
-        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $cveWithTagCount; ?></a></td>
+        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCvesWithTag(); ?></a></td>
     </tr>
     <tr>
         <td>Last report received on</td>

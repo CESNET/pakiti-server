@@ -165,6 +165,33 @@ class HostsManager extends DefaultManager {
     }
      return $this->getPakiti()->getDao("Host")->setLastReportId($host->getId(), $report->getId()); 
   }
+
+  public function recalculateCvesCountForHost($hostId) {
+    Utils::log(LOG_DEBUG, "Recalculating numOfCves for Host[".$hostId."]", __FILE__, __LINE__);
+    $dao = $this->getPakiti()->getDao("Host");
+    $host = $this->getHostById($hostId);
+    if ($host == null) {
+      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+      throw new Exception("Host[".$hostId."] doesn't exist");
+    }
+    # Get number of CVEs
+    $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
+    $host->setNumOfCves($cveCount);
+    $cveWithTagCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true);
+    $host->setNumOfCvesWithTag($cveWithTagCount);
+
+    $dao->update($host);
+  }
+
+  public function recalculateCvesCountForEachHost() {
+    Utils::log(LOG_DEBUG, "Recalculating numOfCves for each host", __FILE__, __LINE__);
+    $dao = $this->getPakiti()->getDao("Host");
+    $ids = $dao->getHostsIds();
+    
+    foreach ($ids as $id) {
+      $this->recalculateCvesCountForHost($id);
+    }
+  }
  
   /* 
    * Get list of all oses

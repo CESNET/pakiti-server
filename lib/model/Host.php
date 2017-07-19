@@ -48,6 +48,8 @@ class Host {
   private $_domain;
   private $_domainName;
   private $_domainId = -1;
+  private $_numOfCves = 0;
+  private $_numOfCvesWithTag = 0;
   private $_lastReportId = -1;
   private $_hostGroup;
   private $_hostGroupName;
@@ -115,7 +117,15 @@ class Host {
   public function getDomainId() {
 	  return $this->_domainId;
 	}
-	
+
+  public function getNumOfCves() {
+	  return $this->_numOfCves;
+	}
+
+  public function getNumOfCvesWithTag() {
+	  return $this->_numOfCvesWithTag;
+	}
+
   public function getLastReportId() {
 	  return $this->_lastReportId;
 	}
@@ -199,7 +209,15 @@ class Host {
   public function setDomainId($val) {
 	  return $this->_domainId = $val;
 	}
-	
+
+  public function setNumOfCves($val) {
+	  $this->_numOfCves = $val;
+	}
+
+  public function setNumOfCvesWithTag($val) {
+	  $this->_numOfCvesWithTag = $val;
+	}
+
   public function setLastReportId($val) {
 	  return $this->_lastReportId = $val;
 	}

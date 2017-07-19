@@ -180,8 +180,6 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
         <?php foreach ($hosts as $host) { ?> 
             <?php $report = $html->getPakiti()->getManager("ReportsManager")->getReportById($host->getLastReportId()); ?>
             <?php $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupsByHost($host); ?>
-            <?php $cveCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host); ?>
-            <?php $cveWithTagCount = $html->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true); ?>
             <?php $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReportsCount($host->getId()); ?>
 
             <tr>
@@ -202,10 +200,10 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                     <a href="packages.php?hostId=<?php echo $host->getId(); ?>"><?php echo $report->getNumOfInstalledPkgs(); ?></a>
                 </td>
                 <td>
-                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $cveCount; ?></a>
+                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a>
                 </td>
                 <td>
-                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"<?php if ($cveWithTagCount > 0) echo ' class="text-danger"'; ?>><?php echo $cveWithTagCount; ?></a>
+                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"<?php if ($cveWithTagCount > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
                 </td>
                 <td>
                     <a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>

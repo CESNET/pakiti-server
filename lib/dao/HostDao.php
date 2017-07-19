@@ -53,6 +53,8 @@ class HostDao {
       	osId=".$this->db->escape($host->getOsId()).",
       	archId=".$this->db->escape($host->getArchId()).",
       	domainId=".$this->db->escape($host->getDomainId()).",
+      	numOfCves=".$this->db->escape($host->getNumOfCves()).",
+      	numOfCvesWithTag=".$this->db->escape($host->getNumOfCvesWithTag()).",
       	lastReportId=".($host->getLastReportId() == -1 ? "NULL" : $this->db->escape($host->getLastReportId())).",
       	type='".$this->db->escape($host->getType())."',
         ownRepositoriesDef=".$this->db->escape($host->getOwnRepositoriesDef()));
@@ -92,6 +94,8 @@ class HostDao {
       Host.osId as _osId,
       Host.archId as _archId,
       Host.domainId as _domainId,
+      Host.numOfCves as _numOfCves,
+      Host.numOfCvesWithTag as _numOfCvesWithTag,
       Host.lastReportId as _lastReportId";
     $from = "Host";
     $join = null;
@@ -225,6 +229,12 @@ class HostDao {
     }
     if ($host->getDomainId() != $dbHost->getDomainId()) {
       $entries['domainId'] = $this->db->escape($host->getDomainId());
+    }
+    if ($host->getNumOfCves() != $dbHost->getNumOfCves()) {
+      $entries['numOfCves'] = $this->db->escape($host->getNumOfCves());
+    }
+    if ($host->getNumOfCvesWithTag() != $dbHost->getNumOfCvesWithTag()) {
+      $entries['numOfCvesWithTag'] = $this->db->escape($host->getNumOfCvesWithTag());
     }
     if ($host->getType() != $dbHost->getType()) {
       $entries['type'] = "'".$this->db->escape($host->getType())."'";
