@@ -37,6 +37,7 @@ $html = new HtmlModule($pakiti);
 $html->checkPermission("hosts");
 
 $selectedHostGroupId = $html->getHttpGetVar("hostGroupId", -1);
+$checkedTaggedCves = $html->getHttpGetVar("taggedCves", "true") == "true";
 
 // Process operations
 switch (Utils::getHttpPostVar("act")) {
@@ -65,9 +66,10 @@ switch (Utils::getHttpPostVar("act")) {
 
 $html->setTitle("List of hosts");
 $html->setMenuActiveItem("hosts.php");
-$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($html->getHttpGetVar("search", null), $selectedHostGroupId, $html->getUserId()));
+$html->setDefaultSorting("lastReport");
+$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($html->getHttpGetVar("search", null), $checkedTaggedCves, $selectedHostGroupId, $html->getUserId()));
 
-$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $html->getHttpGetVar("search", null), $selectedHostGroupId, $html->getUserId());
+$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $html->getHttpGetVar("search", null), $checkedTaggedCves, $selectedHostGroupId, $html->getUserId());
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $html->getUserId());
 $hostGroupTmp = new HostGroup(); $hostGroupTmp->setName("All host groups"); $hostGroups[] = $hostGroupTmp;
 $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupById($selectedHostGroupId);
@@ -90,6 +92,11 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                     </button>
                 </span>
             </div>
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" onclick="location.href='<?php echo $html->getQueryString(array("taggedCves" => $checkedTaggedCves ? "false" : "true")); ?>';"<?php if ($checkedTaggedCves) echo ' checked'; ?>> Only hosts with tagged CVEs
+                </label>
+            </div>
         </form>
     </div>
     <div class="col-md-2"></div>
@@ -105,7 +112,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                 <button class="btn btn-default dropdown-toggle btn-block" type="button" id="hostGroups" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
                     <?php if ($hostGroup->getId() == $selectedHostGroupId) { ?>
-                        <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, $hostGroup->getId(), $html->getUserId()); ?>
+                        <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, false, $hostGroup->getId(), $html->getUserId()); ?>
                             <div class="text-left"><?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
                         <?php } ?>
                     <?php } ?>
@@ -114,7 +121,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                 <ul class="dropdown-menu dropdown-menu-right col-xs-12" aria-labelledby="hostGroups">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
                         <?php if ($hostGroup->getId() != $selectedHostGroupId) { ?>
-                            <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, $hostGroup->getId(), $html->getUserId()); ?>
+                            <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, false, $hostGroup->getId(), $html->getUserId()); ?>
                             <li>
                                 <a href="<?php echo $html->getQueryString(array("hostGroupId" => $hostGroup->getId())); ?>">
                                     <?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
@@ -149,7 +156,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
                 <?php } ?>
             </th>
-            <th>HostGroup</th>
+            <th>HostGroups</th>
             <th>
                 <a href="<?php echo $html->getQueryString(array("sortBy" => "os")); ?>">Os</a>
                 <?php if ($html->getSortBy() == "os") { ?>
@@ -169,10 +176,25 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                 <?php } ?>
             </th>
             <th>#InstalledPkgs</th>
-            <th>#CVEs</th>
-            <th>#CVEs with Tag</th>
+            <th>
+                <a href="<?php echo $html->getQueryString(array("sortBy" => "cves")); ?>">#CVEs</a>
+                <?php if ($html->getSortBy() == "cves") { ?>
+                    <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+                <?php } ?>
+            </th>
+            <th>
+                <a href="<?php echo $html->getQueryString(array("sortBy" => "taggedCves")); ?>">#TaggedCVEs</a>
+                <?php if ($html->getSortBy() == "taggedCves") { ?>
+                    <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+                <?php } ?>
+            </th>
             <th>#Reports</th>
-            <th>LastReport</th>
+            <th>
+                <a href="<?php echo $html->getQueryString(array("sortBy" => "lastReport")); ?>">LastReport</a>
+                <?php if ($html->getSortBy() == "lastReport") { ?>
+                    <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+                <?php } ?>
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -203,7 +225,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                     <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a>
                 </td>
                 <td>
-                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"<?php if ($cveWithTagCount > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
+                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
                 </td>
                 <td>
                     <a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>
