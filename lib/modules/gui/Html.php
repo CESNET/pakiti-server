@@ -160,6 +160,11 @@ class HTMLModule extends DefaultModule
         return 100;
     }
 
+    public function getPaginationSize()
+    {
+        return 11;
+    }
+
     public function getPageNum()
     {
         return $this->getHttpGetVar("pageNum", 0);
