@@ -84,6 +84,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
     <div class="col-md-3">
         <form>
             <input type="hidden" name="hostGroupId" value="<?php echo $selectedHostGroupId; ?>" />
+            <input type="hidden" name="taggedCves" value="<?php echo $checkedTaggedCves ? "true" : "false"; ?>" />
             <div class="input-group">
                 <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php echo $html->getHttpGetVar("search", ""); ?>">
                 <span class="input-group-btn">
