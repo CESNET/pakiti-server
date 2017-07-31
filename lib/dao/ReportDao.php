@@ -128,22 +128,42 @@ class ReportDao {
     return $this->db->queryToSingleValueMultiRow($sql);
   }
  
- public function getHostReportsIds($hostId, $orderBy, $pageSize, $pageNum) {
-    $sql = "select id from Report left join ReportHost on Report.id=ReportHost.reportId where ReportHost.hostId=$hostId";
-   
-    switch ($orderBy) {
-      default:
-	$sql .= " order by receivedOn";
-    } 
+    public function getHostReportsIds($hostId = -1, $orderBy = null, $pageSize = -1, $pageNum = -1)
+    {
+        $select = "Report.id";
+        $from = "Report";
+        $join = null;
+        $where = null;
+        $order = null;
+        $limit = null;
+        $offset = null;
 
-    if ($pageSize != -1 && $pageNum != -1) {
-      $offset = $pageSize*$pageNum;
-      $sql .= " limit $offset,$pageSize";
+        if ($hostId != -1) {
+            $join[] = "left join ReportHost on Report.id = ReportHost.reportId";
+            $where[] = "ReportHost.hostId=".$hostId."";
+        }
+
+        switch ($orderBy) {
+            case "id":
+                $order[] = "Report.id";
+                break;
+            case "processedOn":
+                $order[] = "Report.receivedOn DESC";
+                break;
+            default:
+                break;
+        }
+        $order[] = "Report.receivedOn DESC";
+
+        if ($pageSize != -1 && $pageNum != -1) {
+            $limit = $pageSize;
+            $offset = $pageSize * $pageNum;
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
-    
-    return $this->db->queryToSingleValueMultiRow($sql);
-  }
- 
+
   public function getHostReportsCount($hostId = -1) {
     $sql = "select count(id) from Report";
     if ($hostId != -1) {
