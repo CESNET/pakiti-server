@@ -118,7 +118,7 @@ class HostDao {
     return $this->getById($hostId);  
   }
   
-  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
+  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $onlyWithTaggedCve = false, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
 
     $select = "distinct Host.id";
     $from = "Host";
@@ -141,15 +141,30 @@ class HostDao {
         $join[] = "left join Arch on Host.archId=Arch.id";
         $order[] = "Arch.name";
         break;
-      case null:
-        $order[] = "Host.hostname";
+      case "kernel":
+        $order[] = "Host.kernel";
+        break;
+      case "cves":
+        $order[] = "Host.numOfCves DESC";
+        break;
+      case "taggedCves":
+        $order[] = "Host.numOfCvesWithTag DESC";
+        break;
+      case "lastReport":
+        $join[] = "left join Report on Host.lastReportId=Report.id";
+        $order[] = "Report.receivedOn DESC";
         break;
       default:
-        $order[] = "Host.".$this->db->escape($orderBy)."";
+        break;
     }
+    $order[] = "Host.hostname";
 
     if($search != null) {
       $where[] = "lower(hostname) like '%".$this->db->escape(strtolower($search))."%'";
+    }
+
+    if($onlyWithTaggedCve) {
+      $where[] = "Host.numOfCvesWithTag > 0";
     }
 
     if($hostGroupId != -1) {

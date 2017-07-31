@@ -114,9 +114,9 @@ class HostsManager extends DefaultManager {
   /*
    * Get all hosts
    */
-  public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
+  public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $onlyWithTaggedCve = false, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
     Utils::log(LOG_DEBUG, "Getting all hosts", __FILE__, __LINE__);
-    $hostsIds = $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $search, $hostGroupId, $userId, $directlyAssignedToUser);
+    $hostsIds = $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $search, $onlyWithTaggedCve, $hostGroupId, $userId, $directlyAssignedToUser);
     
     $hosts = array();
     foreach ($hostsIds as $hostId) {
@@ -141,9 +141,9 @@ class HostsManager extends DefaultManager {
   /*
    * Get hosts count
    */
-  public function getHostsCount($search = null, $hostGroupId = -1, $userId = -1) {
+  public function getHostsCount($search = null, $onlyWithTaggedCve = false, $hostGroupId = -1, $userId = -1) {
     Utils::log(LOG_DEBUG, "Getting hosts count", __FILE__, __LINE__);
-    return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $hostGroupId, $userId));
+    return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $onlyWithTaggedCve, $hostGroupId, $userId));
   }
   
   /*

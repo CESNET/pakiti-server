@@ -38,6 +38,7 @@ class HTMLModule extends DefaultModule
     private $_errors;
     private $_messages;
 
+    private $_defaultSorting = null;
     private $_numOfEntities = 0;
     private $_title = "Pakiti";
     private $_menuActiveItem = null;
@@ -150,9 +151,13 @@ class HTMLModule extends DefaultModule
     }
 
     // Pagination
+    public function setDefaultSorting($sortBy)
+    {
+        return $this->_defaultSorting = $sortBy;
+    }
     public function getSortBy()
     {
-        return $this->getHttpGetVar("sortBy", null);
+        return $this->getHttpGetVar("sortBy", $this->_defaultSorting);
     }
 
     public function getPageSize()
