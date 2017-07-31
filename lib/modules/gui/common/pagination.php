@@ -36,21 +36,25 @@
 
 <?php
     # Calculate start and end pagination
-    $long = 10;
-    if($html->getPageNum() - 6 > 0){
-        $long -= 2;
-        $start = $html->getPageNum() - 3;
-    } else {
+    if ($html->getNumOfPages() <= $html->getPaginationSize()) {
         $start = 0;
-    }
-
-    if($start + $long < $html->getNumOfPages() - 1){
-        $long -= 2;
-        $end = $start + $long;
-    } else {
         $end = $html->getNumOfPages() - 1;
-        if ($end - 10 > 0) {
-            $start = $end - 8;
+    } else {
+        $long = $html->getPaginationSize();
+
+        if ($html->getPageNum() > floor($html->getPaginationSize() / 2)) {
+            $long -= 2;
+            $start = $html->getPageNum() - floor(($html->getPaginationSize() - 4) / 2);
+        } else {
+            $start = 0;
+        }
+
+        if ($start + $long <= $html->getNumOfPages() - 1) {
+            $long -= 2;
+            $end = $start + $long - 1;
+        } else {
+            $end = $html->getNumOfPages() - 1;
+            $start = $end - $long + 1;
         }
     }
 ?>
