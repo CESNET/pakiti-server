@@ -100,6 +100,60 @@ switch ($opt["c"]) {
     }
     break;
 
+    # import users
+    case "import":
+        $data = json_decode(file_get_contents("php://stdin"), true);
+        if ($data == null || !is_array($data)) {
+            die("bad format");
+        }
+        $ids = array();
+        $manager = $pakiti->getManager("UsersManager");
+        foreach ($data as $obj) {
+            if (!array_key_exists(Config::$USERS_UID, $obj)) {
+                print "required variable uid is missing, user is omitted\n";
+                continue;
+            }
+            $uids = array($obj[Config::$USERS_UID]);
+            if (is_array($obj[Config::$USERS_UID])) {
+                $uids = $obj[Config::$USERS_UID];
+            }
+            $name = "";
+            if (array_key_exists(Config::$USERS_NAME, $obj)) {
+                $name = $obj[Config::$USERS_NAME];
+            }
+            $email = "";
+            if (array_key_exists(Config::$USERS_EMAIL, $obj)) {
+                $email = $obj[Config::$USERS_EMAIL];
+            }
+            $admin = Config::$USERS_ADMIN_DEFAULT_VALUE;
+            if (array_key_exists(Config::$USERS_ADMIN, $obj)) {
+                $admin = $obj[Config::$USERS_ADMIN];
+            }
+            foreach ($uids as $uid) {
+                $user = new User();
+                $user->setUid($uid);
+                $user->setName($name);
+                $user->setEmail($email);
+                $user->setAdmin($admin);
+                if ($manager->storeUser($user)) {
+                    print "user ".$uid." was created\n";
+                } else {
+                    print "user ".$uid." was updated\n";
+                }
+                array_push($ids, $user->getId());
+            }
+        }
+        foreach ($manager->getUsers() as $user) {
+            if (!in_array($user->getId(), $ids)) {
+                if ($manager->deleteUser($user->getId())) {
+                    print "user ".$user->getUid()." was deleted\n";
+                } else {
+                    print "user ".$user->getUid()." wasn't deleted\n";
+                }
+            }
+        }
+        break;
+
   default:
     die("option -c has unknown value\n");
     break;
