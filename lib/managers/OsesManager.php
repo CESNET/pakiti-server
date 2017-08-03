@@ -30,13 +30,14 @@
 /**
  * @author Jakub Mlcak
  */
-class OsesManager extends DefaultManager {
-
+class OsesManager extends DefaultManager
+{
     /**
     * Create if not exist, else set id
     * @return false if already exist
     */
-    public function storeOs(Os &$os){
+    public function storeOs(Os &$os)
+    {
         Utils::log(LOG_DEBUG, "Storing the os", __FILE__, __LINE__);
         if ($os == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
@@ -50,8 +51,49 @@ class OsesManager extends DefaultManager {
             # Os is missing, so store it
             $dao->create($os);
             $new = true;
+            $this->recalculateOsGroups($os);
         }
         return $new;
     }
 
+    private function recalculateOsGroups(Os $os)
+    {
+        Utils::log(LOG_DEBUG, "Recalculating os osGroups", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Os");
+        $osGroupsManager = $this->getPakiti()->getManager("OsGroupsManager");
+
+        $dao->unassignOsGroupsFromOs($os->getId());
+        foreach ($osGroupsManager->getOsGroups() as $osGroup) {
+            if (!empty($osGroup->getRegex()) && !empty($os->getName()) && preg_match("/" . htmlspecialchars_decode($osGroup->getRegex()) . "/", $os->getName()) == 1) {
+                $dao->assignOsToOsGroup($os->getId(), $osGroup->getId());
+            }
+        }
+    }
+
+    public function getOsById($id)
+    {
+        Utils::log(LOG_DEBUG, "Getting os by ID[$id]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Os");
+        return $dao->getById($id);
+    }
+
+    public function assignOsToOsGroup($osId, $osGroupId)
+    {
+        Utils::log(LOG_DEBUG, "Assign OS to OS group", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Os");
+        return $dao->assignOsToOsGroup($osId, $osGroupId);
+    }
+
+    public function getOses($orderBy = null, $pageSize = -1, $pageNum = -1)
+    {
+        Utils::log(LOG_DEBUG, "Getting oses", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Os");
+        $ids = $dao->getIds($orderBy, $pageSize, $pageNum);
+
+        $oses = array();
+        foreach ($ids as $id) {
+            array_push($oses, $dao->getById($id));
+        }
+        return $oses;
+    }
 }

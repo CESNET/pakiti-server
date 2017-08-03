@@ -43,7 +43,7 @@ switch (Utils::getHttpPostVar("act")) {
         $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
         foreach ($osGroups as $osGroup) {
             $osGroup->setRegex(Utils::getHttpPostVar("regex_" . $osGroup->getId()));
-            $pakiti->getManager("OsGroupsManager")->updateOsGroup($osGroup);
+            $pakiti->getManager("OsGroupsManager")->storeOsGroup($osGroup);
         }
         break;
     default:
@@ -54,7 +54,7 @@ switch (Utils::getHttpPostVar("act")) {
 $html->setTitle("Oses mapping");
 $html->setMenuActiveItem("oses.php");
 
-$oses = $pakiti->getManager("HostsManager")->getOses();
+$oses = $pakiti->getManager("OsesManager")->getOses();
 $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
 
 // HTML
@@ -87,7 +87,7 @@ $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
             <tr>
                 <td><?php echo $os->getName(); ?></td>
                 <td>
-                    <?php $osOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOs($os); ?>
+                    <?php $osOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOsName($os->getName()); ?>
                     <?php foreach ($osOsGroups as $osOsGroup) { ?>
                         <?php echo $osOsGroup->getName(); ?>
                     <?php } ?>

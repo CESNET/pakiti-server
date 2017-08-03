@@ -146,25 +146,18 @@ class VulnerabilitiesManager extends DefaultManager
     public function getVulnerabilitiesByCveNameAndOsName($cveName, $osName)
     {
         Utils::log(LOG_DEBUG, "Searching for vulnerable packages for all hosts", __FILE__, __LINE__);
-        $os = $this->getPakiti()->getDao("Os")->getByName($osName);
-        if (!is_object($os)) {
-            return array();
-        }
 
         $cves = $this->getPakiti()->getDao("Cve")->getCvesByName($cveName);
         if (empty($cves)) {
             return array();
         }
 
-        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($os);
-
         $cveDefsIds = array_map(function ($cve) {
             return $cve->getCveDefId();
         }, $cves);
 
-        $osGroupsIds = array_map(function ($osGroup) {
-            return $osGroup->getId();
-        }, $osGroups);
+        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($osName);
+
         return $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroupsIds);
     }
 

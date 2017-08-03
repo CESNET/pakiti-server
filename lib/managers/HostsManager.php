@@ -96,7 +96,7 @@ class HostsManager extends DefaultManager {
     $host =& $this->getPakiti()->getDao("Host")->getById($id, $userId);
     if (is_object($host)) {
       $host->setArch($this->getPakiti()->getDao("Arch")->getById($host->getArchId()));
-      $host->setOs($this->getPakiti()->getDao("Os")->getById($host->getOsId()));
+      $host->setOs($this->getPakiti()->getManager("OsesManager")->getOsById($host->getOsId()));
       $host->setDomain($this->getPakiti()->getDao("Domain")->getById($host->getDomainId()));
     } else return null;
     
@@ -192,23 +192,6 @@ class HostsManager extends DefaultManager {
       $this->recalculateCvesCountForHost($id);
     }
   }
- 
-  /* 
-   * Get list of all oses
-   */
-  public function getOses($orderBy = null, $pageSize = -1, $pageNum = -1) {
-    Utils::log(LOG_DEBUG, "Getting all oses", __FILE__, __LINE__);
-    $osesIds =& $this->getPakiti()->getDao("Os")->getOsesIds($orderBy, $pageSize, $pageNum);
-
-    $oses = array();
-    foreach ($osesIds as $osId) {
-      array_push($oses, $this->getPakiti()->getDao("Os")->getById($osId));
-    }
-
-    return $oses;
-  }
-
-
 
   /* 
    * Get list of all archs

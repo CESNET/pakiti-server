@@ -29,91 +29,78 @@
 
 /**
  * @author Michal Prochazka
+ * @author Jakub Mlcak
  */
-class OsDao {
-  private $db;
+class OsDao
+{
+    private $db;
   
-  public function __construct(DbManager &$dbManager) {
-    $this->db = $dbManager;  
-  }
+    public function __construct(DbManager &$dbManager)
+    {
+        $this->db = $dbManager;
+    }
   
-  public function create(Os &$os) {
-    $this->db->query(
-      "insert into Os set
-      	name='".$this->db->escape($os->getName())."'");
-    
-    # Set the newly assigned id
-    $os->setId($this->db->getLastInsertedId());
-  }
+    public function create(Os &$os)
+    {
+        $sql = "insert into Os set
+          name='" . $this->db->escape($os->getName()) . "'";
+        $this->db->query($sql);
 
-  public function getById($id) {
-    if (!is_numeric($id)) return null;
-    return $this->getBy($id, "id");
-  }
-  
-  public function getByName($name) {
-    return $this->getBy($name, "name");
-  }
-  
-  public function getIdByName($name) {
-    $id = $this->db->queryToSingleValue(
-    	"select 
-    		id
-      from 
-      	Os 
-      where
-      	name='".$this->db->escape($name)."'");
-    if ($id == null) {
-      return -1;
+        # Set the newly assigned id
+        $os->setId($this->db->getLastInsertedId());
     }
-    return $id;
-  }
-  
-  public function getOsesIds($orderBy = null, $pageSize = -1, $pageNum = -1) {
-    $sql = "select id from Os order by name";
-    
-    if ($pageSize != -1 && $pageNum != -1) {
-      $offset = $pageSize*$pageNum;
-      $sql .= " limit $offset,$pageSize";
+
+    public function getById($id)
+    {
+        $sql = "select id as _id, name as _name from Os
+            where id='" . $this->db->escape($id) . "'";
+        return $this->db->queryObject($sql, "Os");
     }
-    
-    return $this->db->queryToSingleValueMultiRow($sql);
-  }
-  
-  public function update(Os &$os) {
-    $this->db->query(
-      "update Os set
-      	name='".$this->db->escape($os->getName())."
-      where id=".$os->getId());
-  }
-  
-  public function delete(Os &$os) {
-    $this->db->query(
-      "delete from Os where id=".$os->getId());
-  }
-  
-/*
-   * We can get the data by ID or name
-   */
-  protected function getBy($value, $type) {
- 
-    $where = "";
-    if ($type == "id") {
-      $where = "id=".$this->db->escape($value);
-    } else if ($type == "name") {
-      $where = "name='".$this->db->escape($value)."'";
-    } else {
-      throw new Exception("Undefined type of the getBy");
+
+    public function getIdByName($name)
+    {
+        $sql = "select id from Os
+            where name='" . $this->db->escape($name) . "'";
+        $id = $this->db->queryToSingleValue($sql);
+        return ($id == null) ? -1 : $id;
     }
-    return $this->db->queryObject(
-    	"select 
-    		id as _id,
-		name as _name
-      from 
-      	Os 
-      where
-      	$where"
-      , "Os");
-  }
+  
+    public function getIds($orderBy = null, $pageSize = -1, $pageNum = -1)
+    {
+        $select = "Os.id";
+        $from = "Os";
+        $join = null;
+        $where = null;
+        $order = "Os.name";
+        $limit = null;
+        $offset = null;
+
+        if ($orderBy != null) {
+            $order = "Os.".$this->db->escape($orderBy)."";
+        }
+
+        if ($pageSize != -1 && $pageNum != -1) {
+            $limit = $pageSize;
+            $offset = $pageSize * $pageNum;
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function unassignOsGroupsFromOs($osId)
+    {
+        $sql = "delete from OsOsGroup
+            where osId='" . $this->db->escape($osId) . "'";
+        $this->db->query($sql);
+    }
+
+    public function assignOsToOsGroup($osId, $osGroupId)
+    {
+        $sql = "insert ignore into OsOsGroup set
+            osId='" . $this->db->escape($osId) . "',
+            osGroupId='" . $this->db->escape($osGroupId) . "'
+        ";
+        $this->db->query($sql);
+    }
 }
-?>
