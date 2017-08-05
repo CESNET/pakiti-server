@@ -34,6 +34,10 @@ $osName = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("os"));
 $cveName = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("cve"));
 $type = $pakiti->getManager("DbManager")->escape(Utils::getHttpGetVar("type"));
 
+$os = new Os();
+$os->setName($osName);
+$pakiti->getManager("OsesManager")->storeOs($os);
+
 //Default output type is CSV
 if ($type == "") {
     $type = "csv";
@@ -41,7 +45,7 @@ if ($type == "") {
 
 //TODO: Add authorization
 
-$vulnerabilities = & $pakiti->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveNameAndOsName($cveName, $osName);
+$vulnerabilities = & $pakiti->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveName($cveName, $os->getId());
 switch($type){
     case "csv":
         header("Content-Type: text/plain");

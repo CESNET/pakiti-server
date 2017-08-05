@@ -201,5 +201,38 @@ class PkgDao
         return $this->db->queryToSingleValue($sql);
     }
 
+    public function getVulnerableIdsForHost($hostId, $tag)
+    {
+        $select = "distinct(Pkg.id)";
+        $from = "Pkg";
+        $order = "Pkg.name ASC";
+
+        # pkgs
+        $join[] = "inner join InstalledPkg on (Pkg.id = InstalledPkg.pkgId and InstalledPkg.hostId = '" . $this->db->escape($hostId) . "')";
+
+        # cveDefs
+        $join[] = "inner join PkgCveDef on Pkg.id = PkgCveDef.pkgId";
+        $join[] = "inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+
+        # os
+        $join[] = "inner join OsOsGroup on PkgCveDef.osGroupId = OsOsGroup.osGroupId";
+        $join[] = "inner join Host on (OsOsGroup.osId = Host.osId and Host.id = '" . $this->db->escape($hostId) . "')";
+
+        # exceptions
+        $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
+        $where[] = "CveException.id IS NULL";
+
+        # tag
+        if ($tag !== null) {
+            if ($tag === true) {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+            } else {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1' and CveTag.tagName = '" . $this->db->escape($tag) . "')";
+            }
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
 }
 ?>

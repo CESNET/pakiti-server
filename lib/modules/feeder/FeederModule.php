@@ -134,31 +134,32 @@ class FeederModule extends DefaultModule
         if(!Utils::isConnectionSecure()){
             return;
         }
-
         if($this->_reportProcessMode == Constants::$STORE_ONLY){
             return "";
         }
         if($this->_reportProcessMode == Constants::$REPORT_ONLY){
-            $os = $this->_host->getOsName();
-            $pkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $this->_pkgs);
+            $pkgs = $this->_pkgs;
+            $os = $this->_host->getOs();
         } else {
             $host = $this->getPakiti()->getManager("HostsManager")->getHostById($this->_host->getId());
-            $os = $host->getOs()->getName();
-            $pkgsIds = $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsIdsByHostId($host->getId());
+            $pkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
+            $os = $host->getOs();
         }
 
-        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($os);
-        $pkgsWithCve = $this->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds);
+        $cvesManager = $this->getPakiti()->getManager("CvesManager");
+        $cveTagsManager = $this->getPakiti()->getManager("CveTagsManager");
 
         $result = "";
-        foreach ($pkgsWithCve as $pkg) {
-            foreach ($pkg['CVE'] as $pkgCve) {
-                foreach ($pkgCve->getTag() as $tag) {
-                    $result .= $pkg["Pkg"]->getName() . "\t" .
-                        $pkg["Pkg"]->getVersionRelease() . "\t" .
-                        $pkg["Pkg"]->getArch() . "\t" .
-                        $pkgCve->getName() . "\t" .
-                        $tag->getTagName() . "\n";
+        foreach ($pkgs as $pkg) {
+            $cvesNames = $cvesManager->getCvesNamesForPkgAndOs($pkg->getId(), $os->getId(), true);
+            foreach ($cvesNames as $cveName) {
+                $cveTags = $cveTagsManager->getCveTagsByCveName($cveName);
+                foreach ($cveTags as $cveTag) {
+                    $result .= $pkg->getName() . "\t" .
+                        $pkg->getVersionRelease() . "\t" .
+                        $pkg->getArch() . "\t" .
+                        $cveName . "\t" .
+                        $cveTag->getTagName() . "\n";
                 }
             }
         }
@@ -400,6 +401,12 @@ class FeederModule extends DefaultModule
         $dbManager->begin();
         try {
 
+            # Store OS
+            $os = new Os();
+            $os->setName($this->_host->getOsName());
+            $this->getPakiti()->getManager("OsesManager")->storeOs($os);
+            $this->_host->setOs($os);
+
             # Store packages
             $this->storePkgs();
 
@@ -482,10 +489,8 @@ class FeederModule extends DefaultModule
         Utils::log(LOG_DEBUG, "Storing report to the DB", __FILE__, __LINE__);
 
         # Get number of CVEs
-        $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host);
-        $this->_report->setNumOfCves($cveCount);
-        $cveWithTagCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($this->_host, true);
-        $this->_report->setNumOfCvesWithTag($cveWithTagCount);
+        $this->_report->setNumOfCves(sizeof($this->getPakiti()->getManager("CvesManager")->getCvesNamesForHost($this->_host->getId(), null)));
+        $this->_report->setNumOfCvesWithTag(sizeof($this->getPakiti()->getManager("CvesManager")->getCvesNamesForHost($this->_host->getId(), true)));
 
         # Get number of installed packages and set to the new report
         if($this->_report->getNumOfInstalledPkgs() == -1){

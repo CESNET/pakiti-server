@@ -107,7 +107,7 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td>Cves with Tag</td>
-        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCvesWithTag(); ?></a></td>
+        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"><?php echo $host->getNumOfCvesWithTag(); ?></a></td>
     </tr>
     <tr>
         <td>Last report received on</td>

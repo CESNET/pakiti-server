@@ -88,7 +88,7 @@ $html->setNumOfEntities($html->getPakiti()->getManager("CveTagsManager")->getCve
 
 $cveTags = $html->getPakiti()->getManager("CveTagsManager")->getCveTags($html->getSortBy(), $html->getPageSize(), $html->getPageNum());
 
-$cveNames = $pakiti->getManager("CveDefsManager")->getCveNames();
+$cveNames = $pakiti->getManager("CvesManager")->getCvesNames();
 $tagNames = Config::$TAGS;
 
 // HTML

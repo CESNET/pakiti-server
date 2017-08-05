@@ -175,10 +175,9 @@ class HostsManager extends DefaultManager {
       throw new Exception("Host[".$hostId."] doesn't exist");
     }
     # Get number of CVEs
-    $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
-    $host->setNumOfCves($cveCount);
-    $cveWithTagCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true);
-    $host->setNumOfCvesWithTag($cveWithTagCount);
+    $cvesManager = $this->getPakiti()->getManager("CvesManager");
+    $host->setNumOfCves(sizeof($cvesManager->getCvesNamesForHost($host->getId(), null)));
+    $host->setNumOfCvesWithTag(sizeof($cvesManager->getCvesNamesForHost($host->getId(), true)));
 
     $dao->update($host);
   }

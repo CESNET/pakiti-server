@@ -79,7 +79,7 @@ $html->setMenuActiveItem("exceptions.php");
 
 $selectedCveName = Utils::getHttpGetVar("cveName", null);
 
-$cveNames = $pakiti->getManager("CveDefsManager")->getUsedCveNames();
+$cveNames = $pakiti->getManager("CvesManager")->getCvesNames(true);
 $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
 $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsByCveName($selectedCveName);
 

@@ -226,7 +226,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                     <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a>
                 </td>
                 <td>
-                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
+                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
                 </td>
                 <td>
                     <a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>

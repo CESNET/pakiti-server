@@ -60,7 +60,7 @@ if($url == null){
   }
 
   # Get all cve names in order to check if cve name exists
-  $cveNames = $pakiti->getManager("CveDefsManager")->getCveNames();
+  $cveNames = $pakiti->getManager("CvesManager")->getCvesNames();
 
   $cveTagsIds = array();
   foreach($xml->cveTag as $cveTagNode){
