@@ -118,7 +118,7 @@ class HostDao {
     return $this->getById($hostId);  
   }
   
-  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $onlyWithTaggedCve = false, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
+  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
 
     $select = "distinct Host.id";
     $from = "Host";
@@ -163,8 +163,25 @@ class HostDao {
       $where[] = "lower(hostname) like '%".$this->db->escape(strtolower($search))."%'";
     }
 
-    if($onlyWithTaggedCve) {
-      $where[] = "Host.numOfCvesWithTag > 0";
+    if ($cveName != null || $tag != null) {
+      $join[] = "inner join InstalledPkg on InstalledPkg.hostId = Host.id";
+      $join[] = "inner join PkgCveDef on PkgCveDef.pkgId = InstalledPkg.pkgId";
+      $join[] = "inner join OsOsGroup on (PkgCveDef.osGroupId = OsOsGroup.osGroupId and OsOsGroup.osId = Host.osId)";
+      $join[] = "inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+      $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
+      $where[] = "CveException.id IS NULL";
+    }
+
+    if ($cveName != null) {
+      $where[] = "Cve.name = '".$this->db->escape($cveName)."'";
+    }
+
+    if ($tag != null) {
+        if ($tag === true) {
+            $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+        } else {
+            $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1' and CveTag.tagName = '" . $this->db->escape($tag) . "')";
+        }
     }
 
     if($hostGroupId != -1) {
