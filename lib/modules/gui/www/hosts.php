@@ -43,6 +43,7 @@ if ($_tag == "true") {
     $_tag = true;
 }
 $_cveName = $html->getHttpGetVar("cveName", null);
+$_activeIn = $html->getHttpGetVar("activeIn", null);
 
 // Process operations
 switch (Utils::getHttpPostVar("act")) {
@@ -72,9 +73,9 @@ switch (Utils::getHttpPostVar("act")) {
 $html->setTitle("List of hosts");
 $html->setMenuActiveItem("hosts.php");
 $html->setDefaultSorting("lastReport");
-$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $html->getUserId()));
+$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $activeIn, $html->getUserId()));
 
-$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $html->getUserId());
+$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $activeIn, $html->getUserId());
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $html->getUserId());
 $hostGroupTmp = new HostGroup(); $hostGroupTmp->setName("All host groups"); $hostGroups[] = $hostGroupTmp;
 $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupById($_hostGroupId);
@@ -130,7 +131,7 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                 <button class="btn btn-default dropdown-toggle btn-block" type="button" id="hostGroups" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
                     <?php if ($hostGroup->getId() == $_hostGroupId) { ?>
-                        <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), $html->getUserId()); ?>
+                        <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), null, $html->getUserId()); ?>
                             <div class="text-left"><?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
                         <?php } ?>
                     <?php } ?>
@@ -139,7 +140,7 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                 <ul class="dropdown-menu dropdown-menu-right col-xs-12" aria-labelledby="hostGroups">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
                         <?php if ($hostGroup->getId() != $_hostGroupId) { ?>
-                            <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), $html->getUserId()); ?>
+                            <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), null, $html->getUserId()); ?>
                             <li>
                                 <a href="<?php echo $html->getQueryString(array("hostGroupId" => $hostGroup->getId())); ?>">
                                     <?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
