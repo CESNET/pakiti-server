@@ -120,6 +120,16 @@ final class Config
         "Critical",
         "High"
     );
+
+    # Names of json variables for import users
+    public static $USERS_UID = "login";
+    public static $USERS_NAME = "displayName";
+    public static $USERS_EMAIL = "mail";
+    public static $USERS_ADMIN = "admin";
+
+    # Import users default admin value (if admin variable not defined in import)
+    public static $USERS_ADMIN_DEFAULT_VALUE = true;
+
 }
 
 ?>
