@@ -43,9 +43,10 @@ if ($host == null) {
 }
 
 $html->setTitle("Host: " . $host->getHostname());
+$html->setDefaultSorting("receivedOn");
 $html->setNumOfEntities($pakiti->getManager("ReportsManager")->getHostReportsCount($host->getId()));
 
-$reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->getSortBy(), $html->getPageSize(), $html->getPageNum());
+$reports = $pakiti->getManager("ReportsManager")->getHostReports($host->getId(), $html->getSortBy(), $html->getPageSize(), $html->getPageNum());
 
 // HTML
 ?>
@@ -67,22 +68,22 @@ $reports = $pakiti->getManager("ReportsManager")->getHostReports($host, $html->g
 <table class="table table-hover table-condensed">
     <thead>
         <tr>
-            <th width="300">
+            <th>
                 <a href="<?php echo $html->getQueryString(array("sortBy" => "id")); ?>">ID</a>
                 <?php if ($html->getSortBy() == "id") { ?>
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
                 <?php } ?>
             </th>
-            <th width="300">
+            <th>
                 <a href="<?php echo $html->getQueryString(array("sortBy" => "receivedOn")); ?>">Received on</a>
                 <?php if ($html->getSortBy() == "receivedOn") { ?>
-                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
+                    <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
                 <?php } ?>
             </th>
-            <th width="300">
+            <th>
                 <a href="<?php echo $html->getQueryString(array("sortBy" => "processedOn")); ?>">Processed on</a>
                 <?php if ($html->getSortBy() == "processedOn") { ?>
-                    <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
+                    <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
                 <?php } ?>
             </th>
             <th>Through proxy</th>

@@ -50,13 +50,13 @@ class ReportsManager extends DefaultManager {
   /*
    * Get all host reports
    */
-  public function getHostReports(Host &$host, $orderBy, $pageSize, $pageNum) {
-    Utils::log(LOG_DEBUG, "Getting all reports for host [hostname={$host->getHostname()}]", __FILE__, __LINE__);
-    $reportsIds =& $this->getPakiti()->getDao("Report")->getHostReportsIds($host->getId(), $orderBy, $pageSize, $pageNum); 
+  public function getHostReports($hostId = -1, $orderBy = null, $pageSize = -1, $pageNum = -1) {
+    Utils::log(LOG_DEBUG, "Getting reports for host ID[". $hostId ."]", __FILE__, __LINE__);
+    $ids = $this->getPakiti()->getDao("Report")->getHostReportsIds($hostId, $orderBy, $pageSize, $pageNum); 
 
     $reports = array();
-    foreach ($reportsIds as $reportId) {
-      array_push($reports, $this->getPakiti()->getDao("Report")->getById($reportId));
+    foreach ($ids as $id) {
+      array_push($reports, $this->getPakiti()->getDao("Report")->getById($id));
     }
 
     return $reports;
