@@ -209,6 +209,14 @@ class HostDao {
     return $this->db->queryToSingleValueMultiRow($sql);
   }
 
+    public function getInactiveIdsLongerThan($days)
+    {
+        $sql = "select Host.id from Host
+            left join Report on Host.lastReportId = Report.id
+            where Report.receivedOn < date_sub(now(), interval ".$this->db->escape($days)." day)
+        ";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
 
   public function update(Host &$host) {
     if ($host == null || $host->getId() == -1) {
@@ -275,17 +283,15 @@ class HostDao {
       Utils::log(LOG_DEBUG, "Host updated", __FILE__, __LINE__);
     }
   }
-  
-  public function delete(Host &$host) {
-    if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
+
+    public function delete($id)
+    {
+        $sql = "delete from Host
+            where id='".$this->db->escape($id)."'";
+        $this->db->query($sql);
+        return $this->db->getNumberOfAffectedRows();
     }
-    $this->db->query(
-      "delete from Host where id=".$host->getId());
-    Utils::log(LOG_DEBUG, "Host deleted", __FILE__, __LINE__);
-  }
-  
+
   public function setLastReportId($hostId, $reportId) {
     $this->db->query("update Host set lastReportId=$reportId where id=$hostId");
   }

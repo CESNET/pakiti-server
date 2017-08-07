@@ -44,9 +44,9 @@ switch (Utils::getHttpPostVar("act")) {
   case "delete":
     $host = $pakiti->getManager("HostsManager")->getHostById(Utils::getHttpPostVar("id"), $html->getUserId());
     if ($host != null) {
-        $pakiti->getManager("HostsManager")->deleteHost($host);
+        $pakiti->getManager("HostsManager")->deleteHost($host->getId());
     } else {
-        $html->setError("Cannot delete host, host with id " . $hostId . " doesn't exist or access denied");
+        $html->setError("Cannot delete host, host with id " . Utils::getHttpPostVar("id") . " doesn't exist or access denied");
     }
     break;
   case "edit":
@@ -58,7 +58,7 @@ switch (Utils::getHttpPostVar("act")) {
         $hostGroup->setNote(Utils::getHttpPostVar("note"));
         $pakiti->getManager("HostGroupsManager")->storeHostGroup($hostGroup);
     } else {
-        $html->setError("Cannot delete hostGroup, hostGroup with id " . $hostId . " doesn't exist or access denied");
+        $html->setError("Cannot delete hostGroup, hostGroup with id " . Utils::getHttpPostVar("id") . " doesn't exist or access denied");
     }
     break;
 }

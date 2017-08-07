@@ -145,18 +145,26 @@ class HostsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Getting hosts count", __FILE__, __LINE__);
     return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $onlyWithTaggedCve, $hostGroupId, $userId));
   }
-  
-  /*
-   * Delete the host
-   */
-  public function deleteHost(Host &$host) {
-    if ($host == null || $host->getId() == -1) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
+
+    public function deleteHost($id)
+    {
+        Utils::log(LOG_DEBUG, "Delete host[$id]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Host");
+        return $dao->delete($id);
     }
-    // Related data in the db is delete using delete on cascade
-    return $this->getPakiti()->getDao("Host")->delete($host);
-  }
+
+    public function getInactiveHostsLongerThan($days)
+    {
+        Utils::log(LOG_DEBUG, "Getting hosts inactive longer than $days days", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Host");
+        $ids = $dao->getInactiveIdsLongerThan($days);
+
+        $hosts = array();
+        foreach ($ids as $id) {
+            array_push($hosts, $this->getPakiti()->getDao("Host")->getById($id));
+        }
+        return $hosts;
+    }
 
   public function setLastReportId(Host &$host, Report &$report) {
     if ($host == null || $host->getId() == -1 || $report == null || $report->getId() == -1) {
