@@ -60,10 +60,8 @@ $vulnerabilities = $html->getPakiti()->getManager("VulnerabilitiesManager")->get
         <tr>
             <th>Name</th>
             <th>Version</th>
-            <th>Release</th>
             <th>Architecture</th>
             <th>OsGroup</th>
-            <th>Operator</th>
         </tr>
     </thead>
     <tbody>
@@ -71,11 +69,9 @@ $vulnerabilities = $html->getPakiti()->getManager("VulnerabilitiesManager")->get
             <?php $vulnerabilityOsGroup = $html->getPakiti()->getManager("OsGroupsManager")->getOsGroupById($vulnerability->getOsGroupId()); ?>
             <tr>
                 <td><?php echo $vulnerability->getName(); ?></td>
-                <td><?php echo $vulnerability->getVersion(); ?></td>
-                <td><?php echo $vulnerability->getRelease(); ?></td>
+                <td><?php echo $vulnerability->getOperator() . " " .$vulnerability->getVersion() . "-" . $vulnerability->getRelease(); ?></td>
                 <td><?php echo $vulnerability->getArch(); ?></td>
                 <td><?php echo $vulnerabilityOsGroup->getName(); ?></td>
-                <td><?php echo $vulnerability->getOperator(); ?></td>
             </tr>
         <?php } ?>
     </tbody>
