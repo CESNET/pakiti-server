@@ -118,7 +118,7 @@ class HostDao {
     return $this->getById($hostId);  
   }
   
-  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $onlyWithTaggedCve = false, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
+  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1, $directlyAssignedToUser = false) {
 
     $select = "distinct Host.id";
     $from = "Host";
@@ -128,8 +128,9 @@ class HostDao {
     $limit = null;
     $offset = null;
 
-    # tmpJoin variable indicates whether HostHostGroup table is joined
-    $tmpJoin = false;
+    # tmpJoin variable indicates whether table is joined
+    $tmpJoinHostHostGroup = false;
+    $tmpJoinReport = false;
 
     // Because os and arch are ids to other tables, we have to do different sorting
     switch ($orderBy) {
@@ -152,6 +153,7 @@ class HostDao {
         break;
       case "lastReport":
         $join[] = "left join Report on Host.lastReportId=Report.id";
+        $tmpJoinReport = true;
         $order[] = "Report.receivedOn DESC";
         break;
       default:
@@ -163,14 +165,38 @@ class HostDao {
       $where[] = "lower(hostname) like '%".$this->db->escape(strtolower($search))."%'";
     }
 
-    if($onlyWithTaggedCve) {
-      $where[] = "Host.numOfCvesWithTag > 0";
+    if ($cveName != null || $tag != null) {
+      $join[] = "inner join InstalledPkg on InstalledPkg.hostId = Host.id";
+      $join[] = "inner join PkgCveDef on PkgCveDef.pkgId = InstalledPkg.pkgId";
+      $join[] = "inner join OsOsGroup on (PkgCveDef.osGroupId = OsOsGroup.osGroupId and OsOsGroup.osId = Host.osId)";
+      $join[] = "inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+      $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
+      $where[] = "CveException.id IS NULL";
+    }
+
+    if ($cveName != null) {
+      $where[] = "Cve.name = '".$this->db->escape($cveName)."'";
+    }
+
+    if ($tag != null) {
+        if ($tag === true) {
+            $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+        } else {
+            $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1' and CveTag.tagName = '" . $this->db->escape($tag) . "')";
+        }
     }
 
     if($hostGroupId != -1) {
           $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
-          $tmpJoin = true;
+          $tmpJoinHostHostGroup = true;
           $where[] = "HostHostGroup.hostGroupId = '".$this->db->escape($hostGroupId)."'";
+    }
+
+    if ($activeIn != null) {
+      if (!$tmpJoinReport) {
+        $join[] = "left join Report on Host.lastReportId = Report.id";
+      }
+      $where[] = "Report.receivedOn > date_sub(now(), interval ".$this->db->escape($activeIn)." day)";
     }
 
     if($userId != -1) {
@@ -179,7 +205,7 @@ class HostDao {
       if ($directlyAssignedToUser) {
           $where[] = "UserHost.userId = $userId";
       } else {
-          if (!$tmpJoin) {
+          if (!$tmpJoinHostHostGroup) {
               $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
           }
           $join[] = "left join UserHostGroup on HostHostGroup.hostGroupId = UserHostGroup.hostGroupId";

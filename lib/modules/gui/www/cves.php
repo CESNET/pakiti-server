@@ -36,6 +36,11 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("host");
 
+$tag = $html->getHttpGetVar("tag", null);
+if ($tag == "true") {
+    $tag = true;
+}
+
 $host = $pakiti->getManager("HostsManager")->getHostById($html->getHttpGetVar("hostId", -1), $html->getUserId());
 if ($host == null) {
     $html->fatalError("Host with id " . $id . " doesn't exist or access denied");
@@ -44,7 +49,7 @@ if ($host == null) {
 
 $html->setTitle("Host: " . $host->getHostname());
 
-$pkgs = $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve($host);
+$pkgs = $pakiti->getManager("PkgsManager")->getVulnerablePkgsForHost($host->getId(), $tag);
 
 // HTML
 ?>
@@ -59,7 +64,15 @@ $pkgs = $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve(
     <li role="presentation" class="active"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
 </ul>
 
-<br><br>
+<br>
+
+<div class="checkbox">
+    <label>
+        <input type="checkbox" onclick="location.href='?hostId=<?php echo $host->getId(); ?><?php if ($tag !== true) echo '&tag=true'; ?>';"<?php if ($tag === true) echo ' checked'; ?>> Only tagged CVEs
+    </label>
+</div>
+
+<br>
 
 <table class="table table-hover table-condensed">
     <thead>
@@ -72,13 +85,15 @@ $pkgs = $pakiti->getManager("VulnerabilitiesManager")->getVulnerablePkgsWithCve(
     </thead>
     <tbody>
         <?php foreach ($pkgs as $pkg) { ?>
+            <?php $cvesNames = $pakiti->getManager("CvesManager")->getCvesNamesForPkgAndOs($pkg->getId(), $host->getOsId(), $tag); ?>
             <tr>
-                <td><?php echo $pkg["Pkg"]->getName(); ?></td>
-                <td><?php echo $pkg["Pkg"]->getVersionRelease(); ?></td>
-                <td><?php echo $pkg["Pkg"]->getArch(); ?></td>
+                <td><?php echo $pkg->getName(); ?></td>
+                <td><?php echo $pkg->getVersionRelease(); ?></td>
+                <td><?php echo $pkg->getArch(); ?></td>
                 <td>
-                    <?php foreach ($pkg["CVE"] as $cve) { ?>
-                        <a href="cve.php?cveName=<?php echo $cve->getName(); ?>"<?php if(!empty($cve->getTag())) echo ' class="text-danger"'; ?>><?php echo $cve->getName(); ?></a>
+                    <?php foreach ($cvesNames as $cveName) { ?>
+                        <?php $tags = $pakiti->getManager("CveTagsManager")->getCveTagsByCveName($cveName); ?>
+                        <a href="cve.php?cveName=<?php echo $cveName; ?>"<?php if(!empty($tags)) echo ' class="text-danger"'; ?>><?php echo $cveName; ?></a>
                     <?php } ?>
                 </td>
             </tr>

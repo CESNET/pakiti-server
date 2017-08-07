@@ -96,7 +96,7 @@ class HostsManager extends DefaultManager {
     $host =& $this->getPakiti()->getDao("Host")->getById($id, $userId);
     if (is_object($host)) {
       $host->setArch($this->getPakiti()->getDao("Arch")->getById($host->getArchId()));
-      $host->setOs($this->getPakiti()->getDao("Os")->getById($host->getOsId()));
+      $host->setOs($this->getPakiti()->getManager("OsesManager")->getOsById($host->getOsId()));
       $host->setDomain($this->getPakiti()->getDao("Domain")->getById($host->getDomainId()));
     } else return null;
     
@@ -114,9 +114,9 @@ class HostsManager extends DefaultManager {
   /*
    * Get all hosts
    */
-  public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $onlyWithTaggedCve = false, $hostGroupId = -1, $userId = -1, $directlyAssignedToUser = false) {
+  public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1, $directlyAssignedToUser = false) {
     Utils::log(LOG_DEBUG, "Getting all hosts", __FILE__, __LINE__);
-    $hostsIds = $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $search, $onlyWithTaggedCve, $hostGroupId, $userId, $directlyAssignedToUser);
+    $hostsIds = $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $userId, $directlyAssignedToUser);
     
     $hosts = array();
     foreach ($hostsIds as $hostId) {
@@ -141,9 +141,9 @@ class HostsManager extends DefaultManager {
   /*
    * Get hosts count
    */
-  public function getHostsCount($search = null, $onlyWithTaggedCve = false, $hostGroupId = -1, $userId = -1) {
+  public function getHostsCount($search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1) {
     Utils::log(LOG_DEBUG, "Getting hosts count", __FILE__, __LINE__);
-    return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $onlyWithTaggedCve, $hostGroupId, $userId));
+    return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $cveName, $tag, $hostGroupId, $activeIn, $userId));
   }
 
     public function deleteHost($id)
@@ -183,10 +183,9 @@ class HostsManager extends DefaultManager {
       throw new Exception("Host[".$hostId."] doesn't exist");
     }
     # Get number of CVEs
-    $cveCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host);
-    $host->setNumOfCves($cveCount);
-    $cveWithTagCount = $this->getPakiti()->getManager("CveDefsManager")->getCvesCount($host, true);
-    $host->setNumOfCvesWithTag($cveWithTagCount);
+    $cvesManager = $this->getPakiti()->getManager("CvesManager");
+    $host->setNumOfCves(sizeof($cvesManager->getCvesNamesForHost($host->getId(), null)));
+    $host->setNumOfCvesWithTag(sizeof($cvesManager->getCvesNamesForHost($host->getId(), true)));
 
     $dao->update($host);
   }
@@ -200,23 +199,6 @@ class HostsManager extends DefaultManager {
       $this->recalculateCvesCountForHost($id);
     }
   }
- 
-  /* 
-   * Get list of all oses
-   */
-  public function getOses($orderBy = null, $pageSize = -1, $pageNum = -1) {
-    Utils::log(LOG_DEBUG, "Getting all oses", __FILE__, __LINE__);
-    $osesIds =& $this->getPakiti()->getDao("Os")->getOsesIds($orderBy, $pageSize, $pageNum);
-
-    $oses = array();
-    foreach ($osesIds as $osId) {
-      array_push($oses, $this->getPakiti()->getDao("Os")->getById($osId));
-    }
-
-    return $oses;
-  }
-
-
 
   /* 
    * Get list of all archs

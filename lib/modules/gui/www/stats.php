@@ -77,7 +77,7 @@ $html->setMenuActiveItem("stats.php");
         </tr>
         <tr>
             <td>Number of CVEs</td>
-            <td><?php echo sizeof($html->getPakiti()->getManager("CveDefsManager")->getCveNames()); ?></td>
+            <td><?php echo sizeof($html->getPakiti()->getManager("CvesManager")->getCvesNames()); ?></td>
         </tr>
         <tr>
             <td>Number of packages</td>

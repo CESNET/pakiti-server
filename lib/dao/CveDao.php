@@ -97,21 +97,6 @@ class CveDao
         return $this->getCvesByCveDefId($cveDef->getId());
     }
 
-    public function getCveNames()
-    {
-        $sql = "select distinct Cve.name from Cve
-            order by Cve.name DESC";
-        return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
-    public function getUsedCveNames()
-    {
-        $sql = "select distinct Cve.name from Cve
-            inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId
-            order by Cve.name DESC";
-        return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
     public function getAllCves()
     {
         return $this->db->queryObjects(
@@ -119,5 +104,87 @@ class CveDao
     		id as _id, name as _name, cveDefId as _cveDefId
             from
       	      Cve", "Cve");
+    }
+
+    public function getNamesForPkgAndOs($pkgId, $osId, $tag = null)
+    {
+        $select = "distinct(Cve.name)";
+        $from = "Cve";
+        $order = "Cve.name DESC";
+
+        # pkg
+        $join[] = "inner join PkgCveDef on (Cve.cveDefId = PkgCveDef.cveDefId and PkgCveDef.pkgId = '" . $this->db->escape($pkgId) . "')";
+
+        # os
+        $join[] = "inner join OsOsGroup on (PkgCveDef.osGroupId = OsOsGroup.osGroupId and OsOsGroup.osId = '" . $this->db->escape($osId) . "')";
+
+        # exceptions
+        $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
+        $where[] = "CveException.id IS NULL";
+
+        # tag
+        if ($tag !== null) {
+            if ($tag === true) {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+            } elseif ($tag === false){
+                $join[] = "left join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+                $where[] = "CveTag.id IS NULL ";
+            } else {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1' and CveTag.tagName = '" . $this->db->escape($tag) . "')";
+            }
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function getNamesForHost($hostId, $tag = null)
+    {
+        $select = "distinct(Cve.name)";
+        $from = "Cve";
+        $order = "Cve.name DESC";
+
+        # pkgs
+        $join[] = "inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId";
+        $join[] = "inner join InstalledPkg on (PkgCveDef.pkgId = InstalledPkg.pkgId and InstalledPkg.hostId = '" . $this->db->escape($hostId) . "')";
+
+        # os
+        $join[] = "inner join OsOsGroup on PkgCveDef.osGroupId = OsOsGroup.osGroupId";
+        $join[] = "inner join Host on (OsOsGroup.osId = Host.osId and Host.id = '" . $this->db->escape($hostId) . "')";
+
+        # exceptions
+        $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
+        $where[] = "CveException.id IS NULL";
+
+        # tag
+        if ($tag !== null) {
+            if ($tag === true) {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+            } elseif ($tag === false){
+                $join[] = "left join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+                $where[] = "CveTag.id IS NULL";
+            } else {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1' and CveTag.tagName = '" . $this->db->escape($tag) . "')";
+            }
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function getNames($used = null)
+    {
+        $select = "distinct(Cve.name)";
+        $from = "Cve";
+        $order = "Cve.name DESC";
+
+        if ($used !== null) {
+            if ($used === true) {
+                $join[] = "inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId";
+            }
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
 }

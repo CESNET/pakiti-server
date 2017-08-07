@@ -36,8 +36,14 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("hosts");
 
-$selectedHostGroupId = $html->getHttpGetVar("hostGroupId", -1);
-$checkedTaggedCves = $html->getHttpGetVar("taggedCves", "true") == "true";
+$_hostGroupId = $html->getHttpGetVar("hostGroupId", -1);
+$_search = $html->getHttpGetVar("search", null);
+$_tag = $html->getHttpGetVar("tag", null);
+if ($_tag == "true") {
+    $_tag = true;
+}
+$_cveName = $html->getHttpGetVar("cveName", null);
+$_activeIn = $html->getHttpGetVar("activeIn", null);
 
 // Process operations
 switch (Utils::getHttpPostVar("act")) {
@@ -67,12 +73,15 @@ switch (Utils::getHttpPostVar("act")) {
 $html->setTitle("List of hosts");
 $html->setMenuActiveItem("hosts.php");
 $html->setDefaultSorting("lastReport");
-$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($html->getHttpGetVar("search", null), $checkedTaggedCves, $selectedHostGroupId, $html->getUserId()));
+$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $activeIn, $html->getUserId()));
 
-$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $html->getHttpGetVar("search", null), $checkedTaggedCves, $selectedHostGroupId, $html->getUserId());
+$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $activeIn, $html->getUserId());
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $html->getUserId());
 $hostGroupTmp = new HostGroup(); $hostGroupTmp->setName("All host groups"); $hostGroups[] = $hostGroupTmp;
-$selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupById($selectedHostGroupId);
+$selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupById($_hostGroupId);
+
+$cveNames = $pakiti->getManager("CvesManager")->getCvesNames(true);
+$tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
 // HTML
 ?>
 
@@ -81,27 +90,37 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
 
 
 <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-5">
         <form>
-            <input type="hidden" name="hostGroupId" value="<?php echo $selectedHostGroupId; ?>" />
+            <input type="hidden" name="hostGroupId" value="<?php echo $_hostGroupId; ?>" />
             <div class="input-group">
-                <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php echo $html->getHttpGetVar("search", ""); ?>">
+                <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php if ($_search != null) echo $_search; ?>" style="width: 34%;">
+
+                <select class="form-control" name="cveName" id="cveName" onchange="submit();"  style="width: 33%;">
+                    <option value="">CVE (no matter)</option>
+                    <?php foreach ($cveNames as $cveName) { ?>
+                        <option value="<?php echo $cveName; ?>"<?php if ($_cveName === $cveName) echo ' selected'; ?>><?php echo $cveName; ?></option>
+                    <?php } ?>
+                </select>
+
+                <select class="form-control" name="tag" id="tag" onchange="submit();" style="width: 33%;">
+                    <option value="">Tag (no matter)</option>
+                    <option value="true"<?php if ($_tag === true) echo ' selected'; ?>>Any tag</option>
+                    <?php foreach ($tagNames as $tagName) { ?>
+                        <option value="<?php echo $tagName; ?>"<?php if ($_tag === $tagName) echo ' selected'; ?>><?php echo $tagName; ?></option>
+                    <?php } ?>
+                </select>
+
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="submit">
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                     </button>
                 </span>
             </div>
-            <div class="checkbox">
-                <label>
-                    <input type="checkbox" onclick="location.href='<?php echo $html->getQueryString(array("taggedCves" => $checkedTaggedCves ? "false" : "true")); ?>';"<?php if ($checkedTaggedCves) echo ' checked'; ?>> Only hosts with tagged CVEs
-                </label>
-            </div>
         </form>
     </div>
-    <div class="col-md-2"></div>
     <div class="col-md-2">
-        <?php if($selectedHostGroupId != -1) { ?>
+        <?php if($_hostGroupId != -1) { ?>
             <button class="btn btn-success btn-block" type="submit" data-toggle="modal" data-target="#edit">Edit host group</button>
         <?php } ?>
     </div>
@@ -111,8 +130,8 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
             <div class="dropdown">
                 <button class="btn btn-default dropdown-toggle btn-block" type="button" id="hostGroups" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
-                    <?php if ($hostGroup->getId() == $selectedHostGroupId) { ?>
-                        <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, false, $hostGroup->getId(), $html->getUserId()); ?>
+                    <?php if ($hostGroup->getId() == $_hostGroupId) { ?>
+                        <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), null, $html->getUserId()); ?>
                             <div class="text-left"><?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
                         <?php } ?>
                     <?php } ?>
@@ -120,8 +139,8 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right col-xs-12" aria-labelledby="hostGroups">
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
-                        <?php if ($hostGroup->getId() != $selectedHostGroupId) { ?>
-                            <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, false, $hostGroup->getId(), $html->getUserId()); ?>
+                        <?php if ($hostGroup->getId() != $_hostGroupId) { ?>
+                            <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), null, $html->getUserId()); ?>
                             <li>
                                 <a href="<?php echo $html->getQueryString(array("hostGroupId" => $hostGroup->getId())); ?>">
                                     <?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
@@ -225,7 +244,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                     <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a>
                 </td>
                 <td>
-                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
+                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
                 </td>
                 <td>
                     <a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>
@@ -277,7 +296,7 @@ $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHos
                 <div class="modal-body">
                     <form name="editForm" method="post">
                         <input type="hidden" name="act" value="edit">
-                        <input type="hidden" name="id" value="<?php echo $selectedHostGroupId; ?>">
+                        <input type="hidden" name="id" value="<?php echo $_hostGroupId; ?>">
                         <input type="hidden" name="name" value="<?php echo $selectedHostGroup->getName(); ?>">
                         <div class="form-group">
                             <label for="name">Name</label>

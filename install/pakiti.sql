@@ -42,6 +42,14 @@ create table `OsGroup` (
 	unique key `name` (`name`)
 )ENGINE=INNODB;
 
+create table `OsOsGroup` (
+	`osId` integer(10) not null,
+	`osGroupId` integer(10) not null,
+	unique key `unique` (`osId`, `osGroupId`),
+	foreign key (`osId`) references Os(`id`) on delete cascade,
+	foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
+)ENGINE=INNODB;
+
 insert into OsGroup (`name`, `regex`) values ('unknown', '');
 
 create table `Arch` (

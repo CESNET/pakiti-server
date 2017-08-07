@@ -234,4 +234,23 @@ class PkgsManager extends DefaultManager {
   public function getPkgsTypesNames(){
     return $this->getPakiti()->getDao("Pkg")->getPkgsTypesNames();
   }
+
+    /**
+     * Getting vulnerable packages for host
+     * @param $hostId
+     * @param $tag = null -> all vulnerable pkgs | true -> only pkgs with tagged CVE | string -> tag name
+     * @return array of packages
+     */
+    public function getVulnerablePkgsForHost($hostId, $tag = null)
+    {
+        Utils::log(LOG_DEBUG, "Getting vulnerable pkgs for host[$hostId]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Pkg");
+        $ids = $dao->getVulnerableIdsForHost($hostId, $tag);
+
+        $pkgs = array();
+        foreach ($ids as $id) {
+            array_push($pkgs, $dao->getById($id));
+        }
+        return $pkgs;
+    }
 }

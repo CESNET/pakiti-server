@@ -33,58 +33,9 @@
  */
 class VulnerabilitiesManager extends DefaultManager
 {
-    private $_pakiti;
-
-    public function __construct(Pakiti &$pakiti)
-    {
-        $this->_pakiti =& $pakiti;
-    }
-
-    public function getPakiti()
-    {
-        return $this->_pakiti;
-    }
-
     public function getVulnerabilityById($id)
     {
         return $this->getPakiti()->getDao("Vulnerability")->getById($id);
-    }
-
-    /**
-     * Returns the array of the vulnerable pkgs with assigned Cves for a specific host. Array is sorted by the key.
-     * @param Host $host
-     * @param string $orderBy
-     * @param int $pageSize
-     * @param int $pageNum
-     * @return mixed
-     * @throws Exception
-     */
-
-    public function getVulnerablePkgsWithCve(Host &$host)
-    {
-        if (($host == null) || ($host->getId() == -1)) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Host object is not valid or Host.id is not set");
-        }
-        Utils::log(LOG_DEBUG, "Getting the vulnerable packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
-
-        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIdsByOsName($host->getOs()->getName());
-        $pkgsIds = $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsIdsByHostId($host->getId());
-        return $this->getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds);
-    }
-
-    public function getVulnerablePkgsWithCveByPkgsIdsAndOsGroupsIds($pkgsIds, $osGroupsIds)
-    {
-        $pkgsWithCves = array();
-        $cves = $this->getPakiti()->getManager("CveDefsManager")->getCvesForPkgs($pkgsIds, $osGroupsIds);
-        $pkgs = $this->getPakiti()->getDao("Pkg")->getPkgsByPkgsIds(array_keys($cves));
-        
-        foreach ($pkgs as $pkg) {
-            $pkgsWithCves[$pkg->getId()]["Pkg"] = $pkg;
-            $pkgsWithCves[$pkg->getId()]["CVE"] = $cves[$pkg->getId()];
-        }
-
-        return $pkgsWithCves;
     }
 
     /**
@@ -135,63 +86,18 @@ class VulnerabilitiesManager extends DefaultManager
         $this->calculateVulnerabilitiesForPkgs($pkgs);
     }
 
-
-    /**
-     * Return array of Vulnerabilities by Cve name and Os name
-     * Used by API
-     * @param $cveName
-     * @param $osName
-     * @return array
-     */
-    public function getVulnerabilitiesByCveNameAndOsName($cveName, $osName)
+    public function getVulnerabilitiesByCveName($cveName, $osId = -1)
     {
-        Utils::log(LOG_DEBUG, "Searching for vulnerable packages for all hosts", __FILE__, __LINE__);
-        $os = $this->getPakiti()->getDao("Os")->getByName($osName);
-        if (!is_object($os)) {
-            return array();
+        Utils::log(LOG_DEBUG, "Getting Vulnerabilities by CVE name[".$cveName."], OS[$osId]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Vulnerability");
+        $ids = $dao->getIdsByCveNameAndOs($cveName, $osId);
+
+        $vulnerabilities = array();
+        foreach ($ids as $id) {
+            array_push($vulnerabilities, $dao->getById($id));
         }
-
-        $cves = $this->getPakiti()->getDao("Cve")->getCvesByName($cveName);
-        if (empty($cves)) {
-            return array();
-        }
-
-        $osGroups = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsByOs($os);
-
-        $cveDefsIds = array_map(function ($cve) {
-            return $cve->getCveDefId();
-        }, $cves);
-
-        $osGroupsIds = array_map(function ($osGroup) {
-            return $osGroup->getId();
-        }, $osGroups);
-        return $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroupsIds);
+        return $vulnerabilities;
     }
-
-    /**
-     * Return array of Vulnerabilities by Cve name and OsGroupId
-     * @param $cveName
-     * @param $osGroupId
-     * @return array
-     */
-    public function getVulnerabilitiesByCveName($cveName)
-    {
-        Utils::log(LOG_DEBUG, "Searching for vulnerabilities by CVE name [" . $cveName . "]", __FILE__, __LINE__);
-
-        $cves = $this->getPakiti()->getDao("Cve")->getCvesByName($cveName);
-        if (empty($cves)) {
-            return array();
-        }
-
-        $osGroupsIds = $this->getPakiti()->getManager("OsGroupsManager")->getOsGroupsIds();
-
-        $cveDefsIds = array_map(function ($cve) {
-            return $cve->getCveDefId();
-        }, $cves);
-
-        return $this->getPakiti()->getDao("Vulnerability")->getVulnerabilitiesByCveDefsIdsAndOsGroupId($cveDefsIds, $osGroupsIds);
-    }
-
 
     /*
      * Compare packages version based on type of packages

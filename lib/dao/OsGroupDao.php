@@ -29,95 +29,88 @@
 
 /**
  * @author Michal Prochazka
+ * @author Jakub Mlcak
  */
-class OsGroupDao {
-  private $db;
-  
-  public function __construct(DbManager &$dbManager) {
-    $this->db = $dbManager;  
-  }
-  
-  public function create(OsGroup &$osGroup) {
-    $this->db->query(
-      "insert into OsGroup set
-      	name='" . $this->db->escape($osGroup->getName()) . "',
-      	regex='" . $this->db->escape($osGroup->getRegex()) . "'
-      	");
-    
-    # Set the newly assigned id
-    $osGroup->setId($this->db->getLastInsertedId());
-  }
+class OsGroupDao
+{
+    private $db;
 
-  public function getById($id) {
-    if (!is_numeric($id)) return null;
-    return $this->getBy($id, "id");
-  }
-  
-  public function getByName($name) {
-    return $this->getBy($name, "name");
-  }
+    public function __construct(DbManager &$dbManager)
+    {
+        $this->db = $dbManager;
+    }
 
-  public function getIdByName($name) {
-    $id = $this->db->queryToSingleValue(
-    	"select 
-    		id
-      from 
-      	OsGroup 
-      where
-      	name='".$this->db->escape($name)."'");
-    if ($id == null) {
-      return -1;
-    }
-    return $id;
-  }
+    public function create(OsGroup &$osGroup)
+    {
+        $sql = "insert into OsGroup set
+            name='" . $this->db->escape($osGroup->getName()) . "',
+            regex='" . $this->db->escape($osGroup->getRegex()) . "'";
+        $this->db->query($sql);
 
-  public function getOsGroupsIds($orderBy = "name", $pageSize = -1, $pageNum = -1) {
-    $sql = "select id from OsGroup order by name";
-    
-    if ($pageSize != -1 && $pageNum != -1) {
-      $offset = $pageSize*$pageNum;
-      $sql .= " limit $offset,$pageSize";
+        # Set the newly assigned id
+        $osGroup->setId($this->db->getLastInsertedId());
     }
-    
-    return $this->db->queryToSingleValueMultiRow($sql);
-  }
-  
-  public function update(OsGroup &$osGroup) {
-    //print_r($this->db->escape($osGroup->getRegex()));
-    $this->db->query(
-      "update OsGroup set
-      	name='" . $this->db->escape($osGroup->getName()) . "',
-      	regex='" . $this->db->escape($osGroup->getRegex()) . "'
-      where id=".$osGroup->getId());
-  }
-  
-  public function delete(OsGroup &$osGroup) {
-    $this->db->query(
-      "delete from OsGroup where id=".$osGroup->getId());
-  }
-  
-/*
-   * We can get the data by ID or name
-   */
-  protected function getBy($value, $type) {
-    $where = "";
-    if ($type == "id") {
-      $where = "id=".$this->db->escape($value);
-    } else if ($type == "name") {
-      $where = "name='".$this->db->escape($value)."'";
-    } else {
-      throw new Exception("Undefined type of the getBy");
+
+    public function update(OsGroup &$osGroup)
+    {
+        $sql = "update OsGroup set
+            name='" . $this->db->escape($osGroup->getName()) . "',
+            regex='" . $this->db->escape($osGroup->getRegex()) . "'
+            where id='" . $this->db->escape($osGroup->getId()) . "'";
+        $this->db->query($sql);
     }
-    return $this->db->queryObject(
-    	"select 
-    		id as _id,
-		name as _name,
-		regex as _regex
-      from 
-      	OsGroup 
-      where
-      	$where"
-      , "OsGroup");
-  }
+
+    public function getById($id)
+    {
+        $sql = "select id as _id, name as _name, regex as _regex from OsGroup
+            where id='" . $this->db->escape($id) . "'";
+        return $this->db->queryObject($sql, "OsGroup");
+    }
+
+    public function getIdByName($name)
+    {
+        $sql = "select id from OsGroup
+            where name='" . $this->db->escape($name) . "'";
+        $id = $this->db->queryToSingleValue($sql);
+        return ($id == null) ? -1 : $id;
+    }
+
+    public function getIds($orderBy = null, $pageSize = -1, $pageNum = -1)
+    {
+        $select = "OsGroup.id";
+        $from = "OsGroup";
+        $join = null;
+        $where = null;
+        $order = "OsGroup.name";
+        $limit = null;
+        $offset = null;
+
+        if ($orderBy != null) {
+            $order = "OsGroup.".$this->db->escape($orderBy)."";
+        }
+
+        if ($pageSize != -1 && $pageNum != -1) {
+            $limit = $pageSize;
+            $offset = $pageSize * $pageNum;
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function getIdsByOsName($osName)
+    {
+        $sql = "select OsGroup.id from OsGroup
+            left join OsOsGroup on OsGroup.id = OsOsGroup.osGroupId
+            left join Os on OsOsGroup.osId = Os.id
+            where Os.name='" . $this->db->escape($osName) . "'";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function unassignOsesFromOsGroup($osGroupId)
+    {
+        $sql = "delete from OsOsGroup
+      where osGroupId='" . $this->db->escape($osGroupId) . "'";
+        $this->db->query($sql);
+    }
 }
-?>

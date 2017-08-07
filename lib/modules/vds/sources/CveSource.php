@@ -174,7 +174,7 @@ class CveSource extends Source implements ISource
                                     $osGroup = new OsGroup();
                                     $osGroup->setName($osGroupName);
                                     # osGropu is not defined in the DB, so created it
-                                    $osGroup = $this->_pakiti->getManager('OsGroupsManager')->createOsGroup($osGroupName);
+                                    $osGroup = $this->_pakiti->getManager('OsGroupsManager')->storeOsGroup($osGroupName);
                                 }
                                 $vuln->setOsGroupId($osGroup->getId());
                                 $vuln->setOperator($defPkg['operator']);

@@ -36,7 +36,7 @@ $pakiti = new Pakiti();
 $cveExceptions = $pakiti->getDao("CveException")->getCvesExceptions();
 
 $pkgDao = $pakiti->getDao("Pkg");
-$osGroupDao = $pakiti->getDao("OsGroup");
+$osGroupsManager = $pakiti->getManager("OsGroupsManager");
 
 $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?> <cveExceptions></cveExceptions>');
 
@@ -52,7 +52,7 @@ foreach($cveExceptions as $cveException){
     $pkgNode->addChild("release", $pkg->getRelease());
     $pkgNode->addChild("arch", $pkg->getArch());
     $pkgNode->addChild("type", $pkg->getType());
-    $osGroup = $osGroupDao->getById($cveException->getOsGroupId());
+    $osGroup = $osGroupsManager->getOsGroupById($cveException->getOsGroupId());
     $osGroupNode = $cveExceptionNode->addChild("osGroup");
     $osGroupNode->addChild("name",$osGroup->getName());
 }

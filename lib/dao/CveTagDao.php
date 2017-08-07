@@ -102,7 +102,8 @@ class CveTagDao
     public function getIdsByCveName($cveName)
     {
         $sql = "select id from CveTag
-            where cveName='".$this->db->escape($cveName)."'";
+            where cveName='".$this->db->escape($cveName)."'
+            and enabled='1'";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
@@ -120,5 +121,11 @@ class CveTagDao
         $sql = "delete from CveTag
             where id=".$this->db->escape($id);
         $this->db->query($sql);
+    }
+
+    public function getTagNames()
+    {
+        $sql = "select distinct(CveTag.tagName) from CveTag";
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
 }
