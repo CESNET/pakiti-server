@@ -39,7 +39,7 @@ It's recommended to synchronize new vulnerabilities every day by cron.
     30 4 * * * root php /var/www/pakiti3/lib/modules/cli/vds.php -c synchronize && php /var/www/pakiti3/lib/modules/cli/calculateVulnerabilities.php
 
 ## Oses
-Os is assigned to OS Group by regex. Assign OS to OS Group is necessary for getting vulnerable packages.
+Os is assigned to OS Group by regex which is set in Config.php. After changing regex you have to run recalculateOsGroupsMapping.php cli tool. Correct assign OS to OS Group is necessary for getting vulnerable packages.
 
 ## Users
 In Config.php have to be set one of these modes user management

@@ -818,7 +818,7 @@ class FeederModule extends DefaultModule
         foreach($pkgs as $pkg){
             $pkgsArray[$pkg->getName()][] = $pkg;
         }
-        foreach (Constants::$OS_NAMES_DEFINITIONS as $pkgName => &$osTmpName) {
+        foreach (Config::$OS_NAMES_DEFINITIONS as $pkgName => &$osTmpName) {
         if (array_key_exists($pkgName, $pkgsArray)) {
             // Iterate over all archs
             foreach ($pkgsArray[$pkgName] as $pkg){
@@ -836,7 +836,7 @@ class FeederModule extends DefaultModule
             if ($osName != "" || $osName != "unknown") {
 
                 # The Pakiti client has sent the OS name, so canonize it
-                foreach (Constants::$OS_NAMES_MAPPING as $pattern => $replacement) {
+                foreach (Config::$OS_NAMES_MAPPING as $pattern => $replacement) {
                     # Apply regex rules on the Os name sent by the client
                     $tmpOsName = preg_replace("/".$pattern."/i", $replacement, $osName, 1, $count);
 

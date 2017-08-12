@@ -58,33 +58,6 @@ final class Constants {
   public static $ENABLED = 1;
   public static $DISABLED = 0;
   
-  public static $OS_NAMES_DEFINITIONS = array ( "sl-release"     => "Scientific Linux",
-                                              "redhat-release" => "Red Hat Linux",
-                                              "sles-release"   => "SUSE Linux",
-                                              "hpc-release"    => "HPC Linux",
-                                              "centos-release" => "CentOS Linux",
-                                              "fedora-release" => "Fedora Linux",
-                                              "redhat-release-server" => "Red Hat Linux Server",
-                                              "redhat-release-client" => "Red Hat Linux Client",
-                                              "redhat-release-workstation" => "Red Hat Linux Workstation",
-                                              "redhat-release-computenode" => "Red Hat Linux ComputeNode",
-                                             );
-                                             
-  # OS names mapping, used for cannonization of the OS name sent by the client. ? will be replaced by the version/release.
-    public static $OS_NAMES_MAPPING = array('^\s*ScientificSL ([\w.-]+)' => 'Scientific Linux ${1}',
-        '^\s*Scientific ([\w.-]+)' => 'Scientific Linux ${1}',
-        '^\s*ScientificCERNSLC ([\w.-]+)' => 'Scientific Linux ${1}.cern',
-        '^\s*RedHatEnterpriseServer ([\w.-]+)' => 'Red Hat Linux Server ${1}',
-        '^\s*Scientific Linux SL release ([\w.-]+) .*' => 'Scientific Linux ${1}',
-        '^\s*Scientific Linux CERN SLC release ([\w.-]+) .*' => 'Scientific Linux ${1}.cern',
-        '^\s*Ubuntu ([\w.-]+)' => 'Ubuntu ${1}',
-        '^\s*CentOS ([\w.-]+)' => 'CentOS Linux ${1}',
-        '^\s*CentOS release ([\w.-]+) .*' => 'CentOS Linux ${1}',
-        '^\s*Fedora ([\w.-]+)' => 'Fedora Linux ${1}',
-        '^\s*SUSE LINUX ([\w.-]+)' => 'SUSE Linux ${1}',
-        '^\s*Debian ([\w.-\/]+)' => 'Debian ${1}',
-					    );
-
   # Where to put OS names which do not have any mapping
   public static $UNKNOWN_OS_NAMES_FILE = "/tmp/pakiti-unknownOses.txt";
 

@@ -43,8 +43,7 @@ class OsGroupDao
     public function create(OsGroup &$osGroup)
     {
         $sql = "insert into OsGroup set
-            name='" . $this->db->escape($osGroup->getName()) . "',
-            regex='" . $this->db->escape($osGroup->getRegex()) . "'";
+            name='" . $this->db->escape($osGroup->getName()) . "'";
         $this->db->query($sql);
 
         # Set the newly assigned id
@@ -54,15 +53,14 @@ class OsGroupDao
     public function update(OsGroup &$osGroup)
     {
         $sql = "update OsGroup set
-            name='" . $this->db->escape($osGroup->getName()) . "',
-            regex='" . $this->db->escape($osGroup->getRegex()) . "'
+            name='" . $this->db->escape($osGroup->getName()) . "''
             where id='" . $this->db->escape($osGroup->getId()) . "'";
         $this->db->query($sql);
     }
 
     public function getById($id)
     {
-        $sql = "select id as _id, name as _name, regex as _regex from OsGroup
+        $sql = "select id as _id, name as _name from OsGroup
             where id='" . $this->db->escape($id) . "'";
         return $this->db->queryObject($sql, "OsGroup");
     }

@@ -64,7 +64,7 @@ class OsesManager extends DefaultManager
 
         $dao->unassignOsGroupsFromOs($os->getId());
         foreach ($osGroupsManager->getOsGroups() as $osGroup) {
-            if (!empty($osGroup->getRegex()) && !empty($os->getName()) && preg_match("/" . htmlspecialchars_decode($osGroup->getRegex()) . "/", $os->getName()) == 1) {
+            if (array_key_exists($osGroup->getName(), Config::$OS_GROUPS_MAPPING) && !empty(Config::$OS_GROUPS_MAPPING[$osGroup->getName()]) && !empty($os->getName()) && preg_match("/" . htmlspecialchars_decode(Config::$OS_GROUPS_MAPPING[$osGroup->getName()]) . "/", $os->getName()) == 1) {
                 $dao->assignOsToOsGroup($os->getId(), $osGroup->getId());
             }
         }
