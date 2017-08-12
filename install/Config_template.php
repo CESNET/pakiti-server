@@ -132,19 +132,19 @@ final class Config
 
     # Mapping OS groups to OSes by regular expression
     public static $OS_GROUPS_MAPPING = array(
-        "stretch" => "",
-        "jessie" => "",
-        "wheezy" => "",
-        "squeeze" => "",
-        "lenny" => "",
-        "etch" => "",
-        "sarge" => "",
-        "woody" => "",
-        "Red Hat Enterprise Linux 7" => "",
-        "Red Hat Enterprise Linux 6" => "",
-        "Red Hat Enterprise Linux 5" => "",
-        "Red Hat Enterprise Linux 4" => "",
-        "Red Hat Enterprise Linux 3" => "",
+        "stretch" => "Debian(.*) 9(.*)",
+        "jessie" => "Debian(.*) 8(.*)",
+        "wheezy" => "Debian(.*) 7(.*)",
+        "squeeze" => "Debian(.*) 6(.*)",
+        "lenny" => "Debian(.*) 5(.*)",
+        "etch" => "Debian(.*) 4(.*)",
+        "sarge" => "Debian(.*) 3.1(.*)",
+        "woody" => "Debian(.*) 3.0(.*)",
+        "Red Hat Enterprise Linux 7" => "(CentOS Linux(.*) 7(.*))|(Scientific Linux(.*) 7(.*))",
+        "Red Hat Enterprise Linux 6" => "(CentOS Linux(.*) 6(.*))|(Scientific Linux(.*) 6(.*))",
+        "Red Hat Enterprise Linux 5" => "(CentOS Linux(.*) 5(.*))|(Scientific Linux(.*) 5(.*))",
+        "Red Hat Enterprise Linux 4" => "(CentOS Linux(.*) 4(.*))|(Scientific Linux(.*) 4(.*))",
+        "Red Hat Enterprise Linux 3" => "(CentOS Linux(.*) 3(.*))|(Scientific Linux(.*) 3(.*))",
     );
 
     # OS names definiton, used for guess OS from installed packages
