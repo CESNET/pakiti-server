@@ -142,7 +142,7 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                         <?php if ($hostGroup->getId() != $_hostGroupId) { ?>
                             <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), null, $html->getUserId()); ?>
                             <li>
-                                <a href="<?php echo $html->getQueryString(array("hostGroupId" => $hostGroup->getId())); ?>">
+                                <a href="<?php echo $html->getQueryString(array("hostGroupId" => $hostGroup->getId(), "pageNum" => 0)); ?>">
                                     <?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
                                 </a>
                             </li>
