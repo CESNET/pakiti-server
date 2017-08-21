@@ -27,7 +27,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
+require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
 header("Content-Type: text/csv; charset=utf-8");
 
