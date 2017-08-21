@@ -55,7 +55,7 @@ $html = new HtmlModule($pakiti);
 </head>
 <body>
     <div class="container">
-            <h1> <span style="font-weight: bold; letter-spacing: 1px; color: #000000;"><span style="background-color: #0000ff; color: #ffffff;">P</span>akiti &nbsp;</span></h1>
+            <h1><span style="font-weight: bold; letter-spacing: 1px; color: #000000;"><span style="background-color: #337ab7; color: #ffffff; border-radius: 0.15em;">P</span>akiti &nbsp;</span></h1>
         <div class="jumbotron">
             <p>
                 Pakiti provides a monitoring and notification mechanism to check the patching status of systems.<br><br>
@@ -69,7 +69,7 @@ $html = new HtmlModule($pakiti);
                 <div class="panel panel-primary">
                     <div class="panel-heading text-center">
                         <h1><?php echo $html->getPakiti()->getManager("HostsManager")->getHostsCount(); ?></h1>
-                        Number of hosts
+                        Watched hosts
                     </div>
                 </div>
             </div>
@@ -99,7 +99,7 @@ $html = new HtmlModule($pakiti);
                             <?php $checkedPkgs = $html->getPakiti()->getManager("StatsManager")->get("checkedPkgs"); ?>
                             <?php echo ($checkedPkgs == null) ? 0 : $checkedPkgs->getValue(); ?>
                         </h1>
-                        Total number of all received packages in all reports
+                        Number of checked packages in all reports
                     </div>
                 </div>
             </div>
