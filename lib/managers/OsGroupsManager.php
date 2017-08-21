@@ -59,7 +59,7 @@ class OsGroupsManager extends DefaultManager
         return $new;
     }
 
-    private function recalculateOses(OsGroup $osGroup)
+    public function recalculateOses(OsGroup $osGroup)
     {
         Utils::log(LOG_DEBUG, "Recalculating osGroup oses", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("OsGroup");
@@ -67,7 +67,7 @@ class OsGroupsManager extends DefaultManager
 
         $dao->unassignOsesFromOsGroup($osGroup->getId());
         foreach ($osesManager->getOses() as $os) {
-            if (!empty($osGroup->getRegex()) && !empty($os->getName()) && preg_match("/" . htmlspecialchars_decode($osGroup->getRegex()) . "/", $os->getName()) == 1) {
+            if (array_key_exists($osGroup->getName(), Config::$OS_GROUPS_MAPPING) && !empty(Config::$OS_GROUPS_MAPPING[$osGroup->getName()]) && !empty($os->getName()) && preg_match("/" . htmlspecialchars_decode(Config::$OS_GROUPS_MAPPING[$osGroup->getName()]) . "/", $os->getName()) == 1) {
                 $osesManager->assignOsToOsGroup($os->getId(), $osGroup->getId());
             }
         }

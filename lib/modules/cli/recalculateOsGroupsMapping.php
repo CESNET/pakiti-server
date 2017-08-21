@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 # Copyright (c) 2017, CESNET. All rights reserved.
 #
@@ -27,58 +28,27 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
-require(realpath(dirname(__FILE__)) . '/../Html.php');
+require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-// Instantiate the HTML module
-$html = new HtmlModule($pakiti);
+$shortopts = "h";
 
-// Access control
-$html->checkPermission("oses");
+$longopts = array(
+    "help"
+);
 
+function usage() {
+  die("Usage: recalculateOsGroupsMapping [-h|--help]\n");
+}
 
-$html->setTitle("Oses");
-$html->setMenuActiveItem("oses.php");
+$opt = getopt($shortopts, $longopts);
 
-$oses = $pakiti->getManager("OsesManager")->getOses();
+if (isset($opt["h"]) || isset($opt["help"])) {
+    usage();
+}
 
-// HTML
-?>
+$manager = $pakiti->getManager("OsGroupsManager");
 
-
-<?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
-
-
-<div class="row">
-    <div class="col-md-5"></div>
-    <div class="col-md-2"></div>
-    <div class="col-md-5"></div>
-</div>
-
-<br>
-<br>
-
-<table class="table table-hover table-condensed">
-    <thead>
-        <tr>
-            <th width="300">Name</th>
-            <th>Os groups</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php foreach ($oses as $os) { ?>
-            <tr>
-                <td><?php echo $os->getName(); ?></td>
-                <td>
-                    <?php $osOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOsName($os->getName()); ?>
-                    <?php foreach ($osOsGroups as $osOsGroup) { ?>
-                        <?php echo $osOsGroup->getName(); ?>
-                    <?php } ?>
-                </td>
-            </tr>
-        <?php } ?>
-    </tbody>
-</table>
-
-
-<?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>
+$osGroups = $manager->getOsGroups();
+foreach ($osGroups as $osGroup) {
+    $manager->recalculateOses($osGroup);
+}

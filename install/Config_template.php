@@ -130,6 +130,53 @@ final class Config
     # Import users default admin value (if admin variable not defined in import)
     public static $USERS_ADMIN_DEFAULT_VALUE = true;
 
+    # Mapping OS groups to OSes by regular expression
+    public static $OS_GROUPS_MAPPING = array(
+        "stretch" => "Debian(.*) 9(.*)",
+        "jessie" => "Debian(.*) 8(.*)",
+        "wheezy" => "Debian(.*) 7(.*)",
+        "squeeze" => "Debian(.*) 6(.*)",
+        "lenny" => "Debian(.*) 5(.*)",
+        "etch" => "Debian(.*) 4(.*)",
+        "sarge" => "Debian(.*) 3.1(.*)",
+        "woody" => "Debian(.*) 3.0(.*)",
+        "Red Hat Enterprise Linux 7" => "(CentOS Linux(.*) 7(.*))|(Scientific Linux(.*) 7(.*))",
+        "Red Hat Enterprise Linux 6" => "(CentOS Linux(.*) 6(.*))|(Scientific Linux(.*) 6(.*))",
+        "Red Hat Enterprise Linux 5" => "(CentOS Linux(.*) 5(.*))|(Scientific Linux(.*) 5(.*))",
+        "Red Hat Enterprise Linux 4" => "(CentOS Linux(.*) 4(.*))|(Scientific Linux(.*) 4(.*))",
+        "Red Hat Enterprise Linux 3" => "(CentOS Linux(.*) 3(.*))|(Scientific Linux(.*) 3(.*))",
+    );
+
+    # OS names definiton, used for guess OS from installed packages
+    public static $OS_NAMES_DEFINITIONS = array(
+        "sl-release"     => "Scientific Linux",
+        "redhat-release" => "Red Hat Linux",
+        "sles-release"   => "SUSE Linux",
+        "hpc-release"    => "HPC Linux",
+        "centos-release" => "CentOS Linux",
+        "fedora-release" => "Fedora Linux",
+        "redhat-release-server" => "Red Hat Linux Server",
+        "redhat-release-client" => "Red Hat Linux Client",
+        "redhat-release-workstation" => "Red Hat Linux Workstation",
+        "redhat-release-computenode" => "Red Hat Linux ComputeNode",
+    );
+
+    # OS names mapping, used for cannonization of the OS name sent by the client. ? will be replaced by the version/release.
+    public static $OS_NAMES_MAPPING = array(
+        '^\s*ScientificSL ([\w.-]+)' => 'Scientific Linux ${1}',
+        '^\s*Scientific ([\w.-]+)' => 'Scientific Linux ${1}',
+        '^\s*ScientificCERNSLC ([\w.-]+)' => 'Scientific Linux ${1}.cern',
+        '^\s*RedHatEnterpriseServer ([\w.-]+)' => 'Red Hat Linux Server ${1}',
+        '^\s*Scientific Linux SL release ([\w.-]+) .*' => 'Scientific Linux ${1}',
+        '^\s*Scientific Linux CERN SLC release ([\w.-]+) .*' => 'Scientific Linux ${1}.cern',
+        '^\s*Ubuntu ([\w.-]+)' => 'Ubuntu ${1}',
+        '^\s*CentOS ([\w.-]+)' => 'CentOS Linux ${1}',
+        '^\s*CentOS release ([\w.-]+) .*' => 'CentOS Linux ${1}',
+        '^\s*Fedora ([\w.-]+)' => 'Fedora Linux ${1}',
+        '^\s*SUSE LINUX ([\w.-]+)' => 'SUSE Linux ${1}',
+        '^\s*Debian ([\w.-\/]+)' => 'Debian ${1}',
+    );
+
 }
 
 ?>
