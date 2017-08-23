@@ -96,12 +96,11 @@ class OsGroupDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    public function getIdsByOsName($osName)
+    public function getIdsByOsId($osId)
     {
         $sql = "select OsGroup.id from OsGroup
             left join OsOsGroup on OsGroup.id = OsOsGroup.osGroupId
-            left join Os on OsOsGroup.osId = Os.id
-            where Os.name='" . $this->db->escape($osName) . "'";
+            where OsOsGroup.osId='" . $this->db->escape($osId) . "'";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 

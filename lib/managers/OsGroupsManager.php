@@ -114,23 +114,16 @@ class OsGroupsManager extends DefaultManager
         return $dao->getIdByName($name);
     }
 
-    public function getOsGroupsByOsName($osName)
+    public function getOsGroupsByOs($osId)
     {
-        Utils::log(LOG_DEBUG, "Getting osGroups by os name[$osName]", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Getting osGroups by os[$osId]", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("OsGroup");
-        $ids = $dao->getIdsByOsName($osName);
+        $ids = $dao->getIdsByOsId($osId);
 
         $osGroups = array();
         foreach ($ids as $id) {
             array_push($osGroups, $dao->getById($id));
         }
         return $osGroups;
-    }
-
-    public function getOsGroupsIdsByOsName($osName)
-    {
-        Utils::log(LOG_DEBUG, "Getting osGroups IDs by os name[$osName]", __FILE__, __LINE__);
-        $dao = $this->getPakiti()->getDao("OsGroup");
-        return $dao->getIdsByOsName($osName);
     }
 }
