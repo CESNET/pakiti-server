@@ -122,7 +122,9 @@ final class Config
     );
 
     # Hosts gui Your favorite settings
-    public static $GUI_HOSTS_FAVORITE_FILTERS = "tag=true&listTaggedCves=true&activeIn=1";
+    public static $GUI_HOSTS_FAVORITE_FILTERS = array(
+        "Favorite filter settings" => "tag=true&listTaggedCves=true&activeIn=%2B1d"
+    );
 
     # Names of json variables for import users
     public static $USERS_UID = "login";

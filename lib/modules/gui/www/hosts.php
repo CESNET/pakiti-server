@@ -45,6 +45,9 @@ if ($_tag == "true") {
 $_cveName = $html->getHttpGetVar("cveName", null);
 $_activeIn = $html->getHttpGetVar("activeIn", null);
 $_listTaggedCves = $html->getHttpGetVar("listTaggedCves", false);
+if ($_listTaggedCves !== false) {
+    $_listTaggedCves = true;
+}
 
 // Process operations
 switch (Utils::getHttpPostVar("act")) {
@@ -95,16 +98,16 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
         <form>
             <input type="hidden" name="hostGroupId" value="<?php echo $_hostGroupId; ?>" />
             <div class="input-group">
-                <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php if ($_search != null) echo $_search; ?>" style="width: 34%;">
+                <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php if ($_search != null) echo $_search; ?>" style="width: 28%;">
 
-                <select class="form-control" name="cveName" id="cveName" onchange="submit();" style="width: 33%;">
+                <select class="form-control" name="cveName" id="cveName" onchange="submit();" style="width: 28%;">
                     <option value="">CVE (no matter)</option>
                     <?php foreach ($cveNames as $cveName) { ?>
                         <option value="<?php echo $cveName; ?>"<?php if ($_cveName === $cveName) echo ' selected'; ?>><?php echo $cveName; ?></option>
                     <?php } ?>
                 </select>
 
-                <select class="form-control" name="tag" id="tag" onchange="submit();" style="width: 33%;">
+                <select class="form-control" name="tag" id="tag" onchange="submit();" style="width: 28%;">
                     <option value="">Tag (no matter)</option>
                     <option value="true"<?php if ($_tag === true) echo ' selected'; ?>>Any tag</option>
                     <?php foreach ($tagNames as $tagName) { ?>
@@ -112,18 +115,26 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                     <?php } ?>
                 </select>
 
+                <input name="activeIn" type="text" class="form-control" placeholder="Active in" title="for example: inactive 2 days -> -2d, active this week -> +1w" value="<?php if ($_activeIn != null) echo $_activeIn; ?>" style="width: 16%;">
+
                 <span class="input-group-btn">
-                    <button class="btn btn-default" type="button" title="Your favorite settings" onclick="location.href='?<?php echo Config::$GUI_HOSTS_FAVORITE_FILTERS; ?>';">
-                        <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
-                    </button>
                     <button class="btn btn-default" type="submit">
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                     </button>
                 </span>
             </div>
+            <div class="checkbox">
+                <label>
+                    <input name="listTaggedCves" type="checkbox" <?php if($_listTaggedCves) echo ' checked'; ?> onchange="submit();"> Show tagged CVEs
+                </label>
+            </div>
+            <br>
+            <?php foreach (Config::$GUI_HOSTS_FAVORITE_FILTERS as $name => $value) { ?>
+                <button class="btn btn-default" type="button" onclick="location.href='?<?php echo $value; ?>';">
+                    <span class="glyphicon glyphicon-star" aria-hidden="true"></span> <?php echo $name; ?>
+                </button>
+            <?php } ?>
         </form>
-        <?php if($_listTaggedCves) echo 'List tagged CVEs<br>'; ?>
-        <?php if($_activeIn != null) echo 'Only hosts with report in the last ' . $_activeIn. ' day' . (($_activeIn != 1) ? 's' : '') . '<br>'; ?>
     </div>
     <div class="col-md-2">
         <?php if($_hostGroupId != -1) { ?>
