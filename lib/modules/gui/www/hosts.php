@@ -44,6 +44,10 @@ if ($_tag == "true") {
 }
 $_cveName = $html->getHttpGetVar("cveName", null);
 $_activeIn = $html->getHttpGetVar("activeIn", null);
+$_listTaggedCves = $html->getHttpGetVar("listTaggedCves", false);
+if ($_listTaggedCves !== false) {
+    $_listTaggedCves = true;
+}
 
 // Process operations
 switch (Utils::getHttpPostVar("act")) {
@@ -73,9 +77,9 @@ switch (Utils::getHttpPostVar("act")) {
 $html->setTitle("List of hosts");
 $html->setMenuActiveItem("hosts.php");
 $html->setDefaultSorting("lastReport");
-$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $activeIn, $html->getUserId()));
+$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $_activeIn, $html->getUserId()));
 
-$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $activeIn, $html->getUserId());
+$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $_activeIn, $html->getUserId());
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $html->getUserId());
 $hostGroupTmp = new HostGroup(); $hostGroupTmp->setName("All host groups"); $hostGroups[] = $hostGroupTmp;
 $selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupById($_hostGroupId);
@@ -94,16 +98,16 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
         <form>
             <input type="hidden" name="hostGroupId" value="<?php echo $_hostGroupId; ?>" />
             <div class="input-group">
-                <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php if ($_search != null) echo $_search; ?>" style="width: 34%;">
+                <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php if ($_search != null) echo $_search; ?>" style="width: 28%;">
 
-                <select class="form-control" name="cveName" id="cveName" onchange="submit();"  style="width: 33%;">
+                <select class="form-control" name="cveName" id="cveName" onchange="submit();" style="width: 28%;">
                     <option value="">CVE (no matter)</option>
                     <?php foreach ($cveNames as $cveName) { ?>
                         <option value="<?php echo $cveName; ?>"<?php if ($_cveName === $cveName) echo ' selected'; ?>><?php echo $cveName; ?></option>
                     <?php } ?>
                 </select>
 
-                <select class="form-control" name="tag" id="tag" onchange="submit();" style="width: 33%;">
+                <select class="form-control" name="tag" id="tag" onchange="submit();" style="width: 28%;">
                     <option value="">Tag (no matter)</option>
                     <option value="true"<?php if ($_tag === true) echo ' selected'; ?>>Any tag</option>
                     <?php foreach ($tagNames as $tagName) { ?>
@@ -111,12 +115,25 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                     <?php } ?>
                 </select>
 
+                <input name="activeIn" type="text" class="form-control" placeholder="Active in" title="for example: inactive 2 days -> -2d, active this week -> +1w" value="<?php if ($_activeIn != null) echo $_activeIn; ?>" style="width: 16%;">
+
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="submit">
                         <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
                     </button>
                 </span>
             </div>
+            <div class="checkbox">
+                <label>
+                    <input name="listTaggedCves" type="checkbox" <?php if($_listTaggedCves) echo ' checked'; ?> onchange="submit();"> Show tagged CVEs
+                </label>
+            </div>
+            <br>
+            <?php foreach (Config::$GUI_HOSTS_FAVORITE_FILTERS as $name => $value) { ?>
+                <button class="btn btn-default" type="button" onclick="location.href='?<?php echo $value; ?>';">
+                    <span class="glyphicon glyphicon-star" aria-hidden="true"></span> <?php echo $name; ?>
+                </button>
+            <?php } ?>
         </form>
     </div>
     <div class="col-md-2">
@@ -202,9 +219,11 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                 <?php } ?>
             </th>
             <th>
-                <a href="<?php echo $html->getQueryString(array("sortBy" => "taggedCves")); ?>">#TaggedCVEs</a>
-                <?php if ($html->getSortBy() == "taggedCves") { ?>
-                    <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+                <?php if ($_listTaggedCves) { echo 'TaggedCVEs'; } else { ?>
+                    <a href="<?php echo $html->getQueryString(array("sortBy" => "taggedCves")); ?>">#TaggedCVEs</a>
+                    <?php if ($html->getSortBy() == "taggedCves") { ?>
+                        <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
+                    <?php } ?>
                 <?php } ?>
             </th>
             <th>#Reports</th>
@@ -244,7 +263,13 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                     <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a>
                 </td>
                 <td>
-                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
+                    <?php if ($_listTaggedCves) { ?>
+                        <?php foreach ($html->getPakiti()->getManager("CvesManager")->getCvesNamesForHost($host->getId(), true) as $cveName) { ?>
+                            <a href="cve.php?cveName=<?php echo $cveName; ?>" class="text-danger"><?php echo $cveName; ?></a><br>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <a href="cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
+                    <?php } ?>
                 </td>
                 <td>
                     <a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>
@@ -258,7 +283,7 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                         data-toggle="modal" data-target="#myModal">Delete</button>
                 </td>
             </tr>
-        <?php } ?> 
+        <?php } ?>
     </tbody>
 </table>
 

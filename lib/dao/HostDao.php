@@ -196,7 +196,38 @@ class HostDao {
       if (!$tmpJoinReport) {
         $join[] = "left join Report on Host.lastReportId = Report.id";
       }
-      $where[] = "Report.receivedOn > date_sub(now(), interval ".$this->db->escape($activeIn)." day)";
+      if (preg_match('/^(\+|-|)(\d+)(.|)$/', trim($activeIn), $matches) === 1) {
+        switch($matches[1]){
+          case "-":
+            $operator = "<";
+            break;
+          default:
+            $operator = ">";
+            break;
+        }
+        $number = $matches[2];
+        switch($matches[3]){
+          case "s":
+            $interval = "second";
+            break;
+          case "m":
+            $interval = "minute";
+            break;
+          case "h":
+            $interval = "hour";
+            break;
+          case "w":
+            $interval = "week";
+            break;
+          case "y":
+            $interval = "year";
+            break;
+          default:
+            $interval = "day";
+            break;
+        }
+        $where[] = "Report.receivedOn ".$operator." date_sub(now(), interval ".$number." ".$interval.")";
+      }
     }
 
     if($userId != -1) {
