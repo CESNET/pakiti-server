@@ -176,6 +176,8 @@ class CveDao
     {
         $select = "distinct(Cve.name)";
         $from = "Cve";
+        $join = null;
+        $where = null;
         $order = "Cve.name DESC";
 
         if ($used !== null) {
