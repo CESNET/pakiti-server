@@ -41,6 +41,7 @@ $html->setTitle("Oses");
 $html->setMenuActiveItem("oses.php");
 
 $oses = $pakiti->getManager("OsesManager")->getOses();
+$osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
 
 // HTML
 ?>
@@ -57,11 +58,11 @@ $oses = $pakiti->getManager("OsesManager")->getOses();
 
 <br>
 <br>
-
+<h1>Oses</h1>
 <table class="table table-hover table-condensed">
     <thead>
         <tr>
-            <th width="300">Name</th>
+            <th width="50%">Name</th>
             <th>Os groups</th>
         </tr>
     </thead>
@@ -70,11 +71,31 @@ $oses = $pakiti->getManager("OsesManager")->getOses();
             <tr>
                 <td><?php echo $os->getName(); ?></td>
                 <td>
-                    <?php $osOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOsName($os->getName()); ?>
+                    <?php $osOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOs($os->getId()); ?>
                     <?php foreach ($osOsGroups as $osOsGroup) { ?>
                         <?php echo $osOsGroup->getName(); ?>
                     <?php } ?>
                 </td>
+            </tr>
+        <?php } ?>
+    </tbody>
+</table>
+
+<br>
+<br>
+<h1>OS groups</h1>
+<table class="table table-hover table-condensed">
+    <thead>
+        <tr>
+            <th width="50%">Name</th>
+            <th>Regex</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($osGroups as $osGroup) { ?>
+            <tr>
+                <td><?php echo $osGroup->getName(); ?></td>
+                <td><?php echo Config::$OS_GROUPS_MAPPING[$osGroup->getName()]; ?></td>
             </tr>
         <?php } ?>
     </tbody>
