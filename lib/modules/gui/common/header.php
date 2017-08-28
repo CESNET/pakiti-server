@@ -64,7 +64,7 @@
             <div class="container-fluid">
                 <div class="navbar-header">
                     <a class="navbar-brand" href="hosts.php">
-                        <span style="font-weight: bold; letter-spacing: 1px; color: #ffffff;"><span style="background-color: #0000ff; color: #ffffff;">P</span>akiti &nbsp;</span>
+                    <span style="font-weight: bold; letter-spacing: 1px; color: #ffffff;"><span style="background-color: #337ab7; color: #ffffff; border-radius: 0.15em;">P</span>akiti &nbsp;</span>
                     </a>
                 </div>
                 <div class="navbar-text navbar-right">
