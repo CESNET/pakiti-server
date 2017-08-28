@@ -31,20 +31,20 @@ create table `Os` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
 	primary key (`id`),
-	unique key `name` (`name`)
+	unique key (`name`)
 )ENGINE=INNODB;
 
 create table `OsGroup` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
 	primary key (`id`),
-	unique key `name` (`name`)
+	unique key (`name`)
 )ENGINE=INNODB;
 
 create table `OsOsGroup` (
 	`osId` integer(10) not null,
 	`osGroupId` integer(10) not null,
-	unique key `unique` (`osId`, `osGroupId`),
+	primary key (`osId`, `osGroupId`),
 	foreign key (`osId`) references Os(`id`) on delete cascade,
 	foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 )ENGINE=INNODB;
@@ -55,14 +55,14 @@ create table `Arch` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(10) not null,
 	primary key (`id`),
-	unique key `name` (`name`)
+	unique key (`name`)
 )ENGINE=INNODB;
 
 create table `Domain` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
 	primary key (`id`),
-	unique key `name` (`name`)
+	unique key (`name`)
 )ENGINE=INNODB;
 
 create table `HostGroup` (
@@ -72,7 +72,7 @@ create table `HostGroup` (
 	`contact` varchar(1023) not null,
 	`note` varchar(1023) not null,
 	primary key (`id`),
-	unique key `name` (`name`)
+	unique key (`name`)
 )ENGINE=INNODB;
 
 create table `Host` (
@@ -96,13 +96,14 @@ create table `Host` (
 	foreign key (`osId`) references Os(`id`)  on delete cascade,
 	foreign key (`archId`) references Arch(`id`)  on delete cascade,
 	foreign key (`domainId`) references Domain(`id`) on delete cascade,
-	foreign key (`lastReportId`) references Report(`id`)
+	foreign key (`lastReportId`) references Report(`id`),
+	unique key `unique` (`hostname`, `ip`, `reporterHostname`, `reporterIp`)
 )ENGINE=INNODB;
 
 create table `HostHostGroup` (
 	`hostId` integer(10) not null,
 	`hostGroupId` integer(10) not null,
-	unique key `unique` (`hostId`, `hostGroupId`),
+	primary key (`hostId`, `hostGroupId`),
 	foreign key (`hostId`) references Host(`id`) on delete cascade,
 	foreign key (`hostGroupId`) references HostGroup(`id`) on delete cascade
 )ENGINE=INNODB;
@@ -110,7 +111,7 @@ create table `HostHostGroup` (
 create table `ReportHost` (
 	`hostId` integer(10) not null,
 	`reportId` integer(10) not null,
-	unique key `unique` (`hostId`, `reportId`),
+	primary key (`hostId`, `reportId`),
 	foreign key (`hostId`) references Host(`id`) on delete cascade,
 	foreign key (`reportId`) references Report(`id`) on delete cascade
 )ENGINE=INNODB;
@@ -124,7 +125,7 @@ create table `Pkg` (
 	`type` varchar(10) not null,
 	primary key (`id`),
 	foreign key (`arch`) references Arch(`name`) on delete cascade,
-	unique key (`name`, `version`, `release`, `arch`)
+	unique key `unique` (`name`, `version`, `release`, `arch`)
 )ENGINE=INNODB;
 
 create table `InstalledPkg` (
@@ -163,7 +164,7 @@ create table `VdsSubSourceDef` (
 	`lastSubSourceDefHash` char(32),
 	`vdsSubSourceId` integer(10) not null,
 	primary key (`id`),
-	unique key `unique` (`name`),
+	unique key (`name`),
 	foreign key (`vdsSubSourceId`) references VdsSubSource(`id`) on delete cascade
 )ENGINE=INNODB;
 
@@ -172,13 +173,14 @@ create table `Cve` (
 	`name` varchar(63) not null,
 	`cveDefId` integer(10) not null,
 	primary key (`id`),
-	unique key `unique` (`name`, `cveDefId`)
+	unique key `unique` (`name`, `cveDefId`),
+	foreign key (`cveDefId`) references CveDef(`id`) on delete cascade
 )ENGINE=INNODB;
 
 create table `CveDef` (
 	`id` integer(10) not null auto_increment,
 	`definitionId` varchar(63) not null,
-	`title` varchar(128) not null,
+	`title` varchar(255) not null,
 	`refUrl` varchar(255) not null,
 	`vdsSubSourceDefId` integer(10) not null,
 	primary key (`id`),
@@ -190,7 +192,7 @@ create table `PkgCveDef` (
 	`pkgId` integer(10) not null,
 	`cveDefId` integer(10) not null,
 	`osGroupId` integer(10) not null,
-	unique key `unique` (`pkgId`, `cveDefId`, `osGroupId`),
+	primary key (`pkgId`, `cveDefId`, `osGroupId`),
 	foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
 	foreign key (`cveDefId`) references CveDef(`id`) on delete cascade,
 	foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
@@ -255,7 +257,7 @@ create table `User` (
 create table `UserHostGroup` (
 	`userId` integer(10) not null,
 	`hostGroupId` integer(10) not null,
-	unique key `unique` (`userId`, `hostGroupId`),
+	primary key (`userId`, `hostGroupId`),
 	foreign key (`userId`) references User(`id`) on delete cascade,
 	foreign key (`hostGroupId`) references HostGroup(`id`) on delete cascade
 )ENGINE=INNODB;
@@ -263,7 +265,7 @@ create table `UserHostGroup` (
 create table `UserHost` (
 	`userId` integer(10) not null,
 	`hostId` integer(10) not null,
-	unique key `unique` (`userId`, `hostId`),
+	primary key (`userId`, `hostId`),
 	foreign key (`userId`) references User(`id`) on delete cascade,
 	foreign key (`hostId`) references Host(`id`) on delete cascade
 )ENGINE=INNODB;
