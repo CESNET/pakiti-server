@@ -27,10 +27,11 @@ deb:
 	@cp pakiti-client pakiti3-client/usr/bin/pakiti3-client
 	@echo "$$CONTROL" > pakiti3-client/DEBIAN/control
 	@dpkg-deb --build pakiti3-client
+	@mv pakiti3-client.deb pakiti3-client_3.0-2_all.deb
 # removes no longer necessary folder
 	@rm -rf pakiti3-client
 	@echo "debian package was successfully built"
 
 clean:
-	@rm -f pakiti3-client.deb
+	@rm -f pakiti3-client_3.0-2_all.deb
 	@echo "successfully cleaned"
