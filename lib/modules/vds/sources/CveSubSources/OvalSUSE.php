@@ -163,9 +163,9 @@ class OvalSUSE extends SubSource implements ISubSource
             foreach ($criterions as $criterion) {
                 $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 //print "Comment: $comment\n";
-                if (strpos($comment, "SUSE") !== false) {
-                    preg_match("/^SUSE (.*) is installed$/", $comment, $suse_release);
-                    $os = 'SUSE ' . $suse_release[1];
+                if (strpos($comment, "SUSE") === 0 || strpos($comment, "openSUSE") === 0) {
+                    preg_match("/^(.*) is installed$/", $comment, $suse_release);
+                    $os = $suse_release[1];
                     //print "Got OS: $os\n";
                 } elseif (strpos($comment, "is installed")) {
                     preg_match("/^([^ ]+)-([^-]+)-([^-]+) is installed$/", $comment, $results);
@@ -239,9 +239,9 @@ class OvalSUSE extends SubSource implements ISubSource
             foreach ($criterions as $criterion) {
                 $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 //print "Comment: $comment\n";
-                if (strpos($comment, "SUSE") !== false) {
-                    preg_match("/^SUSE (.*) is installed$/", $comment, $suse_release);
-                    $os = 'SUSE ' . $suse_release[1];
+                if (strpos($comment, "SUSE") === 0 || strpos($comment, "openSUSE") === 0) {
+                    preg_match("/^(.*) is installed$/", $comment, $suse_release);
+                    $os = $suse_release[1];
                     //print "Got OS: $os\n";
                 } elseif (strpos($comment, "is installed")) {
                     preg_match("/^([^ ]+)-([^-]+)-([^-]+) is installed$/", $comment, $results);
