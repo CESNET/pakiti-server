@@ -125,6 +125,6 @@ class Acl
             return true;
         }
 
-        return in_array($source, ["hosts", "host"]);
+        return in_array($source, ["hosts", "host", "groups"]);
     }
 }
