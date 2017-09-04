@@ -22,6 +22,18 @@
     border-color: #5cb85c;
 }
 
+.btn-info {
+    color: #17a2b8;
+    background-color: #fff;
+    border-color: #17a2b8;
+}
+
+.btn-info:hover {
+    color: #fff;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
 .text-danger {
     color: #d9534f;
 }
@@ -40,4 +52,8 @@ a:hover {
 
 .pointer {
     cursor: pointer;
+}
+
+.background-grey {
+    background-color: #f8f8f8;
 }

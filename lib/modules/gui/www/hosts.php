@@ -43,7 +43,7 @@ if ($_tag == "true") {
     $_tag = true;
 }
 $_cveName = $html->getHttpGetVar("cveName", null);
-$_activeIn = $html->getHttpGetVar("activeIn", null);
+$_activity = $html->getHttpGetVar("activity", null);
 $_listTaggedCves = $html->getHttpGetVar("listTaggedCves", false);
 if ($_listTaggedCves !== false) {
     $_listTaggedCves = true;
@@ -59,127 +59,118 @@ switch (Utils::getHttpPostVar("act")) {
         $html->setError("Cannot delete host, host with id " . Utils::getHttpPostVar("id") . " doesn't exist or access denied");
     }
     break;
-  case "edit":
-    $hostGroup = $pakiti->getManager("HostGroupsManager")->getHostGroupById(Utils::getHttpPostVar("id"), $html->getUserId());
-    if ($hostGroup != null) {
-        $hostGroup->setName(Utils::getHttpPostVar("name"));
-        $hostGroup->setUrl(Utils::getHttpPostVar("url"));
-        $hostGroup->setContact(Utils::getHttpPostVar("contact"));
-        $hostGroup->setNote(Utils::getHttpPostVar("note"));
-        $pakiti->getManager("HostGroupsManager")->storeHostGroup($hostGroup);
-    } else {
-        $html->setError("Cannot delete hostGroup, hostGroup with id " . Utils::getHttpPostVar("id") . " doesn't exist or access denied");
-    }
-    break;
 }
 
+$hostsCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $_activity, $html->getUserId());
 
 $html->setTitle("List of hosts");
 $html->setMenuActiveItem("hosts.php");
 $html->setDefaultSorting("lastReport");
-$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $_activeIn, $html->getUserId()));
+$html->setNumOfEntities($hostsCount);
 
-$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $_activeIn, $html->getUserId());
+$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $_activity, $html->getUserId());
+
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $html->getUserId());
-$hostGroupTmp = new HostGroup(); $hostGroupTmp->setName("All host groups"); $hostGroups[] = $hostGroupTmp;
-$selectedHostGroup = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroupById($_hostGroupId);
-
 $cveNames = $pakiti->getManager("CvesManager")->getCvesNames(true);
 $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
+$activity = array("Last 24 hours" => "24h", "Last 2 days" => "2d", "Last week" => "1w", "Inactive 48 hours" => "-48h", "Inactive 7 days" => "-7d");
+
 // HTML
 ?>
 
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
 
-
 <div class="row">
-    <div class="col-md-5">
-        <form>
-            <input type="hidden" name="hostGroupId" value="<?php echo $_hostGroupId; ?>" />
-            <div class="input-group">
-                <input name="search" type="text" class="form-control" placeholder="Search by hostname..." value="<?php if ($_search != null) echo $_search; ?>" style="width: 28%;">
-
-                <select class="form-control" name="cveName" id="cveName" onchange="submit();" style="width: 28%;">
-                    <option value="">CVE (no matter)</option>
-                    <?php foreach ($cveNames as $cveName) { ?>
-                        <option value="<?php echo $cveName; ?>"<?php if ($_cveName === $cveName) echo ' selected'; ?>><?php echo $cveName; ?></option>
-                    <?php } ?>
-                </select>
-
-                <select class="form-control" name="tag" id="tag" onchange="submit();" style="width: 28%;">
-                    <option value="">Tag (no matter)</option>
-                    <option value="true"<?php if ($_tag === true) echo ' selected'; ?>>Any tag</option>
-                    <?php foreach ($tagNames as $tagName) { ?>
-                        <option value="<?php echo $tagName; ?>"<?php if ($_tag === $tagName) echo ' selected'; ?>><?php echo $tagName; ?></option>
-                    <?php } ?>
-                </select>
-
-                <input name="activeIn" type="text" class="form-control" placeholder="Active in" title="for example: inactive 2 days -> -2d, active this week -> +1w" value="<?php if ($_activeIn != null) echo $_activeIn; ?>" style="width: 16%;">
-
-                <span class="input-group-btn">
-                    <button class="btn btn-default" type="submit">
-                        <span class="glyphicon glyphicon-search" aria-hidden="true"></span>
-                    </button>
-                </span>
-            </div>
-            <div class="checkbox">
-                <label>
-                    <input name="listTaggedCves" type="checkbox" <?php if($_listTaggedCves) echo ' checked'; ?> onchange="submit();"> Show tagged CVEs
-                </label>
-            </div>
-            <br>
-            <?php foreach (Config::$GUI_HOSTS_FAVORITE_FILTERS as $name => $value) { ?>
-                <button class="btn btn-default" type="button" onclick="location.href='?<?php echo $value; ?>';">
-                    <span class="glyphicon glyphicon-star" aria-hidden="true"></span> <?php echo $name; ?>
+    <div class="col-md-12 text-center">
+        Shortcuts:
+            <?php foreach (Config::$GUI_HOSTS_FAVORITE_FILTERS as $key => $value) { ?>
+                <button class="btn btn-info" type="button" onclick="location.href='?<?php echo $value; ?>';">
+                    <?php echo $key; ?>
                 </button>
             <?php } ?>
-        </form>
-    </div>
-    <div class="col-md-2">
-        <?php if($_hostGroupId != -1) { ?>
-            <button class="btn btn-success btn-block" type="submit" data-toggle="modal" data-target="#edit">Edit host group</button>
-        <?php } ?>
-    </div>
-    <div class="col-md-2"></div>
-    <div class="col-md-3">
-        <div class="text-right">
-            <div class="dropdown">
-                <button class="btn btn-default dropdown-toggle btn-block" type="button" id="hostGroups" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                    <?php foreach ($hostGroups as $hostGroup) { ?> 
-                    <?php if ($hostGroup->getId() == $_hostGroupId) { ?>
-                        <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), null, $html->getUserId()); ?>
-                            <div class="text-left"><?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
-                        <?php } ?>
-                    <?php } ?>
-                    <span class="caret"></span></div>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-right col-xs-12" aria-labelledby="hostGroups">
-                    <?php foreach ($hostGroups as $hostGroup) { ?> 
-                        <?php if ($hostGroup->getId() != $_hostGroupId) { ?>
-                            <?php $hostCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostGroup->getId(), null, $html->getUserId()); ?>
-                            <li>
-                                <a href="<?php echo $html->getQueryString(array("hostGroupId" => $hostGroup->getId(), "pageNum" => 0)); ?>">
-                                    <?php echo $hostGroup->getName(); ?> (<?php echo $hostCount; ?> host<?php if($hostCount != 1) echo 's'; ?>)
-                                </a>
-                            </li>
-                        <?php } ?>
-                    <?php } ?>
-                </ul>
-            </div>
-        </div>
     </div>
 </div>
-
-<?php if($selectedHostGroup != null) { ?>
-    <div class="row">
-        <div class="col-md-12 text-right">
-            <?php echo ($selectedHostGroup->getUrl() != "") ? '<a href="'.$selectedHostGroup->getUrl() . '" target="_blank">'.$selectedHostGroup->getUrl() . '</a><br>' : '' ?>
-            <?php echo ($selectedHostGroup->getContact() != "") ? $selectedHostGroup->getContact() . "<br>" : "" ?>
-            <?php echo ($selectedHostGroup->getNote() != "") ? $selectedHostGroup->getNote() . "<br>" : "" ?>
+<br>
+<form>
+    <div class="row background-grey">
+        <div class="col-md-1 col-lg-2 col-sm-0"></div>
+        <div class="col-md-8 col-lg-6 col-sm-10"><h3>Search Term:</h3></div>
+        <div class="col-md-3 col-lg-4 col-sm-2"></div>
+    </div>
+    <div class="row background-grey">
+        <div class="col-md-1 col-lg-2 col-sm-0"></div>
+        <div class="col-md-8 col-lg-6 col-sm-10">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <input type="text" class="form-control" name="search" id="search" value="<?php if ($_search != null) echo $_search; ?>">
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label for="cveName">CVE</label>
+                        <select class="form-control" name="cveName" id="cveName">
+                            <option value="">All</option>
+                            <?php foreach ($cveNames as $cveName) { ?>
+                                <option value="<?php echo $cveName; ?>"<?php if ($_cveName === $cveName) echo ' selected'; ?>><?php echo $cveName; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label for="tag">CVE Tag</label>
+                        <select class="form-control" name="tag" id="tag">
+                            <option value="">All</option>
+                            <option value="true"<?php if ($_tag === true) echo ' selected'; ?>>Any tag</option>
+                            <?php foreach ($tagNames as $tagName) { ?>
+                                <option value="<?php echo $tagName; ?>"<?php if ($_tag === $tagName) echo ' selected'; ?>><?php echo $tagName; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label for="activity">Activity</label>
+                        <select class="form-control" name="activity" id="activity">
+                            <option value="">All</option>
+                            <?php foreach ($activity as $key => $value) { ?>
+                                <option value="<?php echo $value; ?>"<?php if ($value == $_activity) echo ' selected'; ?>><?php echo $key; ?></option>
+                            <?php } ?>
+                            <?php if(!in_array($_activity, $activity) && $_activity != null){ ?>
+                                <option value="<?php echo $_activity; ?>" selected><?php echo $_activity; ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="form-group">
+                        <label for="hostGroupId">Host group</label>
+                        <select class="form-control" name="hostGroupId" id="hostGroupId">
+                            <option value="">All</option>
+                            <?php foreach ($hostGroups as $hostGroup) { ?>
+                                <option value="<?php echo $hostGroup->getId(); ?>"<?php if ($hostGroup->getId() == $_hostGroupId) echo ' selected'; ?>><?php echo $hostGroup->getName(); ?></option>
+                            <?php } ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-lg-2 col-sm-2">
+            <button class="btn btn-primary btn-block" type="submit">
+                <span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search
+            </button>
+        </div>
+        <div class="col-md-1 col-lg-2 col-sm-0"></div>
+        <div class="col-sm-12">
+            <br><br>
         </div>
     </div>
-<?php } ?>
+</form>
+<div>
+    <h4><?php echo $hostsCount; ?> host<?php if($hostsCount != 1) echo 's'; ?> found</h4>
+</div>
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/pagination.php"); ?>
 
@@ -225,6 +216,7 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                         <span class="glyphicon glyphicon-menu-up" aria-hidden="true"></span>
                     <?php } ?>
                 <?php } ?>
+                <input name="listTaggedCves" type="checkbox" title="show list of CVEs" onchange="location.href='<?php echo $html->getQueryString(array("listTaggedCves" => ($_listTaggedCves ? "" : "true"))); ?>';" <?php if($_listTaggedCves) echo ' checked'; ?>>
             </th>
             <th>#Reports</th>
             <th>
@@ -248,7 +240,7 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
                 </td>
                 <td>
                     <?php foreach ($hostGroups as $hostGroup) { ?> 
-                        <a href="hosts.php?hostGroupId=<?php echo $hostGroup->getId(); ?>"><?php echo $hostGroup->getName(); ?> </a>
+                        <?php echo $hostGroup->getName(); ?> 
                     <?php } ?> 
                 </td>
                 <td><?php echo $host->getOs()->getName() ?></td>
@@ -310,47 +302,5 @@ $tagNames = $pakiti->getManager("CveTagsManager")->getTagNames();
     </div>
 </div>
 
-<?php if($selectedHostGroup != null) { ?>
-    <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="editLabel">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="editLabel">Edit host groupp</h4>
-                </div>
-                <div class="modal-body">
-                    <form name="editForm" method="post">
-                        <input type="hidden" name="act" value="edit">
-                        <input type="hidden" name="id" value="<?php echo $_hostGroupId; ?>">
-                        <input type="hidden" name="name" value="<?php echo $selectedHostGroup->getName(); ?>">
-                        <div class="form-group">
-                            <label for="name">Name</label>
-                            <input type="text" class="form-control" id="name" value="<?php echo $selectedHostGroup->getName(); ?>" disabled>
-                        </div>
-                        <div class="form-group">
-                            <label for="url">URL</label>
-                            <input type="text" class="form-control" name="url" id="url" value="<?php echo $selectedHostGroup->getUrl(); ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="contact">Contact</label>
-                            <input type="text" class="form-control" name="contact" id="contact" value="<?php echo $selectedHostGroup->getContact(); ?>">
-                        </div>
-                        <div class="form-group">
-                            <label for="note">Note</label>
-                            <input type="text" class="form-control" name="note" id="note" value="<?php echo $selectedHostGroup->getNote(); ?>">
-                        </div>
-                        <div class="text-right">
-                            <button type="submit" class="btn btn-success">Save</button>
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    * Click on host or hostgroup to delete permission.
-                </div>
-            </div>
-        </div>
-    </div>
-<?php } ?>
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/footer.php"); ?>
