@@ -41,7 +41,7 @@ $html = new HtmlModule($pakiti);
 <head>
     <meta charset="utf-8">
 
-    <title><?php echo Config::$PAKITI_NAME; ?></title>
+    <title><?php echo Config::$PAKITI_NAME; ?> Pakiti instance</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -62,7 +62,15 @@ $html = new HtmlModule($pakiti);
                 Once installed on a client host, Pakiti will send every night the list of installed packages to the relevant Pakiti Server(s). After the client sends the list of installed packages, Pakiti server compares the versions against versions which Pakiti server obtains from OVAL definitions from MITRE. Optionally client reports back the packages which has marked CVE by tag.<br><br>
                 Pakiti has a web based GUI which provides a list of the registered systems. This helps the system admins keep multiple machines up-to-date and prevent unpatched machines to be kept silently on the network.
             </p>
-            <p><a class="btn btn-primary btn-lg" href="https://github.com/CESNET/pakiti3" role="button">Learn more</a></p>
+            <p class="text-right">
+                <a class="btn btn-primary btn-lg" href="https://github.com/CESNET/pakiti3" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Github</a>
+                <a class="btn btn-primary btn-lg" href="https://github.com/CESNET/pakiti3/releases" role="button"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a>
+            </p>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h1><?php echo Config::$PAKITI_NAME; ?> Pakiti instance</h1>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-4">
@@ -100,6 +108,14 @@ $html = new HtmlModule($pakiti);
                             <?php echo ($checkedPkgs == null) ? 0 : $checkedPkgs->getValue(); ?>
                         </h1>
                         Number of checked packages in all reports
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading text-center">
+                        <h1><a href="hosts.php">Enter Pakiti</a></h1>
+                        <br>
                     </div>
                 </div>
             </div>
