@@ -104,7 +104,7 @@ $activity = array("Last 24 hours" => "24h", "Last 2 days" => "2d", "Last week" =
             <div class="row">
                 <div class="col-sm-12">
                     <div class="form-group">
-                        <input type="text" class="form-control" name="search" id="search">
+                        <input type="text" class="form-control" name="search" id="search" value="<?php if ($_search != null) echo $_search; ?>">
                     </div>
                 </div>
                 <div class="col-sm-3">
