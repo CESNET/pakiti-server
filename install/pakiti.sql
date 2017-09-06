@@ -49,8 +49,6 @@ create table `OsOsGroup` (
 	foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 )ENGINE=INNODB;
 
-insert into OsGroup (`name`, `regex`) values ('unknown', '');
-
 create table `Arch` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(10) not null,
@@ -168,15 +166,6 @@ create table `VdsSubSourceDef` (
 	foreign key (`vdsSubSourceId`) references VdsSubSource(`id`) on delete cascade
 )ENGINE=INNODB;
 
-create table `Cve` (
-	`id` integer(10) not null auto_increment,
-	`name` varchar(63) not null,
-	`cveDefId` integer(10) not null,
-	primary key (`id`),
-	unique key `unique` (`name`, `cveDefId`),
-	foreign key (`cveDefId`) references CveDef(`id`) on delete cascade
-)ENGINE=INNODB;
-
 create table `CveDef` (
 	`id` integer(10) not null auto_increment,
 	`definitionId` varchar(63) not null,
@@ -186,6 +175,15 @@ create table `CveDef` (
 	primary key (`id`),
 	unique key `unique` (`definitionId`, `title`, `refUrl`, `vdsSubSourceDefId`),
 	foreign key (`vdsSubSourceDefId`) references VdsSubSourceDef(`id`) on delete cascade
+)ENGINE=INNODB;
+
+create table `Cve` (
+	`id` integer(10) not null auto_increment,
+	`name` varchar(63) not null,
+	`cveDefId` integer(10) not null,
+	primary key (`id`),
+	unique key `unique` (`name`, `cveDefId`),
+	foreign key (`cveDefId`) references CveDef(`id`) on delete cascade
 )ENGINE=INNODB;
 
 create table `PkgCveDef` (
