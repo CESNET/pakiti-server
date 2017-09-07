@@ -1,0 +1,18 @@
+Source: pakiti
+Section: admin
+Priority: optional
+Maintainer: Daniel Kouril <kouril@ics.muni.cz>
+Build-Depends: debhelper (>= 8.0.0), perl
+Standards-Version: 3.9.5
+Homepage: https://github.com/CESNET/pakiti3
+#Vcs-Git: git://git.debian.org/collab-maint/pakiti.git
+
+Package: pakiti-client
+Architecture: all
+Depends: ${misc:Depends}, curl, openssl, perl
+Description: Patch Status Monitoring Tool
+ Pakiti provides a monitoring mechanism to check the patching status of
+ Linux systems.
+ .
+ This package provides the client part that is able to send information
+ about installed software to a defined Pakiti server.
