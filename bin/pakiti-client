@@ -618,7 +618,8 @@ show this manual
 
 =item B<--mode> I<STRING>
 
-the mode that determines how the report should be processed by the server
+the mode that determines how the report should be processed by the server. The following
+modes are supported: 'store-only', 'report-only', 'store-and-report'.
 
 =item B<--debug>, B<-d>
 
