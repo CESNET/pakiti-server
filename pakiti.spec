@@ -27,20 +27,22 @@ Summary:	Client for the Pakiti tool
 Group:		Applications/System
 
 %description client
-Runs rpm -qa or dpkg -l, depends on the linux distro. Results are sent to the
-central Pakiti server using openssl s_client or curl.
+Pakiti provides a monitoring mechanism to check the patching status of
+Linux systems.
+
+This package provides the client part that is able to send information
+about installed software to a defined Pakiti server.
 
 %prep
 %setup -qn %{github_name}-%{commit} 
 
 %build
-mkdir man
-pod2man --section=1 bin/pakiti-client > man/pakiti-client.1
+make
 
 %install
 rm -rf %{buildroot}
 install -D -m755 bin/pakiti-client   %{buildroot}%{_bindir}/pakiti-client
-install -D -m644 man/pakiti-client.1 %{buildroot}%{_mandir}/man1/pakiti-client.1
+install -D -m644 pakiti-client.1 %{buildroot}%{_mandir}/man1/pakiti-client.1
 
 %clean
 rm -rf %{buildroot}
