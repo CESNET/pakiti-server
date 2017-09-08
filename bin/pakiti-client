@@ -362,7 +362,8 @@ sub send_report ($) {
     for my $key (qw(mode)) {
         push(@pairs, join('=', $key, $Option{$key})) if $Option{$key};
     }
-    push(@pairs, "protocol=" . PROTOCOL_VERSION);
+
+    push(@pairs, "protocol=" . PROTOCOL_VERSION) if !$Option{"no-protocol-version"};
 
     $url = "$Option{url}";
     $url = $url . '?' . join('&', @pairs) if @pairs;
@@ -430,6 +431,7 @@ sub init () {
         "input"    => "|i=s",
         "manual"   => "|m",
         "mode"     => "=s",
+        "no-protocol-version" => "",
         "debug"    => "|d",
         "output"   => "|o=s",
         "rndsleep" => "|r=i",
@@ -620,6 +622,10 @@ show this manual
 
 the mode that determines how the report should be processed by the server. The following
 modes are supported: 'store-only', 'report-only', 'store-and-report'.
+
+=item B<--no-protocol-version>
+
+do not include the protocol version in the message sent to the server.
 
 =item B<--debug>, B<-d>
 
