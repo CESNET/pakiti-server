@@ -237,6 +237,7 @@ sub find_system ($) {
 sub find_packages ($) {
     my($data) = @_;
     my($cmd, $format, @list);
+    my(@output);
 
     # Red Hat packages
     $cmd = $Option{"rpm"};
@@ -244,12 +245,17 @@ sub find_packages ($) {
         $data->{packager} = "rpm";
         $format = "%{NAME}\t%{EPOCH}:%{VERSION}-%{RELEASE}\t%{ARCH}";
         ## no critic 'InputOutput::ProhibitBacktickOperators'
-        foreach my $line (qx($cmd -qa --queryformat "$format\n" 2>&1)) {
-            $line =~ s{\t\(none\):}{\t0:}g;
-            push(@list, $line) unless $line =~ /^gpg-pubkey\t/;
+        @output = qx($cmd -qa --queryformat "$format\n");
+        return if $?;
+
+        if (@output) {
+            foreach my $line (@output) {
+                $line =~ s{\t\(none\):}{\t0:}g;
+                push(@list, $line) unless $line =~ /^gpg-pubkey\t/;
+            }
+            $data->{packages} = join("", sort(@list));
+            return;
         }
-        $data->{packages} = join("", sort(@list));
-        return;
     }
     # Debian packages
     $cmd = $Option{"dpkg-query"};
@@ -258,30 +264,40 @@ sub find_packages ($) {
         $format = sprintf("\\\${%s}=\\\${%s}\t\\\${%s}\t\\\${%s}",
                           qw(Status Package Version Architecture));
         ## no critic 'InputOutput::ProhibitBacktickOperators'
-        foreach my $line (qx($cmd -W --showformat="$format\n" 2>&1)) {
-            if ($line =~ /^install ok installed/) {
-                $line =~ s{^.+?=}{}g;
-                push(@list, $line);
+        @output = qx($cmd -W --showformat="$format\n");
+        return if $?;
+
+        if (@output) {
+            foreach my $line (@output) {
+                if ($line =~ /^install ok installed/) {
+                    $line =~ s{^.+?=}{}g;
+                    push(@list, $line);
+                }
             }
+            $data->{packages} = join("", sort(@list));
+            return;
         }
-        $data->{packages} = join("", sort(@list));
-        return;
     }
     # OpenBSD (pkg) or FreeBSD (pkgng) packages
     $cmd = $Option{"pkg"};
     if ($cmd) {
         $data->{packager} = "pkg";
         ## no critic 'InputOutput::ProhibitBacktickOperators'
-        foreach my $line (qx($cmd info 2>&1)) {
-            $line =~ s{\s+.*$}{};
-            $line =~ s{-([0-9])}{\t$1};
-            push(@list, "$line\t$data->{arch}\n");
+        @output = qx($cmd info);
+        return if $?;
+
+        if (@output) {
+            foreach my $line (@output) {
+                $line =~ s{\s+.*$}{};
+                $line =~ s{-([0-9])}{\t$1};
+                push(@list, "$line\t$data->{arch}\n");
+            }
+            $data->{packages} = join("", sort(@list));
+            return;
         }
-        $data->{packages} = join("", sort(@list));
-        return;
     }
-    # unknown!
-    die("$Script: unknown package manager\n");
+    # unknown or not working!
+    die("$Script: package manager unknown or not working properly\n");
 }
 
 #
