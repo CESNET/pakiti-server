@@ -440,6 +440,7 @@ sub init () {
     $| = 1;
     %spec = (
         "config"   => "|conf=s",
+        "debug"    => "|d",
         "encrypt"  => "=s",
         "expect"   => "=s",
         "help"     => "|h|?",
@@ -448,7 +449,6 @@ sub init () {
         "manual"   => "|m",
         "mode"     => "=s",
         "no-protocol-version" => "",
-        "debug"    => "|d",
         "output"   => "|o=s",
         "rndsleep" => "|r=i",
         "site"     => "=s",
@@ -595,6 +595,10 @@ use this configuration file before processing the command line parameters
 
 set the path of the C<curl> command to use
 
+=item B<--debug>, B<-d>
+
+enable debug mode
+
 =item B<--dpkg-query> I<PATH>
 
 set the path of the C<dpkg-query> command to use
@@ -642,10 +646,6 @@ modes are supported: 'store-only', 'report-only', 'store-and-report'.
 =item B<--no-protocol-version>
 
 do not include the protocol version in the message sent to the server.
-
-=item B<--debug>, B<-d>
-
-enable debug mode
 
 =item B<--openssl> I<PATH>
 
