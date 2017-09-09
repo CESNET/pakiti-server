@@ -1,5 +1,11 @@
-pakiti (3.0.1) stable; urgency=low
+pakiti (3.0.2) stable; urgency=medium
 
-  * Initial release
+  * Support for installations with multiple package managers
+  * The communication protocol extended by utilizing the URL query string
+    to pass auxiliary information to the server
+  * Support of Devuan and FreeBSD systems
+  * Added --mode option to specify how the server should process the report
+  * Added --no-protocol-version and --debug options
+  * Various fixes and improvements
 
- -- Daniel Kouril <kouril@ics.muni.cz>  Thu, 07 Sep 2017 07:22:59 +0200
+ -- Daniel Kouril <kouril@ics.muni.cz>  Fri, 08 Sep 2017 17:57:46 +0200
