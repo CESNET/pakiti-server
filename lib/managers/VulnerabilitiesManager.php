@@ -132,6 +132,17 @@ class VulnerabilitiesManager extends DefaultManager
                 return $this->dpkgvercmp($vera, $rela, $verb, $relb);
                 break;
             case "rpm":
+                # Get epoch
+                $epoch_a = substr($vera, 0, strpos($vera, ':'));
+                $epoch_b = substr($verb, 0, strpos($verb, ':'));
+
+                # If epoch is not there => 0
+                if ($epoch_a == "") $epoch_a = "0";
+                if ($epoch_b == "") $epoch_b = "0";
+
+                if ($epoch_a > $epoch_b) return 1;
+                if ($epoch_a < $epoch_b) return -1;
+
                 $cmp_ret = $this->rpmvercmp($ver_a, $ver_b);
                 if ($cmp_ret == 0)
                     return $this->rpmvercmp($rel_a, $rel_b);
