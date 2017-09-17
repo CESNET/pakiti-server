@@ -82,7 +82,7 @@ class VulnerabilitiesManager extends DefaultManager
     {
         Utils::log(LOG_DEBUG, "Calculate Vulnerabilities for each pkg", __FILE__, __LINE__);
 
-        $pkgs = $this->getPakiti()->getDao("Pkg")->getAllPkgs();
+        $pkgs = $this->getPakiti()->getManager("PkgsManager")->getPkgs();
         $this->calculateVulnerabilitiesForPkgs($pkgs);
     }
 

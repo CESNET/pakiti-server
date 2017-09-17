@@ -60,6 +60,52 @@ class PkgDao
         $pkg->setId($this->db->getLastInsertedId());
     }
 
+    public function getPkgsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $hostId = -1, $search = null)
+    {
+        $select = "distinct Pkg.id";
+        $from = "Pkg";
+        $join = null;
+        $where = null;
+        $order = null;
+        $limit = null;
+        $offset = null;
+
+        switch ($orderBy) {
+            case "version":
+                $order[] = "Pkg.version";
+                break;
+            case "release":
+                $order[] = "Pkg.release";
+                break;
+            case "arch":
+                $order[] = "Pkg.arch";
+                break;
+            case "type":
+                $order[] = "Pkg.type";
+                break;
+            default:
+                break;
+        }
+        $order[] = "Pkg.name";
+        
+        if($hostId != -1) {
+            $join[] = "inner join InstalledPkg on InstalledPkg.pkgId = Pkg.id";
+            $where[] = "InstalledPkg.hostId = '".$this->db->escape($hostId)."'";
+        }
+
+        if($search != null) {
+            $where[] = "lower(Pkg.name) like '%".$this->db->escape(strtolower($search))."%'";
+        }
+
+        if ($pageSize != -1 && $pageNum != -1) {
+            $limit = $pageSize;
+            $offset = $pageSize * $pageNum;
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
     /*
      * Get the pkg by name, version, release and arch
      */
@@ -85,35 +131,6 @@ class PkgDao
     {
         if (!is_numeric($id)) return null;
         return $this->getBy($id, "id");
-    }
-
-    /*
-     * Get all pkgs
-     * returns array of pkgs
-     */
-    public function getAllPkgs()
-    {
-        return $this->db->queryObjects(
-            "select id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release from Pkg"
-            , "Pkg");
-    }
-
-    /*
-     * Get the pkgs by their IDs
-     * $ids is array of IDs
-     * returns array of pkgs
-     */
-    public function getPkgsByPkgsIds($pkgsIds)
-    {
-        if(empty($pkgsIds)){
-            return array();
-        }
-
-        $sql = "select id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release
-            from Pkg
-            where id IN (" . implode(",", array_map("intval", $pkgsIds)) . ")";
-
-        return $this->db->queryObjects($sql, "Pkg");
     }
 
     /*
@@ -164,6 +181,22 @@ class PkgDao
             "delete from Pkg where id=" . $this->db->escape($pkg->getId()));
     }
 
+    public function assignPkgToHost($pkgId, $hostId)
+    {
+        $sql = "insert into InstalledPkg set
+            pkgId='" . $this->db->escape($pkgId) . "',
+            hostId='" . $this->db->escape($hostId) . "'";
+        $this->db->query($sql);
+    }
+
+    public function unassignPkgToHost($pkgId, $hostId)
+    {
+        $sql = "delete from InstalledPkg where
+            pkgId='" . $this->db->escape($pkgId) . "' and
+            hostId='" . $this->db->escape($hostId) . "'";
+        $this->db->query($sql);
+    }
+
     /*********************
      * Protected functins
      *********************/
@@ -194,11 +227,6 @@ class PkgDao
     public function getPkgsTypesNames(){
         $sql = "select distinct(type) from Pkg";
         return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
-    public function getPkgsCount(){
-        $sql = "select count(id) from Pkg";
-        return $this->db->queryToSingleValue($sql);
     }
 
     public function getVulnerableIdsForHost($hostId, $tag)

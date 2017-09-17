@@ -36,16 +36,19 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("host");
 
-$host = $pakiti->getManager("HostsManager")->getHostById($html->getHttpGetVar("hostId", -1), $html->getUserId());
+$_id = $html->getHttpGetVar("hostId", -1);
+$_search = $html->getHttpGetVar("search", null);
+
+$host = $pakiti->getManager("HostsManager")->getHostById($_id, $html->getUserId());
 if ($host == null) {
-    $html->fatalError("Host with id " . $id . " doesn't exist or access denied");
+    $html->fatalError("Host with id " . $_id . " doesn't exist or access denied");
     exit;
 }
 
 $html->setTitle("Host: " . $host->getHostname());
-$html->setNumOfEntities($pakiti->getManager("PkgsManager")->getInstalledPkgsCount($host));
+$html->setNumOfEntities($pakiti->getManager("PkgsManager")->getPkgsCount($host->getId(), $_search));
 
-$pkgs = $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $html->getSortBy(), $html->getPageSize(), $html->getPageNum());
+$pkgs = $pakiti->getManager("PkgsManager")->getPkgs($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $host->getId(), $_search);
 
 // HTML
 ?>
@@ -60,7 +63,24 @@ $pkgs = $pakiti->getManager("PkgsManager")->getInstalledPkgs($host, $html->getSo
     <li role="presentation"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
 </ul>
 
-<br><br>
+<br>
+
+<div class="row">
+    <div class="col-md-4">
+        <form>
+            <input type="hidden" name="hostId" value="<?php echo $host->getId(); ?>">
+            <div class="input-group">
+                <input type="text" class="form-control" name="search" value="<?php if ($_search != null) echo $_search; ?>" placeholder="Search packages by name...">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                </span>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-8"></div>
+</div>
+
+<br>
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/pagination.php"); ?>
 

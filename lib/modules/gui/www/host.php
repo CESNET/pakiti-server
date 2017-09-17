@@ -36,9 +36,11 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("host");
 
-$host = $pakiti->getManager("HostsManager")->getHostById($html->getHttpGetVar("hostId", -1), $html->getUserId());
+$_id = $html->getHttpGetVar("hostId", -1);
+
+$host = $pakiti->getManager("HostsManager")->getHostById($_id, $html->getUserId());
 if ($host == null) {
-    $html->fatalError("Host with id " . $id . " doesn't exist or access denied");
+    $html->fatalError("Host with id " . $_id . " doesn't exist or access denied");
     exit;
 }
 
