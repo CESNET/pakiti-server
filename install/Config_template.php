@@ -37,7 +37,7 @@ final class Config
 {
 
     # Name of this Pakiti instance
-    public static $PAKITI_NAME = "Pakiti";
+    public static $PAKITI_NAME = "";
 
     # Pakiti operational mode
     #   1 - Synchronous mode - process clients reports immediatelly, useful for small deployments with < 1000 hosts
@@ -59,7 +59,7 @@ final class Config
     public static $AUTHZ_EMAIL = "mail";
 
     # Debug
-    public static $DEBUG = FALSE;
+    public static $DEBUG = false;
 
     # Directory, where to put the reports (only applied for asynchronous mode)
     public static $REPORTS_DIR = "/var/tmp/pakiti-reports/";
@@ -70,7 +70,7 @@ final class Config
     public static $REPORT_DECRYPTION_KEY = "/etc/ssl/localcerts/pakiti3.key";
 
     # Do we want backup the reports
-    public static $BACKUP = FALSE;
+    public static $BACKUP = false;
     public static $BACKUP_DIR = "/var/log/pakitiv3-reports/";
 
     # Proxy authentication mode (hostname | ip | x509)
@@ -90,6 +90,9 @@ final class Config
         "kernel-headers",
         "kernel-debug",
         "kernel-source",
+        # SUSE
+        "kernel-syms",
+        "kernel-macros",
     );
     # Also the ignore list, but using REGEXP
     public static $IGNORE_PACKAGES_PATTERNS = array(
@@ -113,12 +116,15 @@ final class Config
         "linux-image-generic",
         "linux-image-2.4",
         "linux-image-2.6",
+        # SUSE
+        "kernel-default",
+        "kernel-default-devel",
     );
 
     # Tags to mark CVEs
     public static $TAGS = array(
         "Critical",
-        "High"
+        "High",
     );
 
     # Hosts gui Your favorite settings
@@ -139,6 +145,7 @@ final class Config
 
     # Mapping OS groups to OSes by regular expression
     public static $OS_GROUPS_MAPPING = array(
+        # Debian
         "stretch" => "Debian(.*) 9(.*)",
         "jessie" => "Debian(.*) 8(.*)",
         "wheezy" => "Debian(.*) 7(.*)",
@@ -147,11 +154,28 @@ final class Config
         "etch" => "Debian(.*) 4(.*)",
         "sarge" => "Debian(.*) 3.1(.*)",
         "woody" => "Debian(.*) 3.0(.*)",
+        # Red Hat
         "Red Hat Enterprise Linux 7" => "(CentOS Linux(.*) 7(.*))|(Scientific Linux(.*) 7(.*))",
         "Red Hat Enterprise Linux 6" => "(CentOS Linux(.*) 6(.*))|(Scientific Linux(.*) 6(.*))",
         "Red Hat Enterprise Linux 5" => "(CentOS Linux(.*) 5(.*))|(Scientific Linux(.*) 5(.*))",
         "Red Hat Enterprise Linux 4" => "(CentOS Linux(.*) 4(.*))|(Scientific Linux(.*) 4(.*))",
         "Red Hat Enterprise Linux 3" => "(CentOS Linux(.*) 3(.*))|(Scientific Linux(.*) 3(.*))",
+        # SUSE
+        "SUSE Linux Enterprise Server 12 SP3" => "SUSE Linux(.*) 12.3(.*)",
+        "SUSE Linux Enterprise Server 12 SP2" => "SUSE Linux(.*) 12.2(.*)",
+        "SUSE Linux Enterprise Server 12 SP1" => "SUSE Linux(.*) 12.1(.*)",
+        "SUSE Linux Enterprise Server 11 SP4" => "SUSE Linux(.*) 11.4(.*)",
+        "SUSE Linux Enterprise Server 11 SP3" => "SUSE Linux(.*) 11.3(.*)",
+        "SUSE Linux Enterprise Server 11 SP2" => "SUSE Linux(.*) 11.2(.*)",
+        "SUSE Linux Enterprise Server 11 SP1" => "SUSE Linux(.*) 11.1(.*)",
+        # openSUSE
+        "openSUSE 13.2" => "openSUSE(.*) 13.2(.*)",
+        "openSUSE Leap 42.2" => "openSUSE(.*) 42.2(.*)",
+        "openSUSE Leap 42.3" => "openSUSE(.*) 42.3(.*)",
+        # Ubuntu
+        "Ubuntu 12.04 LTS" => "Ubuntu(.*) 12.04(.*)",
+        "Ubuntu 14.04 LTS" => "Ubuntu(.*) 14.04(.*)",
+        "Ubuntu 16.04 LTS" => "Ubuntu(.*) 16.04(.*)",
     );
 
     # OS names definiton, used for guess OS from installed packages
@@ -182,8 +206,7 @@ final class Config
         '^\s*Fedora ([\w.-]+)' => 'Fedora Linux ${1}',
         '^\s*SUSE LINUX ([\w.-]+)' => 'SUSE Linux ${1}',
         '^\s*Debian ([\w.-\/]+)' => 'Debian ${1}',
+        '^\s*openSUSE ([\w.-]+) .*' => 'openSUSE ${1}',
     );
 
 }
-
-?>
