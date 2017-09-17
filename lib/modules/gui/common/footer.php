@@ -31,7 +31,8 @@
 <?php
 ?>
 
-        <div class="text-center">Copyright &copy; 2017, CESNET, <a href="https://github.com/CESNET/pakiti3" target="_blank">Github</a></div>
+        <div class="text-center"><?php if(isset(Config::$GUI_FOOTER)) echo Config::$GUI_FOOTER; ?></div>
+        <div class="text-center">Copyright &copy; 2017, CESNET, <a href="https://github.com/CESNET/pakiti3" target="_blank">GitHub</a></div>
     </div>
 </body>
 

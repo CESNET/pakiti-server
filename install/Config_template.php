@@ -128,6 +128,9 @@ final class Config
         "Report in the last 48 hours sorted by hostname" => "listTaggedCves=true&activity=48h&sortBy=hostname"
     );
 
+    # Configurable footer
+    public static $GUI_FOOTER = "";
+
     # Names of json variables for import users
     public static $USERS_UID = "login";
     public static $USERS_NAME = "displayName";
