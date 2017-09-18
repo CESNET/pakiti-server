@@ -93,6 +93,12 @@ class OvalRedHat extends SubSource implements ISubSource {
                 } else $def['severity'] = "n/a";
 
                 $def['title'] = rtrim($xDefinition->getElementsByTagName('title')->item(0)->nodeValue);
+
+                /* This is a hack to recognize the related architecture, supposing that only ARM should be disregarded */
+                if (strpos($def['title'], 'aarch64') !== false) {
+                    continue;
+                }
+
                 $def['ref_url'] = $xDefinition->getElementsByTagName('reference')->item(0)->getAttribute('ref_url');
 
                 // Get associated CVEs
