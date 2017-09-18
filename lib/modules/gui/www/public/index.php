@@ -27,8 +27,8 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require(realpath(dirname(__FILE__)) . '/../../../common/Loader.php');
-require(realpath(dirname(__FILE__)) . '/../Html.php');
+require(realpath(dirname(__FILE__)) . '/../../../../common/Loader.php');
+require(realpath(dirname(__FILE__)) . '/../../Html.php');
 
 // Instantiate the HTML module
 $html = new HtmlModule($pakiti);
@@ -59,13 +59,36 @@ $html = new HtmlModule($pakiti);
         <div class="jumbotron">
             <p>
                 Pakiti provides a monitoring and notification mechanism to check the patching status of systems.<br><br>
-                Once installed on a client host, Pakiti will send every night the list of installed packages to the relevant Pakiti Server(s). After the client sends the list of installed packages, Pakiti server compares the versions against versions which Pakiti server obtains from OVAL definitions from MITRE. Optionally client reports back the packages which has marked CVE by tag.<br><br>
+                Once installed on a client host, Pakiti will send every night the list of installed packages to the relevant Pakiti Server(s). After the client sends the list of installed packages, Pakiti server compares the versions against versions which Pakiti server obtains from OVAL definitions from MITRE. Pakiti supports definitions for RHEL, Debian, SLES, openSUSE and Ubuntu. Optionally client reports back the packages which has marked CVE by tag.<br><br>
                 Pakiti has a web based GUI which provides a list of the registered systems. This helps the system admins keep multiple machines up-to-date and prevent unpatched machines to be kept silently on the network.
             </p>
             <p class="text-right">
                 <a class="btn btn-primary btn-lg" href="https://github.com/CESNET/pakiti3" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Github</a>
                 <a class="btn btn-primary btn-lg" href="https://github.com/CESNET/pakiti3/releases" role="button"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a>
             </p>
+            <br>
+            <h2>Supported OSes</h2>
+            <br>
+            <div class="row">
+                <div class="col-sm-2">
+                    <img src="debian.png" style="width: 100%;">
+                </div>
+                <div class="col-sm-2">
+                    <img src="redhat.png" style="width: 100%;">
+                </div>
+                <div class="col-sm-2">
+                    <img src="scientific.png" style="width: 100%;">
+                </div>
+                <div class="col-sm-2">
+                    <img src="centos.png" style="width: 100%;">
+                </div>
+                <div class="col-sm-2">
+                    <img src="ubuntu.png" style="width: 100%;">
+                </div>
+                <div class="col-sm-2">
+                    <img src="suse.png" style="width: 100%;">
+                </div>
+            </div>
         </div>
         <div class="row">
             <div class="col-md-12">
@@ -112,15 +135,21 @@ $html = new HtmlModule($pakiti);
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="panel panel-default">
+                <div class="panel panel-primary">
                     <div class="panel-heading text-center">
-                        <h1><a href="hosts.php">Enter Pakiti</a></h1>
-                        <br>
+                        <h1><?php echo Utils::pakitiVersion(); ?></h1>
+                        Pakiti version
                     </div>
                 </div>
             </div>
+            <div class="col-md-4">
+                <a class="btn btn-success btn-block" href="protected/hosts.php" role="button" style="padding: 10px 15px;">
+                    <h2><span class="glyphicon glyphicon-log-in" aria-hidden="true"></span> Enter</h2><?php echo Config::$PAKITI_NAME; ?> Pakiti instance<br>
+                </a>
+            </div>
         </div>
-        <div class="text-center">Copyright &copy; 2017, CESNET, <a href="https://github.com/CESNET/pakiti3" target="_blank">Github</a></div>
+        <div class="text-center"><?php if(isset(Config::$GUI_FOOTER)) echo Config::$GUI_FOOTER; ?></div>
+        <div class="text-center">Copyright &copy; 2017, CESNET, <a href="https://github.com/CESNET/pakiti3" target="_blank">GitHub</a></div>
     </div>
 </body>
 
