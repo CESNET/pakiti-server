@@ -54,6 +54,9 @@ $vulnerabilities = $html->getPakiti()->getManager("VulnerabilitiesManager")->get
 <a href="https://bugzilla.redhat.com/show_bug.cgi?id=<?php echo $cveName; ?>" target="_blank">Link to the RedHat Bugzilla</a><br>
 <a href="https://security-tracker.debian.org/tracker/<?php echo $cveName; ?>" target="_blank">Link to the Debian Security Tracker</a><br>
 <a href="https://www.suse.com/security/cve/<?php echo $cveName; ?>/" target="_blank">Link to the SUSE Security</a><br>
+<?php if(preg_match("/^CVE-(.*)-(.*)$/", $cveName, $values) === 1) { ?>
+    <a href="https://people.canonical.com/~ubuntu-security/cve/<?php echo $values[1]; ?>/<?php echo $cveName; ?>.html" target="_blank">Link to Ubuntu Security Tracker</a><br>
+<?php } ?>
 <br>
 
 <table class="table table-hover table-condensed">
