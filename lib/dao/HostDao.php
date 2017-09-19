@@ -162,7 +162,7 @@ class HostDao {
     $order[] = "Host.hostname";
 
     if($search != null) {
-      $where[] = "lower(hostname) like '%".$this->db->escape(strtolower($search))."%'";
+      $where[] = "lower(hostname) like '%".$this->db->escape(strtolower($search), true)."%'";
     }
 
     if ($cveName != null || $tag != null) {

@@ -94,7 +94,7 @@ class PkgDao
         }
 
         if($search != null) {
-            $where[] = "lower(Pkg.name) like '%".$this->db->escape(strtolower($search))."%'";
+            $where[] = "lower(Pkg.name) like '%".$this->db->escape(strtolower($search), true)."%'";
         }
 
         if ($pageSize != -1 && $pageNum != -1) {
