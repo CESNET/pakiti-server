@@ -42,6 +42,10 @@
     color: #f0ad4e;
 }
 
+.text-normal {
+    font-weight: normal;
+}
+
 a {
     color: #0275d8;
 }
