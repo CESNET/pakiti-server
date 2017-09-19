@@ -133,8 +133,8 @@ class VulnerabilitiesManager extends DefaultManager
                 break;
             case "rpm":
                 # Get epoch
-                $epoch_a = substr($vera, 0, strpos($vera, ':'));
-                $epoch_b = substr($verb, 0, strpos($verb, ':'));
+                $epoch_a = substr($ver_a, 0, strpos($ver_a, ':'));
+                $epoch_b = substr($ver_b, 0, strpos($ver_b, ':'));
 
                 # If epoch is not there => 0
                 if ($epoch_a == "") $epoch_a = "0";
@@ -143,7 +143,7 @@ class VulnerabilitiesManager extends DefaultManager
                 if ($epoch_a > $epoch_b) return 1;
                 if ($epoch_a < $epoch_b) return -1;
 
-                $cmp_ret = $this->rpmvercmp($ver_a, $ver_b);
+                $cmp_ret = $this->rpmvercmp($this->addepoch($ver_a), $this->addepoch($ver_b));
                 if ($cmp_ret == 0)
                     return $this->rpmvercmp($rel_a, $rel_b);
                 else return $cmp_ret;
@@ -295,7 +295,7 @@ class VulnerabilitiesManager extends DefaultManager
         if ($epoch_a < $epoch_b) return -1;
 
         # Compare versions
-        $r = $this->dpkgvercmp_in($vera, $verb);
+        $r = $this->dpkgvercmp_in($this->addepoch($vera), $this->addepoch($verb));
 
         if ($r) {
             return $r;
@@ -303,6 +303,17 @@ class VulnerabilitiesManager extends DefaultManager
 
         # Compare release
         return $this->dpkgvercmp_in($rela, $relb);
+    }
+
+    /**
+     * Add epoch
+     */
+    private function addepoch($ver)
+    {
+        if(strpos($ver, ':') === false) {
+            return "0:" . $ver;
+        }
+        return $ver;
     }
 
     public function storeVulnerabilities(&$vulnerabilities)
