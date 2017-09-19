@@ -76,16 +76,17 @@ class OvalRedHat extends SubSource implements ISubSource {
                 // Don't consider marginal versions, like 'Supplementary for RHEL' and the like, which
                 // easily might distort results
                 $platform_query = 'def:metadata/def:affected/def:platform';
-                $platforms = $xpath->query($platform_query, $entry);
-                $supported = False;
+                $platforms = $this->_xpath->query($platform_query, $xDefinition);
+                $supported = false;
                 foreach ($platforms as $platform) {
                     if (preg_match('/^Red Hat Enterprise Linux [0-9\.]+$/', $platform->nodeValue)) {
-                        $supported = True;
+                        $supported = true;
                         break;
                     }
                 }
-                if (!$supported)
+                if (!$supported) {
                     continue;
+                }
 
                 $el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
                 if (!empty($el_severity)) {
