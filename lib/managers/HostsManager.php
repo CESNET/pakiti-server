@@ -126,6 +126,14 @@ class HostsManager extends DefaultManager {
     return $hosts;
   }
 
+  /**
+   * Get hosts IDs
+   */
+  public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1, $directlyAssignedToUser = false) {
+    Utils::log(LOG_DEBUG, "Getting hosts IDs", __FILE__, __LINE__);
+    return $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $userId, $directlyAssignedToUser);
+  }
+
   public function getHostsByHostGroupId($hostGroupId) {
     Utils::log(LOG_DEBUG, "Getting host IDs by HostGroup ID[".$hostGroupId."]", __FILE__, __LINE__);
     $ids = $this->getPakiti()->getDao("Host")->getIdsByHostGroupId($hostGroupId);

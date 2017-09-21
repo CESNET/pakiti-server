@@ -108,6 +108,15 @@ class HostGroupsManager extends DefaultManager {
     return $hostGroups;
   }
 
+  /**
+   * Get host groups IDs
+   */
+  public function getHostGroupsIds($orderBy = null, $pageNum = -1, $pageSize = -1, $userId = -1) {
+    Utils::log(LOG_DEBUG, "Getting host groups IDs", __FILE__, __LINE__);
+    $dao = $this->getPakiti()->getDao("HostGroup");
+    return $dao->getHostGroupsIds($orderBy, $pageNum, $pageSize, $userId); 
+  }
+
   public function getHostGroupsCount($userId = -1) {
     Utils::log(LOG_DEBUG, "Getting the count of all host groups", __FILE__, __LINE__);
     return sizeof($this->getPakiti()->getDao("HostGroup")->getHostGroupsIds(null, -1, -1, $userId));
