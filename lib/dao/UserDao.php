@@ -104,6 +104,7 @@ class UserDao
             userId='".$this->db->escape($userId)."',
             hostId='".$this->db->escape($hostId)."'";
         $this->db->query($sql);
+        return $this->db->getNumberOfAffectedRows();
     }
 
     public function assignHostGroupToUser($userId, $hostGroupId)
@@ -112,6 +113,7 @@ class UserDao
             userId='".$this->db->escape($userId)."',
             hostGroupId='".$this->db->escape($hostGroupId)."'";
         $this->db->query($sql);
+        return $this->db->getNumberOfAffectedRows();
     }
 
     public function unassignHostToUser($userId, $hostId)
@@ -120,6 +122,7 @@ class UserDao
             where userId='".$this->db->escape($userId)."'
             and hostId='".$this->db->escape($hostId)."'";
         $this->db->query($sql);
+        return $this->db->getNumberOfAffectedRows();
     }
 
     public function unassignHostGroupToUser($userId, $hostGroupId)
@@ -128,5 +131,6 @@ class UserDao
             where userId='".$this->db->escape($userId)."'
             and hostGroupId='".$this->db->escape($hostGroupId)."'";
         $this->db->query($sql);
+        return $this->db->getNumberOfAffectedRows();
     }
 }

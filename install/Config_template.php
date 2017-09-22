@@ -142,6 +142,9 @@ final class Config
     public static $USERS_NAME = "displayName";
     public static $USERS_EMAIL = "mail";
     public static $USERS_ADMIN = "admin";
+    public static $USERS_HOSTS_IDS = "hostsIds";
+    public static $USERS_HOSTGROUPS_IDS = "hostGroupsIds";
+    public static $USERS_HOSTGROUPS_NAMES = "hostGroupsNames";
 
     # Import users default admin value (if admin variable not defined in import)
     public static $USERS_ADMIN_DEFAULT_VALUE = true;
