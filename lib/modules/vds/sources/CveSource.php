@@ -37,7 +37,7 @@ class CveSource extends Source implements ISource
     private static $NAME = "Cve";
     private $_pakiti;
 
-    /*
+    /**
      * Load all types of CVE sources
      */
     public function __construct(Pakiti &$pakiti)
@@ -48,26 +48,24 @@ class CveSource extends Source implements ISource
         $this->setName(CveSource::$NAME);
     }
 
-    /*
+    /**
      * Initialization routine
      */
     public function init()
     {
         parent::init();
-
         # Get module ID from the DB
     }
 
-
-    /*
+    /**
      * Get the name of this class.
      */
-    public function getClassName() {
+    public function getClassName()
+    {
         return get_class();
     }
 
-
-    /*
+    /**
      * Ask all CVE sources to provide the complete list of CVE definitions
      */
     public function retrieveVulnerabilities()
@@ -81,7 +79,7 @@ class CveSource extends Source implements ISource
             # We have CVE definition in this format:
             # Array
             #(
-            #	   [subSourceDefId] => 5
+            #    [subSourceDefId] => 5
             #    [definition_id] => oval:com.redhat.rhsa:def:20120006
             #    [severity] => Critical
             #    [title] => RHSA-2012:0006: java-1.4.2-ibm security update (Critical)
@@ -101,14 +99,14 @@ class CveSource extends Source implements ISource
             #                            [name] => java-1.4.2-ibm-plugin
             #                            [version] => 0:1.4.2.13.11
             #                            [release] => 1jpp.1.el5
-            #				              [operator] => <
+            #                            [operator] => <
             #                        )
             #                    [1] => Array
             #                        (
             #                             [name] => java-1.4.2-ibm-src
             #                             [version] => 0:1.4.2.13.11
             #                             [release] => 1jpp.1.el5
-            #				                [operator] => <
+            #                             [operator] => <
             #                         )
             #
             #                )
@@ -116,6 +114,7 @@ class CveSource extends Source implements ISource
             #        )
             #
             #)
+
             # Store them into the list of Vulnerabilities
             if ($defs) {
                 # Reformat data into
@@ -129,7 +128,7 @@ class CveSource extends Source implements ISource
 
                     $cveDefId = $this->_pakiti->getDao("CveDef")->getCveDefId($cveDef);
 
-                    if ($cveDefId == null){
+                    if ($cveDefId == null) {
                         # CVEs
                         $cves = array();
                         foreach ($def['cves'] as $cveName) {
@@ -140,16 +139,14 @@ class CveSource extends Source implements ISource
                         $cveDef->setCves($cves);
 
                         $this->_pakiti->getManager('CveDefsManager')->createCveDef($cveDef);
-
-                    }else{
+                    } else {
                         $cveDef->setId($cveDefId);
                     }
 
-                    //if osGroup not set, than it is unfixed in DSA
-                    if(isset($def['osGroup'])){
+                    # if osGroup not set, than it is unfixed in DSA
+                    if (isset($def['osGroup'])) {
                         foreach ($def['osGroup'] as $osGroupName => $defsPkg) {
                             foreach ($defsPkg as $defPkg) {
-
                                 $vuln = new Vulnerability();
 
                                 $vuln->setCveDefId($cveDef->getId());

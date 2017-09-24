@@ -39,10 +39,8 @@ $html->checkPermission("stats");
 $html->setTitle("Statistics");
 $html->setMenuActiveItem("stats.php");
 
-
 // HTML
 ?>
-
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
 

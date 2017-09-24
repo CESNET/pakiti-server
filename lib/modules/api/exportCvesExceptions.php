@@ -40,7 +40,7 @@ $osGroupsManager = $pakiti->getManager("OsGroupsManager");
 
 $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?> <cveExceptions></cveExceptions>');
 
-foreach($cveExceptions as $cveException){
+foreach ($cveExceptions as $cveException) {
     $cveExceptionNode = $xml->addChild("cveException");
     $cveExceptionNode->addChild("cveName", $cveException->getCveName());
     $cveExceptionNode->addChild("reason", $cveException->getReason());
@@ -54,9 +54,7 @@ foreach($cveExceptions as $cveException){
     $pkgNode->addChild("type", $pkg->getType());
     $osGroup = $osGroupsManager->getOsGroupById($cveException->getOsGroupId());
     $osGroupNode = $cveExceptionNode->addChild("osGroup");
-    $osGroupNode->addChild("name",$osGroup->getName());
+    $osGroupNode->addChild("name", $osGroup->getName());
 }
 
 print($xml->asXML());
-
-?>

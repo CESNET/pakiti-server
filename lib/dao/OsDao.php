@@ -34,16 +34,16 @@
 class OsDao
 {
     private $db;
-  
+
     public function __construct(DbManager &$dbManager)
     {
         $this->db = $dbManager;
     }
-  
+
     public function create(Os &$os)
     {
         $sql = "insert into Os set
-          name='" . $this->db->escape($os->getName()) . "'";
+            name='" . $this->db->escape($os->getName()) . "'";
         $this->db->query($sql);
 
         # Set the newly assigned id
@@ -64,7 +64,7 @@ class OsDao
         $id = $this->db->queryToSingleValue($sql);
         return ($id == null) ? -1 : $id;
     }
-  
+
     public function getIds($orderBy = null, $pageSize = -1, $pageNum = -1)
     {
         $select = "Os.id";
@@ -99,8 +99,7 @@ class OsDao
     {
         $sql = "insert ignore into OsOsGroup set
             osId='" . $this->db->escape($osId) . "',
-            osGroupId='" . $this->db->escape($osGroupId) . "'
-        ";
+            osGroupId='" . $this->db->escape($osGroupId) . "'";
         $this->db->query($sql);
     }
 }

@@ -28,13 +28,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ?>
 
-<?php
-# getTitle
-# getUsername
-# getMenuItems
-# getMenuActiveItem
-?>
-
 <!doctype html>
 
 <html lang="en">

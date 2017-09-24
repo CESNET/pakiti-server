@@ -37,7 +37,7 @@ $cveTags = $pakiti->getManager("CveTagsManager")->getCveTags();
 
 $xml = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?> <cveTags></cveTags>');
 
-foreach($cveTags as $cveTag){
+foreach ($cveTags as $cveTag) {
     $cveTagNode = $xml->addChild("cveTag");
     $cveTagNode->addChild("cveName", $cveTag->getCveName());
     $cveTagNode->addChild("tagName", $cveTag->getTagName());
@@ -49,5 +49,3 @@ foreach($cveTags as $cveTag){
 }
 
 print($xml->asXML());
-
-?>

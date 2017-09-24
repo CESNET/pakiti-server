@@ -30,61 +30,60 @@
 
 require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-$shortopts = "hu:r"; # Command
+$shortopts = "hu:r";
 
 $longopts = array(
-      "help",
-      "url:",
-      "remove"
+    "help",
+    "url:",
+    "remove"
 );
 
-function usage() {
-  die("Usage: importCvesTags (-u <url> | --url=<url>) [-r | --remove]\n");
+function usage()
+{
+    die("Usage: importCvesTags (-u <url> | --url=<url>) [-r | --remove]\n");
 }
 
 $opt = getopt($shortopts, $longopts);
 
 if (isset($opt["h"]) || isset($opt["help"])) {
-  usage();
+    usage();
 }
 
 $url = isset($opt["u"]) ? $opt["u"] : (isset($opt["url"]) ? $opt["url"] : null);
 
-if($url == null){
-  usage();
+if ($url == null) {
+    usage();
 } else {
-  $xml = simplexml_load_string(Utils::getContent($url));
+    $xml = simplexml_load_string(Utils::getContent($url));
 
-  if($xml == null){
-    die("Xml parsing error! Check log for curl errors.");
-  }
-
-  # Get all cve names in order to check if cve name exists
-  $cveNames = $pakiti->getManager("CvesManager")->getCvesNames();
-
-  $cveTagsIds = array();
-  foreach($xml->cveTag as $cveTagNode){
-    if(in_array($cveTagNode->cveName, $cveNames)){
-      $cveTag = new CveTag();
-      $cveTag->setCveName($cveTagNode->cveName->__toString());
-      $cveTag->setTagName($cveTagNode->tagName->__toString());
-      $cveTag->setReason($cveTagNode->reason->__toString());
-      $cveTag->setInfoUrl($cveTagNode->infoUrl->__toString());
-      $cveTag->setEnabled($cveTagNode->enabled->__toString());
-      $cveTag->setModifier($cveTagNode->modifier->__toString());
-      $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
-      array_push($cveTagsIds, $cveTag->getId());
+    if ($xml == null) {
+        die("Xml parsing error! Check log for curl errors.");
     }
-  }
 
-  if (isset($opt["r"]) || isset($opt["remove"])) {
-    $allCveTagsIds = $pakiti->getManager("CveTagsManager")->getCveTagsIds();
-    foreach($allCveTagsIds as $id){
-      if(!in_array($id, $cveTagsIds)){
-        $pakiti->getManager("CveTagsManager")->deleteCveTagById($id);
-      }
+    # Get all cve names in order to check if cve name exists
+    $cveNames = $pakiti->getManager("CvesManager")->getCvesNames();
+
+    $cveTagsIds = array();
+    foreach ($xml->cveTag as $cveTagNode) {
+        if (in_array($cveTagNode->cveName, $cveNames)) {
+            $cveTag = new CveTag();
+            $cveTag->setCveName($cveTagNode->cveName->__toString());
+            $cveTag->setTagName($cveTagNode->tagName->__toString());
+            $cveTag->setReason($cveTagNode->reason->__toString());
+            $cveTag->setInfoUrl($cveTagNode->infoUrl->__toString());
+            $cveTag->setEnabled($cveTagNode->enabled->__toString());
+            $cveTag->setModifier($cveTagNode->modifier->__toString());
+            $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
+            array_push($cveTagsIds, $cveTag->getId());
+        }
     }
-  }
+
+    if (isset($opt["r"]) || isset($opt["remove"])) {
+        $allCveTagsIds = $pakiti->getManager("CveTagsManager")->getCveTagsIds();
+        foreach ($allCveTagsIds as $id) {
+            if (!in_array($id, $cveTagsIds)) {
+                $pakiti->getManager("CveTagsManager")->deleteCveTagById($id);
+            }
+        }
+    }
 }
-
-?>

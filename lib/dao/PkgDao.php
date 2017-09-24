@@ -39,22 +39,17 @@ class PkgDao
         $this->db = $dbManager;
     }
 
-    /*******************
-     * Public functions
-     *******************/
-
-    /*
+    /**
      * Stores the pkg in the DB
      */
     public function create(Pkg &$pkg)
     {
-        $this->db->query(
-            "insert into Pkg set
-          name='" . $this->db->escape($pkg->getName()) . "',
-          version='" . $this->db->escape($pkg->getVersion()) . "',
-          arch='" . $this->db->escape($pkg->getArch()) . "',
-          type='" . $this->db->escape($pkg->getType()) . "',
-          `release`='" . $this->db->escape($pkg->getRelease()) . "'");
+        $this->db->query("insert into Pkg set
+            name='" . $this->db->escape($pkg->getName()) . "',
+            version='" . $this->db->escape($pkg->getVersion()) . "',
+            arch='" . $this->db->escape($pkg->getArch()) . "',
+            type='" . $this->db->escape($pkg->getType()) . "',
+            `release`='" . $this->db->escape($pkg->getRelease()) . "'");
 
         # Set the newly assigned id
         $pkg->setId($this->db->getLastInsertedId());
@@ -87,13 +82,13 @@ class PkgDao
                 break;
         }
         $order[] = "Pkg.name";
-        
-        if($hostId != -1) {
+
+        if ($hostId != -1) {
             $join[] = "inner join InstalledPkg on InstalledPkg.pkgId = Pkg.id";
             $where[] = "InstalledPkg.hostId = '".$this->db->escape($hostId)."'";
         }
 
-        if($search != null) {
+        if ($search != null) {
             $where[] = "lower(Pkg.name) like '%".$this->db->escape(strtolower($search), true)."%'";
         }
 
@@ -106,30 +101,27 @@ class PkgDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    /*
+    /**
      * Get the pkg by name, version, release and arch
      */
     public function getPkg($name, $version, $release, $arch, $type)
     {
-        return $this->db->queryObject(
-            "select
-    		id as _id, name as _name, version as _version, `release` as _release, arch as _arch, type as _type
-      from
-      	Pkg
-      where
-      	binary name='" . $this->db->escape($name) . "' AND
-        version='" . $this->db->escape($version) . "' AND
-        type='" . $this->db->escape($type) . "' AND
-        `release`='" . $this->db->escape($release) . "' AND
-        arch='" . $this->db->escape($arch) . "'", "Pkg");
+        return $this->db->queryObject("select id as _id, name as _name, version as _version, `release` as _release, arch as _arch, type as _type from Pkg
+            where binary name='" . $this->db->escape($name) . "'
+            and version='" . $this->db->escape($version) . "'
+            and type='" . $this->db->escape($type) . "'
+            and `release`='" . $this->db->escape($release) . "'
+            and arch='" . $this->db->escape($arch) . "'", "Pkg");
     }
 
-    /*
-    * Get the pkg by its ID
-    */
+    /**
+     * Get the pkg by its ID
+     */
     public function getById($id)
     {
-        if (!is_numeric($id)) return null;
+        if (!is_numeric($id)) {
+            return null;
+        }
         return $this->getBy($id, "id");
     }
 
@@ -143,12 +135,12 @@ class PkgDao
 
     public function getPkgIdByNameVersionReleaseArchType($pkgName, $pkgVersion, $pkgRelease, $pkgArch, $pkgType)
     {
-        $sql = "select id from Pkg where binary
-        name='" . $this->db->escape($pkgName) . "' and
-        version='" . $this->db->escape($pkgVersion) . "' and
-      	arch='" . $this->db->escape($pkgArch) . "' and
-        type='" . $this->db->escape($pkgType) . "' and
-      	`release`='" . $this->db->escape($pkgRelease) . "'";
+        $sql = "select id from Pkg
+            where binary name='" . $this->db->escape($pkgName) . "'
+            and version='" . $this->db->escape($pkgVersion) . "'
+            and arch='" . $this->db->escape($pkgArch) . "'
+            and type='" . $this->db->escape($pkgType) . "'
+            and `release`='" . $this->db->escape($pkgRelease) . "'";
         $id = $this->db->queryToSingleValue($sql);
 
         if ($id == null) {
@@ -157,28 +149,26 @@ class PkgDao
         return $id;
     }
 
-    /*
+    /**
      * Update the pkg in the DB
      */
     public function update(Pkg &$pkg)
     {
-        $this->db->query(
-            "update Pkg set
-      	name='" . $this->db->escape($pkg->getName()) . "',
-      	version='" . $this->db->escape($pkg->getVersion()) . "',
-      	arch='" . $this->db->escape($pkg->getArch()) . "',
-      	type='" . $this->db->escape($pkg->getType()) . "',
-      	`release`='" . $this->db->escape($pkg->getRelease()) . "'
-      where id=" . $this->db->escape($pkg->getId()));
+        $this->db->query("update Pkg set
+            name='" . $this->db->escape($pkg->getName()) . "',
+            version='" . $this->db->escape($pkg->getVersion()) . "',
+            arch='" . $this->db->escape($pkg->getArch()) . "',
+            type='" . $this->db->escape($pkg->getType()) . "',
+            `release`='" . $this->db->escape($pkg->getRelease()) . "'
+            where id=" . $this->db->escape($pkg->getId()));
     }
 
-    /*
+    /**
      * Delete the pkg from the DB
      */
     public function delete(Pkg &$pkg)
     {
-        $this->db->query(
-            "delete from Pkg where id=" . $this->db->escape($pkg->getId()));
+        $this->db->query("delete from Pkg where id=" . $this->db->escape($pkg->getId()));
     }
 
     public function assignPkgToHost($pkgId, $hostId)
@@ -197,11 +187,7 @@ class PkgDao
         $this->db->query($sql);
     }
 
-    /*********************
-     * Protected functins
-     *********************/
-
-    /*
+    /**
      * We can get the data by ID or name
      */
     protected function getBy($value, $type)
@@ -209,22 +195,17 @@ class PkgDao
         $where = "";
         if ($type == "id") {
             $where = "id=" . $this->db->escape($value);
-        } else if ($type == "name") {
+        } elseif ($type == "name") {
             $where = "binary name='" . $this->db->escape($value) . "'";
         } else {
             throw new Exception("Undefined type of the getBy");
         }
-        return $this->db->queryObject(
-            "select
-    		id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release
-      from 
-      	Pkg 
-      where
-      	$where"
-            , "Pkg");
+        return $this->db->queryObject("select id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release from Pkg
+            where $where", "Pkg");
     }
 
-    public function getPkgsTypesNames(){
+    public function getPkgsTypesNames()
+    {
         $sql = "select distinct(type) from Pkg";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
@@ -263,4 +244,3 @@ class PkgDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 }
-?>

@@ -30,13 +30,14 @@
 /**
  * @author Jakub Mlcak
  */
-class ArchsManager extends DefaultManager {
-
+class ArchsManager extends DefaultManager
+{
     /**
-    * Create if not exist, else set id
-    * @return false if already exist
-    */
-    public function storeArch(Arch &$arch){
+     * Create if not exist, else set id
+     * @return false if already exist
+     */
+    public function storeArch(Arch &$arch)
+    {
         Utils::log(LOG_DEBUG, "Storing the arch", __FILE__, __LINE__);
         if ($arch == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
@@ -55,11 +56,11 @@ class ArchsManager extends DefaultManager {
     }
 
     /**
-    * Get all archs names
-    * @return archs names array
-    */
-    public function getArchsNames() {
+     * Get all archs names
+     * @return archs names array
+     */
+    public function getArchsNames()
+    {
         return $this->getPakiti()->getDao("Arch")->getArchsNames();
     }
-
 }

@@ -30,25 +30,25 @@
 
 require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-$shortopts = "h:"; # Command
+$shortopts = "h:";
 
 $longopts = array(
-      "hostname:",       # sort by
+    "hostname:"
 );
 
-function usage() {
-  die("Usage: listHostPackages [-h|--hostname] hostname\n");
+function usage()
+{
+    die("Usage: listHostPackages [-h|--hostname] hostname\n");
 }
 
 $opt = getopt($shortopts, $longopts);
 
-if ($opt === FALSE) {
-  usage();  
+if ($opt === false) {
+    usage();
 }
 
-$hostname = !empty($opt["h"]) ? $opt["h"] : 
-  (!empty($opt["hostname"]) ? $opt["hostname"] : usage());
- 
+$hostname = !empty($opt["h"]) ? $opt["h"] : (!empty($opt["hostname"]) ? $opt["hostname"] : usage());
+
 $host = $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
 
 $pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
@@ -60,4 +60,3 @@ foreach ($pkgs as $pkg) {
         print "{$pkg->getName()}\t{$pkg->getVersion()}\t{$pkg->getRelease()}\t{$pkg->getArch()}\n";
     }
 }
-?>

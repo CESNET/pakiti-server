@@ -36,8 +36,9 @@ $longopts = array(
     "help"
 );
 
-function usage() {
-  die("Usage: recalculateOsGroupsMapping [-h|--help]\n");
+function usage()
+{
+    die("Usage: recalculateOsGroupsMapping [-h|--help]\n");
 }
 
 $opt = getopt($shortopts, $longopts);

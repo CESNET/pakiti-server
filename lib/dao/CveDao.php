@@ -39,15 +39,14 @@ class CveDao
         $this->db = $dbManager;
     }
 
-    /*
+    /**
      * Stores the Cve in the DB
      */
     public function create(Cve &$cve)
     {
-        $this->db->query(
-            "insert into Cve set
-      	name='" . $this->db->escape($cve->getName()) . "',
-      	cveDefId='" . $this->db->escape($cve->getCveDefId()) . "'");
+        $this->db->query("insert into Cve set
+            name='" . $this->db->escape($cve->getName()) . "',
+            cveDefId='" . $this->db->escape($cve->getCveDefId()) . "'");
 
         # Set the newly assigned id
         $cve->setId($this->db->getLastInsertedId());
@@ -55,41 +54,27 @@ class CveDao
 
     public function getCve($name, $cveDefId)
     {
-        return $this->db->queryObject(
-            "select
-    		id as _id, name as _name, cveDefId as _cveDefId
-      from
-      	Cve
-      where
-      	name='" . $this->db->escape($name) . "' AND
-      	cveDefId ='" . $this->db->escape($cveDefId) . "'", "Cve");
+        return $this->db->queryObject("select id as _id, name as _name, cveDefId as _cveDefId from Cve
+            where name='" . $this->db->escape($name) . "'
+            and cveDefId ='" . $this->db->escape($cveDefId) . "'", "Cve");
     }
 
     public function getCvesByName($name)
     {
-        return $this->db->queryObjects(
-            "select
-    		id as _id, name as _name, cveDefId as _cveDefId
-            from
-      	      Cve
-            where
-              name='" . $this->db->escape($name) . "'", "Cve");
+        return $this->db->queryObjects("select id as _id, name as _name, cveDefId as _cveDefId from Cve
+            where name='" . $this->db->escape($name) . "'", "Cve");
     }
 
     public function getCveNameById($cveId)
     {
-        return $this->db->queryToSingleValue(
-            "select name from Cve
-              where id='" . $this->db->escape($cveId) . "'"
-        );
+        return $this->db->queryToSingleValue("select name from Cve
+            where id='" . $this->db->escape($cveId) . "'");
     }
 
     public function getCvesByCveDefId($cveDefId)
     {
-        return $this->db->queryObjects("select id
-        as _id, name as _name, cveDefId
-        as _cveDefId from Cve where
-        Cve.cveDefId={$cveDefId}", "Cve");
+        return $this->db->queryObjects("select id as _id, name as _name, cveDefId as _cveDefId from Cve
+            where Cve.cveDefId={$cveDefId}", "Cve");
     }
 
     public function getCvesByCveDef(CveDef $cveDef)
@@ -99,11 +84,7 @@ class CveDao
 
     public function getAllCves()
     {
-        return $this->db->queryObjects(
-            "select
-    		id as _id, name as _name, cveDefId as _cveDefId
-            from
-      	      Cve", "Cve");
+        return $this->db->queryObjects("select id as _id, name as _name, cveDefId as _cveDefId from Cve", "Cve");
     }
 
     public function getNamesForPkgAndOs($pkgId, $osId, $tag = null)

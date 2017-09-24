@@ -32,23 +32,10 @@
  */
 class CveExceptionsManager extends DefaultManager
 {
-    private $_pakiti;
-
-    public function __construct(Pakiti &$pakiti)
-    {
-        $this->_pakiti =& $pakiti;
-    }
-
-    public function getPakiti()
-    {
-        return $this->_pakiti;
-    }
-
-
     /**
-    * Create if not exist, else set id
-    * @return false if already exist
-    */
+     * Create if not exist, else set id
+     * @return false if already exist
+     */
     public function storeCveException(CveException &$cveException)
     {
         Utils::log(LOG_DEBUG, "Storing the CveException", __FILE__, __LINE__);

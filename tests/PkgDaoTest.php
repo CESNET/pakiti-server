@@ -32,12 +32,12 @@ include('GenerateTestData.php');
 /**
  * @author Michal Prochazka
  */
-class PkgDaoTest extends PHPUnit_Framework_TestCase {
-
+class PkgDaoTest extends PHPUnit_Framework_TestCase
+{
     private static $_testData;
 
     public static function setUpBeforeClass()
-    {   
+    {
         self::$_testData = new GenerateTestData();
     }
 
@@ -51,15 +51,14 @@ class PkgDaoTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(self::$_testData->getPkg1()->getId(), $pkg3->getId());
     }
 
-    public function testGetById(){
-
+    public function testGetById()
+    {
         //get by Id
         self::$_testData->getPakiti()->getManager("DbManager")->begin();
         $pkg3 = self::$_testData->getPakiti() -> getDao("Pkg") -> getById(self::$_testData->getPkg1()->getId());
         self::$_testData->getPakiti()->getManager("DbManager")->commit();
 
         $this->assertEquals(self::$_testData->getPkg1()->getId(), $pkg3->getId());
-
     }
 
     public function testGetPkgsByPkgIds()
@@ -89,14 +88,11 @@ class PkgDaoTest extends PHPUnit_Framework_TestCase {
         self::$_testData->getPakiti()->getManager("DbManager")->commit();
 
         $this->assertNotEquals(self::$_testData->getPkg1(), $pkg3);
-
     }
 
 
     public static function tearDownAfterClass()
     {
-        self::$_testData->deleteGeneratedTestData();   
+        self::$_testData->deleteGeneratedTestData();
     }
-
-
 }

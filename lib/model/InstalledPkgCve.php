@@ -27,28 +27,24 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require_once(realpath(dirname(__FILE__)) . '/Host.php');
-require_once(realpath(dirname(__FILE__)) . '/Pkg.php');
-require_once(realpath(dirname(__FILE__)) . '/CvePkg.php');
-
 /**
  * @author Michal Prochazka
  */
-class InstalledPkgCve {
-	/**
-	 * @AssociationType Host
-	 * @AssociationMultiplicity 1
-	 */
-	public $_host;
-	/**
-	 * @AssociationType Pkg
-	 * @AssociationMultiplicity 1
-	 */
-	public $_pkg;
-	/**
-	 * @AssociationType CvePkg
-	 * @AssociationMultiplicity 1
-	 */
-	public $_cvesPkg;
+class InstalledPkgCve
+{
+    /**
+     * @AssociationType Host
+     * @AssociationMultiplicity 1
+     */
+    public $_host;
+    /**
+     * @AssociationType Pkg
+     * @AssociationMultiplicity 1
+     */
+    public $_pkg;
+    /**
+     * @AssociationType CvePkg
+     * @AssociationMultiplicity 1
+     */
+    public $_cvesPkg;
 }
-?>

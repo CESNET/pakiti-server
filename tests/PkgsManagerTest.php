@@ -68,18 +68,14 @@ class PkgsManagerTest extends PHPUnit_Framework_TestCase
 
     public function testGetInstalledPkgs()
     {
-
-       $installedPkgs2 = self::$_testData->getPakiti()->getManager("PkgsManager")->getInstalledPkgs(self::$_testData->getHost());
-
-       $this->assertEquals(array(self::$_testData->getPkg1(), self::$_testData->getPkg2()), $installedPkgs2);
+        $installedPkgs2 = self::$_testData->getPakiti()->getManager("PkgsManager")->getInstalledPkgs(self::$_testData->getHost());
+        $this->assertEquals(array(self::$_testData->getPkg1(), self::$_testData->getPkg2()), $installedPkgs2);
     }
 
     public function testGetInstalledPkgsCount()
     {
-
         $pkgs_num = self::$_testData->getPakiti()->getManager("PkgsManager")->getInstalledPkgsCount(self::$_testData->getHost());
         $this->assertEquals(2, $pkgs_num);
-
     }
 
     public function testAddPkgs()
@@ -101,7 +97,7 @@ class PkgsManagerTest extends PHPUnit_Framework_TestCase
             "Test_Package2" => $record2
         );
 
-        self::$_testData->getPakiti()->getManager("PkgsManager")->addPkgs(self::$_testData->getHost(),  $installedPkgs1 );
+        self::$_testData->getPakiti()->getManager("PkgsManager")->addPkgs(self::$_testData->getHost(), $installedPkgs1);
 
         $pkg1 =  self::$_testData->getPakiti()->getDao("Pkg")->getPkg("Test_Package1", self::$_testData->getPkg1()->getVersion(), self::$_testData->getPkg1()->getRelease(), "64");
         $pkg2 = self::$_testData->getPakiti()->getDao("Pkg")->getPkg("Test_Package2", "deb7u1", self::$_testData->getPkg2()->getRelease(), self::$_testData->getPkg2()->getArch());
@@ -118,8 +114,6 @@ class PkgsManagerTest extends PHPUnit_Framework_TestCase
                 "pkgRelease" => $pkg2->getRelease(),
                 "pkgArch" => $pkg2->getArch()
             )));
-
-
     }
 
     public function testUpdatePkgs()
@@ -189,10 +183,8 @@ class PkgsManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($instPkgs, array());
     }
 
-
-
     public static function tearDownAfterClass()
     {
-       self::$_testData->deleteGeneratedTestData();
+        self::$_testData->deleteGeneratedTestData();
     }
 }

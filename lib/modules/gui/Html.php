@@ -57,7 +57,7 @@ class HTMLModule extends DefaultModule
         $this->_messages = array();
     }
 
-    /*
+    /**
      * Print fatal error and exits
      */
     public function fatalError($msg = "")
@@ -69,7 +69,7 @@ class HTMLModule extends DefaultModule
         exit;
     }
 
-    /*
+    /**
      * Gets the HTTP var value from the GET query string and sets it's value for further use.
      * If there is no value, return the default value.
      */
@@ -84,14 +84,14 @@ class HTMLModule extends DefaultModule
         return $varValue;
     }
 
-    /*
+    /**
      * Creates the query string, if the array containing httpGetVarName => httpGetVarValue is supplied,
      * the value of the supplied variables will be overwritten by the new value
      */
     public function getQueryString($httpGetVars = null)
     {
         $queryString = "?";
-        // Add supplied variables to the query string
+        # Add supplied variables to the query string
         if ($httpGetVars != null) {
             foreach ($httpGetVars as $httpGetVarName => $httpGetVarValue) {
                 $queryString .= "&{$httpGetVarName}={$httpGetVarValue}";
@@ -100,10 +100,10 @@ class HTMLModule extends DefaultModule
 
         foreach ($this->_httpGetVars as $varName => $varValue) {
             if ($httpGetVars != null && array_key_exists($varName, $httpGetVars)) {
-                // Skip it because it was set by previous statement
+                # Skip it because it was set by previous statement
                 continue;
             }
-            // Add the rest which was stored in the _httpGetVars
+            # Add the rest which was stored in the _httpGetVars
             $queryString .= "&{$varName}={$varValue}";
         }
         
@@ -123,7 +123,7 @@ class HTMLModule extends DefaultModule
     }
 
 
-    // Access control
+    # Access control
     public function checkPermission($source)
     {
         if (!$this->_acl->permission($source)) {
@@ -150,11 +150,12 @@ class HTMLModule extends DefaultModule
         return null;
     }
 
-    // Pagination
+    # Pagination
     public function setDefaultSorting($sortBy)
     {
         return $this->_defaultSorting = $sortBy;
     }
+
     public function getSortBy()
     {
         return $this->getHttpGetVar("sortBy", $this->_defaultSorting);
@@ -185,7 +186,7 @@ class HTMLModule extends DefaultModule
         return ceil($this->_numOfEntities / $this->getPageSize());
     }
 
-    // Header
+    # Header
     public function getMenuItems()
     {
         $menu = array();

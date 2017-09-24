@@ -31,120 +31,120 @@
  * @author Michal Prochazka
  * @author Jakub Mlcak
  */
-class HostGroupsManager extends DefaultManager {
-  private $_pakiti;
+class HostGroupsManager extends DefaultManager
+{
+    /**
+     * Create if not exist, else set id
+     * @return false if already exist
+     */
+    public function storeHostGroup(HostGroup &$hostGroup)
+    {
+        Utils::log(LOG_DEBUG, "Storing the hostGroup", __FILE__, __LINE__);
+        if ($hostGroup == null) {
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+            throw new Exception("HostGroup object is not valid");
+        }
 
-  public function __construct(Pakiti &$pakiti) {
-    $this->_pakiti =& $pakiti;
-  }
-
-  public function getPakiti() {
-    return $this->_pakiti;
-  }
-
-  /**
-  * Create if not exist, else set id
-  * @return false if already exist
-  */
-  public function storeHostGroup(HostGroup &$hostGroup){
-    Utils::log(LOG_DEBUG, "Storing the hostGroup", __FILE__, __LINE__);
-    if ($hostGroup == null) {
-        Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-        throw new Exception("HostGroup object is not valid");
+        $new = false;
+        $dao = $this->getPakiti()->getDao("HostGroup");
+        $hostGroup->setId($dao->getIdByName($hostGroup->getName()));
+        if ($hostGroup->getId() == -1) {
+            # HostGroup is missing, so store it
+          $dao->create($hostGroup);
+            $new = true;
+        } else {
+            $dao->update($hostGroup);
+        }
+        return $new;
     }
 
-    $new = false;
-    $dao = $this->getPakiti()->getDao("HostGroup");
-    $hostGroup->setId($dao->getIdByName($hostGroup->getName()));
-    if ($hostGroup->getId() == -1) {
-        # HostGroup is missing, so store it
-        $dao->create($hostGroup);
-        $new = true;
-    } else {
-        $dao->update($hostGroup);
-    }
-    return $new;
-  }
-
-  public function getHostGroupById($id, $userId = -1) {
-    Utils::log(LOG_DEBUG, "Getting host group by id [hostGroupId=$id]", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("HostGroup")->getById($id, $userId);  
-  }
-  
-  public function getHostGroupByName($name) {
-    Utils::log(LOG_DEBUG, "Getting host group by name [hostGroupName=$name]", __FILE__, __LINE__);
-    $dao = $this->getPakiti()->getDao("HostGroup");
-    return $dao->getById($dao->getIdByName($name));
-  }
-  
-  public function getHostGroupIdByName($name) {
-    Utils::log(LOG_DEBUG, "Getting host group ID by name [hostGroupName=$name]", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("HostGroup")->getIdByName($name);  
-  }
-
-  public function getHostGroupsByHost(Host &$host) {
-    Utils::log(LOG_DEBUG, "Getting host groups by name [host={$host->getHostname()}]", __FILE__, __LINE__);
-    $dao = $this->getPakiti()->getDao("HostGroup");
-    $ids = $dao->getIdsByHostId($host->getId());
-
-    $hostGroups = array();
-    foreach ($ids as $id) {
-      array_push($hostGroups, $dao->getById($id));
+    public function getHostGroupById($id, $userId = -1)
+    {
+        Utils::log(LOG_DEBUG, "Getting host group by id [hostGroupId=$id]", __FILE__, __LINE__);
+        return $this->getPakiti()->getDao("HostGroup")->getById($id, $userId);
     }
 
-    return $hostGroups;
-  }
-
-  public function getHostGroups($orderBy = null, $pageNum = -1, $pageSize = -1, $userId = -1) {
-    Utils::log(LOG_DEBUG, "Getting all host groups", __FILE__, __LINE__);
-    $dao = $this->getPakiti()->getDao("HostGroup");
-    $ids = $dao->getHostGroupsIds($orderBy, $pageNum, $pageSize, $userId); 
-
-    $hostGroups = array();
-    foreach ($ids as $id) {
-      array_push($hostGroups, $dao->getById($id));
+    public function getHostGroupByName($name)
+    {
+        Utils::log(LOG_DEBUG, "Getting host group by name [hostGroupName=$name]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("HostGroup");
+        return $dao->getById($dao->getIdByName($name));
     }
 
-    return $hostGroups;
-  }
+    public function getHostGroupIdByName($name)
+    {
+        Utils::log(LOG_DEBUG, "Getting host group ID by name [hostGroupName=$name]", __FILE__, __LINE__);
+        return $this->getPakiti()->getDao("HostGroup")->getIdByName($name);
+    }
 
-  /**
-   * Get host groups IDs
-   */
-  public function getHostGroupsIds($orderBy = null, $pageNum = -1, $pageSize = -1, $userId = -1) {
-    Utils::log(LOG_DEBUG, "Getting host groups IDs", __FILE__, __LINE__);
-    $dao = $this->getPakiti()->getDao("HostGroup");
-    return $dao->getHostGroupsIds($orderBy, $pageNum, $pageSize, $userId); 
-  }
+    public function getHostGroupsByHost(Host &$host)
+    {
+        Utils::log(LOG_DEBUG, "Getting host groups by name [host={$host->getHostname()}]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("HostGroup");
+        $ids = $dao->getIdsByHostId($host->getId());
 
-  public function getHostGroupsCount($userId = -1) {
-    Utils::log(LOG_DEBUG, "Getting the count of all host groups", __FILE__, __LINE__);
-    return sizeof($this->getPakiti()->getDao("HostGroup")->getHostGroupsIds(null, -1, -1, $userId));
-  }
+        $hostGroups = array();
+        foreach ($ids as $id) {
+            array_push($hostGroups, $dao->getById($id));
+        }
 
-  /*
-   * Create association between host and hostGroup
-   */
-  public function assignHostToHostGroup($hostId, $hostGroupId) {
-    Utils::log(LOG_DEBUG, "Assign host to hostGroup [hostId=" . $hostId . ",hostGroupId=" . $hostGroupId . "]", __FILE__, __LINE__);
-    $this->getPakiti()->getManager("DbManager")->query("insert ignore into HostHostGroup set
-      hostId=".$this->getPakiti()->getManager("DbManager")->escape($hostId).",
-      hostGroupId=".$this->getPakiti()->getManager("DbManager")->escape($hostGroupId));
-  }
-  
-  /*
-   * Removes the host from the host group.
-   */
-  public function removeHostFromHostGroups($hostId) {
-    Utils::log(LOG_DEBUG, "Removing the host with ID[".$hostId."] from all host groups", __FILE__, __LINE__);
-    $this->getPakiti()->getDao("HostGroup")->removeHostFromHostGroups($hostId);
-  }
+        return $hostGroups;
+    }
 
-  public function deleteHostGroup($id)
-  {
-    Utils::log(LOG_DEBUG, "Deleting hostGroup[$id]", __FILE__, __LINE__);
-    $dao = $this->getPakiti()->getDao("HostGroup");
-    return $dao->delete($id);
-  }
+    public function getHostGroups($orderBy = null, $pageNum = -1, $pageSize = -1, $userId = -1)
+    {
+        Utils::log(LOG_DEBUG, "Getting all host groups", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("HostGroup");
+        $ids = $dao->getHostGroupsIds($orderBy, $pageNum, $pageSize, $userId);
 
+        $hostGroups = array();
+        foreach ($ids as $id) {
+            array_push($hostGroups, $dao->getById($id));
+        }
+
+        return $hostGroups;
+    }
+
+    /**
+     * Get host groups IDs
+     */
+    public function getHostGroupsIds($orderBy = null, $pageNum = -1, $pageSize = -1, $userId = -1)
+    {
+        Utils::log(LOG_DEBUG, "Getting host groups IDs", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("HostGroup");
+        return $dao->getHostGroupsIds($orderBy, $pageNum, $pageSize, $userId);
+    }
+
+    public function getHostGroupsCount($userId = -1)
+    {
+        Utils::log(LOG_DEBUG, "Getting the count of all host groups", __FILE__, __LINE__);
+        return sizeof($this->getPakiti()->getDao("HostGroup")->getHostGroupsIds(null, -1, -1, $userId));
+    }
+
+    /**
+     * Create association between host and hostGroup
+     */
+    public function assignHostToHostGroup($hostId, $hostGroupId)
+    {
+        Utils::log(LOG_DEBUG, "Assign host to hostGroup [hostId=" . $hostId . ",hostGroupId=" . $hostGroupId . "]", __FILE__, __LINE__);
+        $this->getPakiti()->getManager("DbManager")->query("insert ignore into HostHostGroup set
+            hostId=".$this->getPakiti()->getManager("DbManager")->escape($hostId).",
+            hostGroupId=".$this->getPakiti()->getManager("DbManager")->escape($hostGroupId));
+    }
+
+    /**
+     * Removes the host from the host group.
+     */
+    public function removeHostFromHostGroups($hostId)
+    {
+        Utils::log(LOG_DEBUG, "Removing the host with ID[".$hostId."] from all host groups", __FILE__, __LINE__);
+        $this->getPakiti()->getDao("HostGroup")->removeHostFromHostGroups($hostId);
+    }
+
+    public function deleteHostGroup($id)
+    {
+        Utils::log(LOG_DEBUG, "Deleting hostGroup[$id]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("HostGroup");
+        return $dao->delete($id);
+    }
 }

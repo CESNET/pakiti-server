@@ -32,7 +32,7 @@
 /**
  * @author Michal Prochazka
  */
-final class AttributeNames {
+final class AttributeNames
+{
     public static $PAKITI_VERSION = "pakitiVersion";
 }
-?>

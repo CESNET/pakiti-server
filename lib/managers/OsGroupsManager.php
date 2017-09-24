@@ -34,9 +34,9 @@
 class OsGroupsManager extends DefaultManager
 {
     /**
-    * Create if not exist, else set id
-    * @return false if already exist
-    */
+     * Create if not exist, else set id
+     * @return false if already exist
+     */
     public function storeOsGroup(OsGroup &$osGroup)
     {
         Utils::log(LOG_DEBUG, "Storing the osGroup", __FILE__, __LINE__);

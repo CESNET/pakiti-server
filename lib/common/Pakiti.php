@@ -30,49 +30,53 @@
 /**
  * @author Michal Prochazka
  */
-final class Pakiti {
-  private $_dbManager = null;
-  private $_hostsManager = null;
-  private $_hostGroupsManager = null;
-  private $_reportsManager = null;
-  
-  public function init() {
-    # Setup logging facility
-    openlog("Pakiti", LOG_PERROR | LOG_ODELAY, LOG_LOCAL0);
+final class Pakiti
+{
+    private $_dbManager = null;
+    private $_hostsManager = null;
+    private $_hostGroupsManager = null;
+    private $_reportsManager = null;
 
-    Utils::log(LOG_DEBUG, "Pakiti initialized", __FILE__, __LINE__);
-  }
-  
-  public function checkDBVersion() {
-    # Check if the Pakiti DB is in correct version
-    $dbVersion = $this->getManager("DbManager")->queryToSingleValue("select attrValue from PakitiAttributes where attrName='".AttributeNames::$PAKITI_VERSION."'");
+    public function init()
+    {
+        # Setup logging facility
+        openlog("Pakiti", LOG_PERROR | LOG_ODELAY, LOG_LOCAL0);
 
-    if ($dbVersion != Constants::$PAKITI_VERSION) {
-      throw new Exception("Pakiti version doesn't correspond with the Pakiti database version!");
+        Utils::log(LOG_DEBUG, "Pakiti initialized", __FILE__, __LINE__);
     }
-  }
-  
-  /*
-   * Get the manager by its name, e.g.'DbManager'. Manager is initialized if it was never used before.
-   */
-  public function getManager($name) {
-    # Get the first charactar and make it lowercase
-    $lcFirstChar = strtolower(substr($name, 0, 1));
-    $propertyName = $lcFirstChar . substr($name, 1);
-    eval("\$manager =& \$this->_$propertyName;");
-    
-    if ($manager == null) {
-      eval("\$manager = new $name(\$this);");
+
+    public function checkDBVersion()
+    {
+        # Check if the Pakiti DB is in correct version
+        $dbVersion = $this->getManager("DbManager")->queryToSingleValue("select attrValue from PakitiAttributes where attrName='".AttributeNames::$PAKITI_VERSION."'");
+
+        if ($dbVersion != Constants::$PAKITI_VERSION) {
+            throw new Exception("Pakiti version doesn't correspond with the Pakiti database version!");
+        }
     }
-    return $manager;
-  }
-  
-  /*
-   * Get the DAO of the requested className
-   */
-  public function getDao($className) {
-   eval("\$dao = new ${className}Dao(\$this->getManager(\"DbManager\"));");
-   return $dao;
-  }
+
+    /**
+     * Get the manager by its name, e.g.'DbManager'. Manager is initialized if it was never used before.
+     */
+    public function getManager($name)
+    {
+        # Get the first charactar and make it lowercase
+        $lcFirstChar = strtolower(substr($name, 0, 1));
+        $propertyName = $lcFirstChar . substr($name, 1);
+        eval("\$manager =& \$this->_$propertyName;");
+        
+        if ($manager == null) {
+            eval("\$manager = new $name(\$this);");
+        }
+        return $manager;
+    }
+
+    /**
+     * Get the DAO of the requested className
+     */
+    public function getDao($className)
+    {
+        eval("\$dao = new ${className}Dao(\$this->getManager(\"DbManager\"));");
+        return $dao;
+    }
 }
-?>

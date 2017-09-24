@@ -38,7 +38,6 @@ require(realpath(dirname(__FILE__)) . '/../lib/common/Loader.php');
  */
 class GenerateTestData
 {
-
     private static $_pakiti;
     private static $_pkg1;
     private static $_pkg2;
@@ -239,7 +238,4 @@ class GenerateTestData
         self::$_pakiti->getDao("InstalledPkg")->delete(self::$_installedPkg2);
         self::$_pakiti->getManager("DbManager")->commit();
     }
-
-
-
 }

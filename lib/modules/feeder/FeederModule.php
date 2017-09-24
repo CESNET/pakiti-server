@@ -64,28 +64,33 @@ class FeederModule extends DefaultModule
           version 5 == format introduced to support wLCG middleware reporter
         */
         $this->_protocolVersion = Utils::getHttpVar(Constants::$PROTOCOL_VERSION);
-        if ($this->_protocolVersion === NULL) {
+        if ($this->_protocolVersion === null) {
             $this->_protocolVersion = Utils::getHttpVar(Constants::$REPORT_VERSION); /* backwards compatibility with pakiti2 clients */
-            if ($this->_protocolVersion === NULL)
+            if ($this->_protocolVersion === null) {
                 $this->_protocolVersion = "5";
+            }
         }
 
         $this->_reportProcessMode = Constants::$STORE_ONLY;
 
         $mode = Utils::getHttpVar(Constants::$PROTOCOL_PROCESSING_MODE);
-        if ($mode === NULL)
-            $mode = Utils::getHttpVar(Constants::$REPORT_REPORT); /* backwards compatibility with pakiti2 clients */
+        if ($mode === null) {
+            $mode = Utils::getHttpVar(Constants::$REPORT_REPORT);
+        }
 
-        if ($mode != NULL) {
-            if ($mode == "0")
+        /* backwards compatibility with pakiti2 clients */
+        if ($mode != null) {
+            if ($mode == "0") {
                 $mode = Constants::$STORE_ONLY;
-            elseif ($mode == "1")
+            } elseif ($mode == "1") {
                 $mode = Constants::$STORE_AND_REPORT;
-            elseif ($mode == "2")
+            } elseif ($mode == "2") {
                 $mode = Constants::$REPORT_ONLY;
+            }
 
-            if (! in_array($mode, array(Constants::$STORE_ONLY, Constants::$STORE_AND_REPORT, Constants::$REPORT_ONLY)))
+            if (! in_array($mode, array(Constants::$STORE_ONLY, Constants::$STORE_AND_REPORT, Constants::$REPORT_ONLY))) {
                 throw new Exception("Unsupported processing mode requested ('" . $mode . "')");
+            }
 
             $this->_reportProcessMode = $mode;
         }
@@ -131,13 +136,13 @@ class FeederModule extends DefaultModule
 
     public function getResult()
     {
-        if(!Utils::isConnectionSecure()){
+        if (!Utils::isConnectionSecure()) {
             return;
         }
-        if($this->_reportProcessMode == Constants::$STORE_ONLY){
+        if ($this->_reportProcessMode == Constants::$STORE_ONLY) {
             return "";
         }
-        if($this->_reportProcessMode == Constants::$REPORT_ONLY){
+        if ($this->_reportProcessMode == Constants::$REPORT_ONLY) {
             $pkgs = $this->_pkgs;
             $os = $this->_host->getOs();
         } else {
@@ -166,7 +171,7 @@ class FeederModule extends DefaultModule
         return $result;
     }
 
-    /*
+    /**
      * Returns hostname of the reporting machine
      */
     public function getReportHost()
@@ -174,7 +179,7 @@ class FeederModule extends DefaultModule
         return $this->_host->getReporterHostname();
     }
 
-    /*
+    /**
      * Maps variables from the reports (depends on the report version) onto the local variables
      */
     private function doReportMapping($protocol_version)
@@ -216,19 +221,19 @@ class FeederModule extends DefaultModule
                 $data = file_get_contents("php://input");
                 
                 // Throw Exception if input stream are empty
-                if($data == ""){
+                if ($data == "") {
                     throw new Exception("Feeder [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "] doesn't send any data!");
                 }
                 
                 $tmpFileIn = tempnam("/dev/shm/", "pakiti3_IN_");
                 # Store encrypted report into the file and the use openssl smime to decode it
-                if (file_put_contents($tmpFileIn, $data) === FALSE) {
+                if (file_put_contents($tmpFileIn, $data) === false) {
                     throw new Exception("Cannot write to the file '$tmpFileIn' during decoding report");
                 }
                 # If mime type is application/octet-stream try to decrypt data, else use data without decryption
                 if (mime_content_type($tmpFileIn) == Constants::$MIME_TYPE_ENCRYPTED_REPORT) {
                     $tmpFileOut = tempnam("/dev/shm/", "pakiti3_OUT_");
-                    if (system("openssl smime -decrypt -binary -inform DER -inkey " . Config::$REPORT_DECRYPTION_KEY . " -in $tmpFileIn -out $tmpFileOut") === FALSE) {
+                    if (system("openssl smime -decrypt -binary -inform DER -inkey " . Config::$REPORT_DECRYPTION_KEY . " -in $tmpFileIn -out $tmpFileOut") === false) {
                         throw new Exception("Cannot run openssl smime on the file '$tmpFileIn'");
                     }
                     # Clean up
@@ -281,12 +286,14 @@ class FeederModule extends DefaultModule
                     }
 
                     while (($line = fgets($handle)) !== false) {
-                        if (trim($line) == "#" || empty($line)) continue;
+                        if (trim($line) == "#" || empty($line)) {
+                            continue;
+                        }
                         # Store packages into the internal variable
                         $this->_report_pkgs .= $line;
                     }
                 } else {
-                    // error opening the file.
+                    # error opening the file.
                     throw new Exception("Cannot open file with the report '$tmpFileOut'");
                 }
                 fclose($handle);
@@ -295,25 +302,24 @@ class FeederModule extends DefaultModule
 
             default:
                 throw new Exception("Unsupported protocol version sent by the client ($protocol_version)");
+                break;
         }
     }
 
-    /*
+    /**
      * Process the report, stores the data about the host, installed packages and report itself.
      */
     public function processReport()
     {
-        if($this->_reportProcessMode != Constants::$REPORT_ONLY){
-
+        if ($this->_reportProcessMode != Constants::$REPORT_ONLY) {
             # If host want save report to database
-            if(!$this->isHostSentNewData()){
+            if (!$this->isHostSentNewData()) {
                 # If host doesn't sent new data
                 $this->processReportWithSameData();
             } else {
                 # If host sent new data, process report one by one
                 $this->processReportWithNewData();
             }
-
         } else {
             # If host want only check for vulnerabilities, process one by one (because of storing pkgs)
             $this->processReportWithoutSavingToDtb();
@@ -399,8 +405,8 @@ class FeederModule extends DefaultModule
 
         # Start the transaction
         $dbManager->begin();
-        try {
 
+        try {
             # Store OS
             $os = new Os();
             $os->setName($this->_host->getOsName());
@@ -426,7 +432,7 @@ class FeederModule extends DefaultModule
         sem_release($semaphore);
     }
 
-    /*
+    /**
      * Process all received entries
      */
     public function prepareReport()
@@ -453,15 +459,14 @@ class FeederModule extends DefaultModule
         $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
 
         # Set HostGroup
-        if($this->_report_site != null){
+        if ($this->_report_site != null) {
             $this->_host->setHostGroupName($this->_report_site);
         } else {
             $this->_host->setHostGroupName(Constants::$NA);
         }
-
     }
 
-    /*
+    /**
      * Store Host
      */
     public function storeHost()
@@ -481,7 +486,7 @@ class FeederModule extends DefaultModule
         $this->getPakiti()->getManager("HostGroupsManager")->assignHostToHostGroup($this->_host->getId(), $hostGroup->getId());
     }
 
-    /*
+    /**
      * Store the report
      */
     public function storeReport()
@@ -493,7 +498,7 @@ class FeederModule extends DefaultModule
         $this->_report->setNumOfCvesWithTag(sizeof($this->getPakiti()->getManager("CvesManager")->getCvesNamesForHost($this->_host->getId(), true)));
 
         # Get number of installed packages and set to the new report
-        if($this->_report->getNumOfInstalledPkgs() == -1){
+        if ($this->_report->getNumOfInstalledPkgs() == -1) {
             $this->_report->setNumOfInstalledPkgs($this->getPakiti()->getManager("PkgsManager")->getPkgsCount(null, -1, -1, $this->_host->getId()));
         }
 
@@ -514,7 +519,7 @@ class FeederModule extends DefaultModule
     {
         # Get host if exist
         $id = $this->getPakiti()->getManager("HostsManager")->getHostId($this->_host->getHostname(), $this->_host->getIp(), $this->_host->getReporterHostname(), $this->_host->getReporterIp());
-        if($id != -1){
+        if ($id != -1) {
             $this->_host = $this->getPakiti()->getManager("HostsManager")->getHostById($id);
         }
 
@@ -523,8 +528,8 @@ class FeederModule extends DefaultModule
             $lastReportHashes = $this->getPakiti()->getManager("ReportsManager")->getLastReportHashes($this->_host);
 
             # Check if the hashes are equals
-            if (($lastReportHashes != null) 
-                && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $this->_report->getHeaderHash()) 
+            if (($lastReportHashes != null)
+                && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $this->_report->getHeaderHash())
                     && ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $this->_report->getPkgsHash()))) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
                 Utils::log(LOG_INFO, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
@@ -533,10 +538,9 @@ class FeederModule extends DefaultModule
         }
 
         return true;
-
     }
 
-    /*
+    /**
      * Stores the report to the file for further processing (only applied in asynchronous mode).
      * In order to save resources, store directly variables from the HTTP request ($_GET or $_POST).
      */
@@ -558,7 +562,7 @@ class FeederModule extends DefaultModule
         }
 
         Utils::log(LOG_DEBUG, "Storing report [file=" . $file . "]", __FILE__, __LINE__);
-        while (($reportFile = fopen($file, "w")) === FALSE) {
+        while (($reportFile = fopen($file, "w")) === false) {
             $count--;
 
             # Wait a bit
@@ -567,8 +571,7 @@ class FeederModule extends DefaultModule
             # Try to create the file three times, if the operation is not successfull, then throw the exception
             if ($count == 0) {
                 Utils::log(LOG_ERR, "Error creating the file", __FILE__, __LINE__);
-                throw new Exception("Cannot create the file containing host report [host=" . $this->_host->getHostname() .
-                    ", reporterHostname=" . $this->_host->getReporterHostname() . "]");
+                throw new Exception("Cannot create the file containing host report [host=" . $this->_host->getHostname() . ", reporterHostname=" . $this->_host->getReporterHostname() . "]");
             }
             Utils::log(LOG_ERR, "Cannot create the file, trying again ($count attempts left)", __FILE__, __LINE__);
         }
@@ -587,7 +590,7 @@ class FeederModule extends DefaultModule
                     "\n";
 
                 # Store the data
-                if (fwrite($reportFile, $header . Utils::getHttpVar(Constants::$REPORT_PKGS)) == FALSE) {
+                if (fwrite($reportFile, $header . Utils::getHttpVar(Constants::$REPORT_PKGS)) == false) {
                     throw new Exception("Cannot write to the file '$file'");
                 }
                 break;
@@ -597,7 +600,7 @@ class FeederModule extends DefaultModule
         fclose($reportFile);
     }
 
-     /*
+    /**
      * Store packages
      */
     public function storePkgs()
@@ -605,40 +608,40 @@ class FeederModule extends DefaultModule
         Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
 
         $pkgsManager = $this->getPakiti()->getManager("PkgsManager");
-        if($this->_host->getId() != -1){
+        if ($this->_host->getId() != -1) {
             $installedPkgs = $pkgsManager->getPkgs(null, -1, -1, $this->_host->getId());
         }
 
         $installedPkgsArray = array();
-        foreach($installedPkgs as $installedPkg){
+        foreach ($installedPkgs as $installedPkg) {
             $installedPkgsArray[$installedPkg->getName()][] = $installedPkg;
         }
 
         $archsManager = $this->getPakiti()->getManager("ArchsManager");
         $archsNames = $archsManager->getArchsNames();
         $newPkgs = array();
-        foreach($this->_pkgs as &$pkg){
+        foreach ($this->_pkgs as &$pkg) {
             # Check if pkg is already in installed pkgs
-            if(array_key_exists($pkg->getName(), $installedPkgsArray)){
-                foreach($installedPkgsArray[$pkg->getName()] as $key => $installedPkg){
-                    if($pkg->getRelease() == $installedPkg->getRelease() 
-                    && $pkg->getVersion() == $installedPkg->getVersion() 
-                    && $pkg->getArch() == $installedPkg->getArch() 
-                    && $pkg->getType() == $installedPkg->getType()){
+            if (array_key_exists($pkg->getName(), $installedPkgsArray)) {
+                foreach ($installedPkgsArray[$pkg->getName()] as $key => $installedPkg) {
+                    if ($pkg->getRelease() == $installedPkg->getRelease()
+                        && $pkg->getVersion() == $installedPkg->getVersion()
+                        && $pkg->getArch() == $installedPkg->getArch()
+                        && $pkg->getType() == $installedPkg->getType()) {
                         $pkg->setId($installedPkg->getId());
                         break;
                     }
                 }
             }
             # If pkg isn't in installed pkgs yet
-            if($pkg->getId() == -1){
-                if(!in_array($pkg->getArch(), $archsNames)){
+            if ($pkg->getId() == -1) {
+                if (!in_array($pkg->getArch(), $archsNames)) {
                     $arch = new Arch();
                     $arch->setName($pkg->getArch());
                     $archsManager->storeArch($arch);
                     array_push($archsNames, $arch->getName());
                 }
-                if($pkgsManager->storePkg($pkg)){
+                if ($pkgsManager->storePkg($pkg)) {
                     array_push($newPkgs, $pkg);
                 }
             }
@@ -648,14 +651,18 @@ class FeederModule extends DefaultModule
         $vulnerabilitiesManager->calculateVulnerabilitiesForPkgs($newPkgs);
 
         # Assign pkgs with Host
-        if($this->_host->getId() != -1){
-            $pkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $this->_pkgs);
-            $installedPkgsIds = array_map(function ($pkg) { return $pkg->getId(); }, $installedPkgs);
+        if ($this->_host->getId() != -1) {
+            $pkgsIds = array_map(function ($pkg) {
+                return $pkg->getId();
+            }, $this->_pkgs);
+            $installedPkgsIds = array_map(function ($pkg) {
+                return $pkg->getId();
+            }, $installedPkgs);
             $this->getPakiti()->getManager("PkgsManager")->assignPkgsWithHost($pkgsIds, $this->_host->getId(), $installedPkgsIds);
         }
     }
 
-    /*
+    /**
      * Parse the long string containing list of installed packages.
      */
     protected function parsePkgs($pkgs, $type, $kernel, $protocol_version)
@@ -667,50 +674,51 @@ class FeederModule extends DefaultModule
 
         # Go throught the string, each entry is separated by the new line
         $tok = strtok($pkgs, "\n");
-        while ($tok !== FALSE) {
+        while ($tok !== false) {
             switch ($protocol_version) {
                 case "4":
-                    if(preg_match("/'(.*)' '(.*)' '(.*)' '(.*)'/", $tok, $entries) == 1){
+                    if (preg_match("/'(.*)' '(.*)' '(.*)' '(.*)'/", $tok, $entries) == 1) {
                         $pkgName = $entries[1];
                         $pkgVersion = $entries[2];
                         $pkgRelease = $entries[3];
                         $pkgArch = $entries[4];
                     } else {
-                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot be parsed (omitted)!" , __FILE__, __LINE__);
+                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot be parsed (omitted)!", __FILE__, __LINE__);
                     }
 
                     # If the host uses dpkg we need to split version manually to version and release by the dash.
                     # Suppress warnings, if the version doesn't contain dash, only version will be filled, release will be empty
                     if ($type == Constants::$PACKAGER_SYSTEM_DPKG) {
-                        @list ($pkgVersion, $pkgRelease) = explode('-', $pkgVersion);
+                        @list($pkgVersion, $pkgRelease) = explode('-', $pkgVersion);
                     }
                     break;
                 case "5":
-                    if(preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries) == 1){
+                    if (preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries) == 1) {
                         $pkgName = $entries[1];
                         $pkgVersion = $entries[2];
                         $pkgRelease = $entries[3];
                         $pkgArch = $entries[4];
-                    } elseif(preg_match("/(.*)[ \t](.*)[ \t](.*)/", $tok, $entries) == 1){
+                    } elseif (preg_match("/(.*)[ \t](.*)[ \t](.*)/", $tok, $entries) == 1) {
                         $pkgName = $entries[1];
                         $pkgVersion = $entries[2];
                         $pkgRelease = "";
                         $pkgArch = $entries[3];
                     } else {
-                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot be parsed (omitted)!" , __FILE__, __LINE__);
+                        Utils::log(LOG_INFO, "Package [" . $tok . "] cannot be parsed (omitted)!", __FILE__, __LINE__);
                     }
                     break;
                 default:
                     throw new Exception("Unsupported protocol version sent by the client ($protocol_version)");
+                    break;
             }
 
-            ## Remove blacklisted packages
+            # Remove blacklisted packages
+
             # Remove packages which fits the patterns provided in the configuration
             if (in_array($pkgName, Config::$IGNORE_PACKAGES)) {
                 $tok = strtok("\n");
                 continue;
             }
-            
             # Guess which package represents running kernel
             if (in_array($pkgName, Config::$KERNEL_PACKAGES_NAMES)) {
                 # Remove epoch from the version
@@ -722,7 +730,6 @@ class FeederModule extends DefaultModule
                     continue;
                 }
             }
-
             # Finally iterate through all regexp which defines packages to ignore
             foreach (Config::$IGNORE_PACKAGES_PATTERNS as &$pkgNamePattern) {
                 if (preg_match("/$pkgNamePattern/", $pkgName) == 1) {
@@ -747,7 +754,7 @@ class FeederModule extends DefaultModule
         return $parsedPkgs;
     }
 
-    /*
+    /**
      * Check whether the proxy is authorized to send the reports on behalf of the host.
      */
     protected function checkProxyAuthz($proxyHostname, $proxyIp)
@@ -756,44 +763,45 @@ class FeederModule extends DefaultModule
         switch (Config::$PROXY_AUTHENTICATION_MODE) {
             case Constants::$PROXY_AUTHN_MODE_HOSTNAME:
                 if (in_array($proxyHostname, Config::$PROXY_ALLOWED_PROXIES)) {
-                    return TRUE;
+                    return true;
                 } else {
-                    return FALSE;
+                    return false;
                 }
                 break;
             case Constants::$PROXY_AUTHN_MODE_IP:
                 if (in_array($proxyIp, Config::$PROXY_ALLOWED_PROXIES)) {
-                    return TRUE;
+                    return true;
                 } else {
-                    return FALSE;
+                    return false;
                 }
                 break;
-            case Constants::$PROXY_AUTHN_MODE_SUBJECT;
+            case Constants::$PROXY_AUTHN_MODE_SUBJECT:
                 if (in_array(Utils::getServerVar(Constants::$SSL_CLIENT_SUBJECT), Config::$PROXY_ALLOWED_PROXIES)) {
-                    return TRUE;
+                    return true;
                 } else {
-                    return FALSE;
+                    return false;
                 }
                 break;
         }
     }
 
-    /*
-    * Separates the domain name from the hostname
-    */
-    protected function guessDomain($hostname) {
+    /**
+     * Separates the domain name from the hostname
+     */
+    protected function guessDomain($hostname)
+    {
         Utils::log(LOG_DEBUG, "Guessing the domain name [hostname=$hostname]", __FILE__, __LINE__);
         # Check if $remote_host is really hostname and not only ip
-        $ipv4_regex = '/^((?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])$/m';    
+        $ipv4_regex = '/^((?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9]).){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]?[0-9])$/m';
         if (preg_match($ipv4_regex, $hostname) > 0) {
-            // We have an IPv4, so we cannot do anything more
+            # We have an IPv4, so we cannot do anything more
             return Constants::$NA;
         }
-        $ipv6_regex = '/^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/';         
+        $ipv6_regex = '/^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/';
         if (preg_match($ipv6_regex, $hostname) > 0) {
-            // We have an IPv6, so we cannot do anything more
+            # We have an IPv6, so we cannot do anything more
             return Constants::$NA;
-        } 
+        }
 
         # Separate hostname from domain name
         $domain = preg_replace('/^[\w-_]+\.(.*)$/', '\1', $hostname);
@@ -805,34 +813,35 @@ class FeederModule extends DefaultModule
             return $domain;
         }
     }
-    
-    /*
-    * Guesses the OS.
-    */
-    protected function guessOs($osName, $pkgs = array()) {
+
+    /**
+     * Guesses the OS.
+     */
+    protected function guessOs($osName, $pkgs = array())
+    {
         Utils::log(LOG_DEBUG, "Guessing the OS", __FILE__, __LINE__);
-        
+
         $osFullName = "unknown";
         # Find the package which represents the OS name/release
         $pkgsArray = array();
-        foreach($pkgs as $pkg){
+        foreach ($pkgs as $pkg) {
             $pkgsArray[$pkg->getName()][] = $pkg;
         }
         foreach (Config::$OS_NAMES_DEFINITIONS as $pkgName => &$osTmpName) {
-        if (array_key_exists($pkgName, $pkgsArray)) {
-            // Iterate over all archs
-            foreach ($pkgsArray[$pkgName] as $pkg){
+            if (array_key_exists($pkgName, $pkgsArray)) {
+                // Iterate over all archs
+            foreach ($pkgsArray[$pkgName] as $pkg) {
                 // Remove epoch if there is one
                 $osFullName = $osTmpName . " " . Utils::removeEpoch($pkg->getVersion());
                 // we have found OS Name, we can skip the others
                 break;
             }
+            }
         }
-        }
-        unset($osTmpName);  
+        unset($osTmpName);
 
         if ($osFullName == "unknown") {
-            # Try to guess the OS name from the data sent by the clent itself?    
+            # Try to guess the OS name from the data sent by the client itself?
             if ($osName != "" || $osName != "unknown") {
 
                 # The Pakiti client has sent the OS name, so canonize it
@@ -847,7 +856,7 @@ class FeederModule extends DefaultModule
                         # If there was any replacement $count will contain number of replacements
                         $osFullName = $tmpOsName;
                         break;
-                    } 
+                    }
                 }
 
                 # We do not have a rule, so log this OS
@@ -858,16 +867,16 @@ class FeederModule extends DefaultModule
                 }
             }
         }
-        return $osFullName; 
+        return $osFullName;
     }
 
-    /*
+    /**
      * Compute hash of the report header (hostname, ip, kernel, ...)
      */
     protected function computeReportHeaderHash()
     {
         Utils::log(LOG_DEBUG, "Computing the hash of the report header", __FILE__, __LINE__);
-        $header = 
+        $header =
             $this->_report_type .
             $this->_report_hostname .
             $this->_report_os .
@@ -878,7 +887,7 @@ class FeederModule extends DefaultModule
         return $this->computeHash($header);
     }
 
-    /*
+    /**
      * Compute hash of the list of packages
      */
     protected function computeReportPkgsHash()
@@ -887,7 +896,7 @@ class FeederModule extends DefaultModule
         return $this->computeHash($this->_report_pkgs);
     }
 
-    /*
+    /**
      * Compute the hash, currently MD5
      */
     protected function computeHash($string)
@@ -895,7 +904,7 @@ class FeederModule extends DefaultModule
         return md5($string);
     }
 
-    /*
+    /**
      * Make diff of the two arrays
      */
     protected function array_compare_recursive($array1, $array2)
@@ -921,5 +930,3 @@ class FeederModule extends DefaultModule
         return $diff;
     }
 }
-
-?>

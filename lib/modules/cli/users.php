@@ -65,52 +65,52 @@ if (isset($opt["h"]) || isset($opt["help"]) || !isset($opt["c"])) {
 
 switch ($opt["c"]) {
 
-  # store user
-  case "store":
-    $user = new User();
-    if (isset($opt["uid"])) {
-        $user->setUid($opt["uid"]);
-    } else {
-        die("required option uid is missing\n");
-    }
-    if (isset($opt["name"])) {
-        $user->setName($opt["name"]);
-    }
-    if (isset($opt["email"])) {
-        $user->setEmail($opt["email"]);
-    }
-    if (isset($opt["admin"])) {
-        $user->setAdmin(true);
-    }
-    if ($pakiti->getManager("UsersManager")->storeUser($user)) {
-        die("user was created\n");
-    } else {
-        die("user was updated\n");
-    }
-    break;
+    # store user
+    case "store":
+        $user = new User();
+        if (isset($opt["uid"])) {
+            $user->setUid($opt["uid"]);
+        } else {
+            die("required option uid is missing\n");
+        }
+        if (isset($opt["name"])) {
+            $user->setName($opt["name"]);
+        }
+        if (isset($opt["email"])) {
+            $user->setEmail($opt["email"]);
+        }
+        if (isset($opt["admin"])) {
+            $user->setAdmin(true);
+        }
+        if ($pakiti->getManager("UsersManager")->storeUser($user)) {
+            die("user was created\n");
+        } else {
+            die("user was updated\n");
+        }
+        break;
 
-  # delete user
-  case "delete":
-    if (isset($opt["uid"])) {
-        $id = $pakiti->getManager("UsersManager")->getUserIdByUid($opt["uid"]);
-    } else {
-        die("required option uid is missing\n");
-    }
-    if ($pakiti->getManager("UsersManager")->deleteUser($id)) {
-        die("user was deleted\n");
-    } else {
-        die("user wasn't deleted\n");
-    }
-    break;
+    # delete user
+    case "delete":
+        if (isset($opt["uid"])) {
+            $id = $pakiti->getManager("UsersManager")->getUserIdByUid($opt["uid"]);
+        } else {
+            die("required option uid is missing\n");
+        }
+        if ($pakiti->getManager("UsersManager")->deleteUser($id)) {
+            die("user was deleted\n");
+        } else {
+            die("user wasn't deleted\n");
+        }
+        break;
 
-  # list users
-  case "list":
-    $users = $pakiti->getManager("UsersManager")->getUsers();
-    print "uid\tname\temail\tadmin\n";
-    foreach ($users as $user) {
-        print $user->getUid()."\t".$user->getName()."\t".$user->getEmail()."\t".$user->isAdmin()."\n";
-    }
-    break;
+    # list users
+    case "list":
+        $users = $pakiti->getManager("UsersManager")->getUsers();
+        print "uid\tname\temail\tadmin\n";
+        foreach ($users as $user) {
+            print $user->getUid()."\t".$user->getName()."\t".$user->getEmail()."\t".$user->isAdmin()."\n";
+        }
+        break;
 
     # import users
     case "import":
@@ -220,8 +220,8 @@ switch ($opt["c"]) {
         }
         break;
 
-        # add host
-        case "addHost":
+    # add host
+    case "addHost":
         if (isset($opt["uid"])) {
             $id = $pakiti->getManager("UsersManager")->getUserIdByUid($opt["uid"]);
         } else {
@@ -241,8 +241,8 @@ switch ($opt["c"]) {
         }
         break;
 
-        # remove host
-        case "removeHost":
+    # remove host
+    case "removeHost":
         if (isset($opt["uid"])) {
             $id = $pakiti->getManager("UsersManager")->getUserIdByUid($opt["uid"]);
         } else {
@@ -262,8 +262,8 @@ switch ($opt["c"]) {
         }
         break;
 
-        # add hostGroup
-        case "addHostGroup":
+    # add hostGroup
+    case "addHostGroup":
         if (isset($opt["uid"])) {
             $id = $pakiti->getManager("UsersManager")->getUserIdByUid($opt["uid"]);
         } else {
@@ -284,8 +284,8 @@ switch ($opt["c"]) {
         }
         break;
 
-        # remove hostGroup
-        case "removeHostGroup":
+    # remove hostGroup
+    case "removeHostGroup":
         if (isset($opt["uid"])) {
             $id = $pakiti->getManager("UsersManager")->getUserIdByUid($opt["uid"]);
         } else {
@@ -306,9 +306,7 @@ switch ($opt["c"]) {
         }
         break;
 
-  default:
-    die("option -c has unknown value\n");
-    break;
+    default:
+        die("option -c has unknown value\n");
+        break;
 }
-
-?>

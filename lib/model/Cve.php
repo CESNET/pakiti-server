@@ -27,98 +27,64 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require_once(realpath(dirname(__FILE__)) . '/CvePkg.php');
-require_once(realpath(dirname(__FILE__)) . '/CveException.php');
-
 /**
  * @author Michal Prochazka
  */
-class Cve {
-	private $_id;
-	private $_name;
-	private $_cveDefId = -1;
-	private $_tag = array();
-	private $_cveExceptions = array();
+class Cve
+{
+    private $_id;
+    private $_name;
+    private $_cveDefId = -1;
+    private $_tag = array();
+    private $_cveExceptions = array();
 
-	/**
-	 * @return array
-	 */
-	public function getCveExceptions()
-	{
-		return $this->_cveExceptions;
-	}
+    public function getCveExceptions()
+    {
+        return $this->_cveExceptions;
+    }
 
-	/**
-	 * @param array $cveExceptions
-	 */
-	public function setCveExceptions($cveExceptions)
-	{
-		$this->_cveExceptions = $cveExceptions;
-	}
+    public function setCveExceptions($cveExceptions)
+    {
+        $this->_cveExceptions = $cveExceptions;
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public function getId()
-	{
-		return $this->_id;
-	}
+    public function getId()
+    {
+        return $this->_id;
+    }
 
-	/**
-	 * @param mixed $id
-	 */
-	public function setId($id)
-	{
-		$this->_id = $id;
-	}
+    public function setId($id)
+    {
+        $this->_id = $id;
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public function getName()
-	{
-		return $this->_name;
-	}
+    public function getName()
+    {
+        return $this->_name;
+    }
 
-	/**
-	 * @param mixed $name
-	 */
-	public function setName($name)
-	{
-		$this->_name = $name;
-	}
+    public function setName($name)
+    {
+        $this->_name = $name;
+    }
 
-	/**
-	 * @return mixed
-	 */
-	public function getCveDefId()
-	{
-		return $this->_cveDefId;
-	}
+    public function getCveDefId()
+    {
+        return $this->_cveDefId;
+    }
 
-	/**
-	 * @param mixed $cveDefId
-	 */
-	public function setCveDefId($cveDefId)
-	{
-		$this->_cveDefId = $cveDefId;
-	}
+    public function setCveDefId($cveDefId)
+    {
+        $this->_cveDefId = $cveDefId;
+    }
 
-	/**
-	 * @return array
-	 */
-	public function getTag()
-	{
-		return $this->_tag;
-	}
+    public function getTag()
+    {
+        return $this->_tag;
+    }
 
-	/**
-	 * @param array $tag
-	 */
-	public function setTag($tag)
-	{
-		$this->_tag = $tag;
-	}
-
+    public function setTag($tag)
+    {
+        $this->_tag = $tag;
+    }
 }
-?>

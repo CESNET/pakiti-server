@@ -33,12 +33,14 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
 /**
  * @author Michal Prochazka
  */
-class OvalRedHat extends SubSource implements ISubSource {
+class OvalRedHat extends SubSource implements ISubSource
+{
     private static $NAME = "RedHat OVAL";
     private static $TYPE = "RedHat";
     private $_xpath;
 
-    public function retrieveDefinitions() {
+    public function retrieveDefinitions()
+    {
         Utils::log(LOG_DEBUG, "Retreiving definitions from the ".OvalRedHat::getName()." OVAL", __FILE__, __LINE__);
 
         $defs = array();
@@ -48,7 +50,7 @@ class OvalRedHat extends SubSource implements ISubSource {
             libxml_set_streams_context(Utils::getStreamContext());
             $oval->load($subSourceDef->getUri());
 
-            if ($oval === FALSE) {
+            if ($oval === false) {
                 Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
                 throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
             }
@@ -73,8 +75,7 @@ class OvalRedHat extends SubSource implements ISubSource {
 
                 $def['definition_id'] = $xDefinition->attributes->getNamedItem('id')->nodeValue;
 
-                // Don't consider marginal versions, like 'Supplementary for RHEL' and the like, which
-                // easily might distort results
+                # Don't consider marginal versions, like 'Supplementary for RHEL' and the like, which easily might distort results
                 $platform_query = 'def:metadata/def:affected/def:platform';
                 $platforms = $this->_xpath->query($platform_query, $xDefinition);
                 $supported = false;
@@ -91,7 +92,9 @@ class OvalRedHat extends SubSource implements ISubSource {
                 $el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
                 if (!empty($el_severity)) {
                     $def['severity'] = $el_severity->nodeValue;
-                } else $def['severity'] = "n/a";
+                } else {
+                    $def['severity'] = "n/a";
+                }
 
                 $def['title'] = rtrim($xDefinition->getElementsByTagName('title')->item(0)->nodeValue);
 
@@ -102,7 +105,7 @@ class OvalRedHat extends SubSource implements ISubSource {
 
                 $def['ref_url'] = $xDefinition->getElementsByTagName('reference')->item(0)->getAttribute('ref_url');
 
-                // Get associated CVEs
+                # Get associated CVEs
                 $cve_query = 'def:metadata/def:advisory/def:cve';
                 $cves = $this->_xpath->query($cve_query, $xDefinition);
 
@@ -113,7 +116,7 @@ class OvalRedHat extends SubSource implements ISubSource {
                     array_push($def['cves'], $cve->nodeValue);
                 }
 
-                // Processing criteria
+                # Processing criteria
                 $root_criterias_query = 'def:criteria';
                 $root_criterias = $this->_xpath->query($root_criterias_query, $xDefinition);
 
@@ -130,52 +133,56 @@ class OvalRedHat extends SubSource implements ISubSource {
         return $defs;
     }
 
-    public function getName() {
+    public function getName()
+    {
         return OvalRedhat::$NAME;
     }
 
-    public function getType() {
+    public function getType()
+    {
         return OvalRedhat::$TYPE;
     }
 
-    /*
-      * Get the operator from the XML element: AND/OR
-      */
-    protected function getOperator(&$xElem) {
+    /**
+     * Get the operator from the XML element: AND/OR
+     */
+    protected function getOperator(&$xElem)
+    {
         if ($xElem->item(0)->getAttribute('operator') == "AND") {
             return "and";
         } elseif ($xElem->item(0)->getAttribute('operator') == "OR") {
             return "or";
         } else {
-            return NULL;
+            return null;
         }
     }
 
-    /*
+    /**
      * Extracts the RedHat release version (3, 4, 5, 6, ...)
      */
-    protected function getOsVersion(&$xElem) {
+    protected function getOsVersion(&$xElem)
+    {
         $rawOsVersion = $xElem->getAttribute('comment');
-
         # Parse the OS version from the string 'Red Hat Enterprise Linux 5 is installed'
         if (preg_match("/\.*Linux ([0-9]*) is installed$/", $rawOsVersion, $matches) == 1) {
             return $matches[1];
         } else {
-            return NULL;
+            return null;
         }
     }
 
-    /*
+    /**
      * Process list of the packages for each OS version.
      * Returns an array [osVersion] -> [pkgName => pkgVersion]*
      */
-    protected function processPkgsForOs(&$xElem) {
+    protected function processPkgsForOs(&$xElem)
+    {
         # Get the OS version from the childElement
         $childElement = $this->_xpath->query("./def:criterion", $xElem);
         $osVersion = getOsVersion($childElement->item(0));
 
         # Os cannot be detected
-        if ($osVersion == NULL) {
+        if ($osVersion == null) {
             return null;
         }
 
@@ -194,25 +201,26 @@ class OvalRedHat extends SubSource implements ISubSource {
     }
 
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference
-    protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$os, &$package){
+    protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$os, &$package)
+    {
         $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 
         if (!array_key_exists('osGroup', $res)) {
             $res['osGroup'] = array();
         }
 
-        // If we have $os and $package filled, store id
+        # If we have $os and $package filled, store id
         if ($os != null && !empty($package)) {
-            #print "Storing $os, $package\n";
+            //print "Storing $os, $package\n";
             if (!array_key_exists($os, $res['osGroup'])) {
                 $res['osGroup'][$os] = array();
             }
             array_push($res['osGroup'][$os], $package);
-            // Empty package variable
+            # Empty package variable
             $package = null;
         }
 
-        // Check if the child nodes are criterion or criteria
+        # Check if the child nodes are criterion or criteria
         $criterias_query = 'def:criteria';
         $criterions_query = 'def:criterion';
 
@@ -220,13 +228,13 @@ class OvalRedHat extends SubSource implements ISubSource {
         $criterions = $xpath->query($criterions_query, $criteriaElement);
 
         if ($criterions->length > 0) {
-            // We have found criterions, so parse them. Try to find redhat version and packages names/versions
+            # We have found criterions, so parse them. Try to find redhat version and packages names/versions
             foreach ($criterions as $criterion) {
                 $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
-                    #print "Got OS: $os\n";
+                    //print "Got OS: $os\n";
                 } elseif (strpos($comment, "is earlier than")) {
                     preg_match("/^([^ ]+) is earlier than ([^-]*)-(.*)$/", $comment, $results);
                     $package = array();
@@ -234,24 +242,24 @@ class OvalRedHat extends SubSource implements ISubSource {
                     $package['version'] = $results[2];
                     $package['release'] = $results[3];
                     $package['operator'] = '<';
-                    #print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
+                    //print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
                 }
             }
 
-            // Criterions can contain both os and package under one criteria
+            # Criterions can contain both os and package under one criteria
             if ($os != null && !empty($package)) {
-                #print "Storing $os, $package\n";
+                //print "Storing $os, $package\n";
                 if (!array_key_exists($os, $res['osGroup'])) {
                     $res['osGroup'][$os] = array();
                 }
                 array_push($res['osGroup'][$os], $package);
-                // Empty package varialble
+                # Empty package varialble
                 $package = null;
             }
         }
 
         if ($criterias->length > 0) {
-            // We have foung criterias, so pass them for further processing
+            # We have foung criterias, so pass them for further processing
             foreach ($criterias as $criteria) {
                 if ($operator == "AND") {
                     $this->processCriteriasWithReference($xpath, $criteria, $res, $os, $package);
@@ -262,38 +270,39 @@ class OvalRedHat extends SubSource implements ISubSource {
         }
     }
 
-    protected function processCriterias(&$xpath, $criteriaElement, &$res, $os, $package) {
+    protected function processCriterias(&$xpath, $criteriaElement, &$res, $os, $package)
+    {
         $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 
         if (!array_key_exists('osGroup', $res)) {
             $res['osGroup'] = array();
         }
 
-        // If we have $os and $package filled, store id
+        # If we have $os and $package filled, store id
         if ($os != null && !empty($package)) {
-            #print "Storing $os, $package\n";
+            //print "Storing $os, $package\n";
             if (!array_key_exists($os, $res['osGroup'])) {
                 $res['osGroup'][$os] = array();
             }
             array_push($res['osGroup'][$os], $package);
-            // Empty package variable
+            # Empty package variable
             $package = null;
         }
 
-        // Check if the child nodes are criterion or criteria
+        # Check if the child nodes are criterion or criteria
         $criterias_query = 'def:criteria';
         $criterions_query = 'def:criterion';
 
         $criterias = $xpath->query($criterias_query, $criteriaElement);
         $criterions = $xpath->query($criterions_query, $criteriaElement);
         if ($criterions->length > 0) {
-            // We have found criterions, so parse them. Try to find redhat version and packages names/versions
+            # We have found criterions, so parse them. Try to find redhat version and packages names/versions
             foreach ($criterions as $criterion) {
                 $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 if (strpos($comment, "is installed")) {
                     preg_match("/^Red Hat Enterprise Linux.* (\d+)[ ]*(Client|Server|Workstation|ComputeNode|)[ ]*is installed$/", $comment, $redhat_release);
                     $os = 'Red Hat Enterprise Linux ' . $redhat_release[1];
-                    #print "Got OS: $os\n";
+                    //print "Got OS: $os\n";
                 } elseif (strpos($comment, "is earlier than")) {
                     preg_match("/^([^ ]+) is earlier than ([^-]*)-(.*)$/", $comment, $results);
                     $package = array();
@@ -301,24 +310,24 @@ class OvalRedHat extends SubSource implements ISubSource {
                     $package['version'] = $results[2];
                     $package['release'] = $results[3];
                     $package['operator'] = '<';
-                    #print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
+                    //print "Got package: {$package['name']} {$package['version']} {$package['release']} \n";
                 }
             }
 
-            // Criterions can contain both os and package under one criteria
+            # Criterions can contain both os and package under one criteria
             if ($os != null && !empty($package)) {
-                #print "Storing $os, $package\n";
+                //print "Storing $os, $package\n";
                 if (!array_key_exists($os, $res['osGroup'])) {
                     $res['osGroup'][$os] = array();
                 }
                 array_push($res['osGroup'][$os], $package);
-                // Empty package varialble
+                # Empty package varialble
                 $package = null;
             }
         }
 
         if ($criterias->length > 0) {
-            // We have foung criterias, so pass them for further processing
+            # We have foung criterias, so pass them for further processing
             foreach ($criterias as $criteria) {
                 if ($operator == "AND") {
                     $this->processCriteriasWithReference($xpath, $criteria, $res, $os, $package);
@@ -328,5 +337,4 @@ class OvalRedHat extends SubSource implements ISubSource {
             }
         }
     }
-
 }

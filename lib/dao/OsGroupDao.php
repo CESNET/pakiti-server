@@ -107,7 +107,7 @@ class OsGroupDao
     public function unassignOsesFromOsGroup($osGroupId)
     {
         $sql = "delete from OsOsGroup
-      where osGroupId='" . $this->db->escape($osGroupId) . "'";
+            where osGroupId='" . $this->db->escape($osGroupId) . "'";
         $this->db->query($sql);
     }
 }

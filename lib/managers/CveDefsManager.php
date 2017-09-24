@@ -51,8 +51,7 @@ class CveDefsManager extends DefaultManager
 
     public function assignPkgToCveDef($pkgId, $cveDefId, $osGroupId)
     {
-        $this->getPakiti()->getManager("DbManager")->query("insert ignore into PkgCveDef set pkgId={$pkgId},
-        cveDefId={$cveDefId}, osGroupId={$osGroupId}");
+        $this->getPakiti()->getManager("DbManager")->query("insert ignore into PkgCveDef set pkgId={$pkgId}, cveDefId={$cveDefId}, osGroupId={$osGroupId}");
     }
 
     public function getCvesByName($name)
