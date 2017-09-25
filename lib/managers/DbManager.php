@@ -67,8 +67,12 @@ final class DbManager {
   /*
    * Escape SQL parameters
    */
-  public function escape($string) {
-    return $this->_dbLink->real_escape_string(htmlspecialchars($string));
+  public function escape($string, $like = false) {
+    $str = $this->_dbLink->real_escape_string(htmlspecialchars($string));
+    if ($like) {
+      $str = str_replace("_", "\_", str_replace("%", "\%", $str));
+    }
+    return $str;
   }
 
   /*

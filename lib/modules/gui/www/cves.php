@@ -36,20 +36,21 @@ $html = new HtmlModule($pakiti);
 // Access control
 $html->checkPermission("host");
 
-$tag = $html->getHttpGetVar("tag", null);
-if ($tag == "true") {
-    $tag = true;
+$_id = $html->getHttpGetVar("hostId", -1);
+$_tag = $html->getHttpGetVar("tag", null);
+if ($_tag == "true") {
+    $_tag = true;
 }
 
-$host = $pakiti->getManager("HostsManager")->getHostById($html->getHttpGetVar("hostId", -1), $html->getUserId());
+$host = $pakiti->getManager("HostsManager")->getHostById($_id, $html->getUserId());
 if ($host == null) {
-    $html->fatalError("Host with id " . $id . " doesn't exist or access denied");
+    $html->fatalError("Host with id " . $_id . " doesn't exist or access denied");
     exit;
 }
 
 $html->setTitle("Host: " . $host->getHostname());
 
-$pkgs = $pakiti->getManager("PkgsManager")->getVulnerablePkgsForHost($host->getId(), $tag);
+$pkgs = $pakiti->getManager("PkgsManager")->getVulnerablePkgsForHost($host->getId(), $_tag);
 
 // HTML
 ?>
@@ -68,7 +69,7 @@ $pkgs = $pakiti->getManager("PkgsManager")->getVulnerablePkgsForHost($host->getI
 
 <div class="checkbox">
     <label>
-        <input type="checkbox" onclick="location.href='?hostId=<?php echo $host->getId(); ?><?php if ($tag !== true) echo '&tag=true'; ?>';"<?php if ($tag === true) echo ' checked'; ?>> Only tagged CVEs
+        <input type="checkbox" onclick="location.href='?hostId=<?php echo $host->getId(); ?><?php if ($_tag !== true) echo '&tag=true'; ?>';"<?php if ($_tag === true) echo ' checked'; ?>> Only tagged CVEs
     </label>
 </div>
 
@@ -85,7 +86,7 @@ $pkgs = $pakiti->getManager("PkgsManager")->getVulnerablePkgsForHost($host->getI
     </thead>
     <tbody>
         <?php foreach ($pkgs as $pkg) { ?>
-            <?php $cvesNames = $pakiti->getManager("CvesManager")->getCvesNamesForPkgAndOs($pkg->getId(), $host->getOsId(), $tag); ?>
+            <?php $cvesNames = $pakiti->getManager("CvesManager")->getCvesNamesForPkgAndOs($pkg->getId(), $host->getOsId(), $_tag); ?>
             <tr>
                 <td><?php echo $pkg->getName(); ?></td>
                 <td><?php echo $pkg->getVersionRelease(); ?></td>

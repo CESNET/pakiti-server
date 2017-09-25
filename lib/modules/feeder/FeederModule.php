@@ -142,7 +142,7 @@ class FeederModule extends DefaultModule
             $os = $this->_host->getOs();
         } else {
             $host = $this->getPakiti()->getManager("HostsManager")->getHostById($this->_host->getId());
-            $pkgs = $this->getPakiti()->getManager("PkgsManager")->getInstalledPkgs($host);
+            $pkgs = $this->getPakiti()->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
             $os = $host->getOs();
         }
 
@@ -494,7 +494,7 @@ class FeederModule extends DefaultModule
 
         # Get number of installed packages and set to the new report
         if($this->_report->getNumOfInstalledPkgs() == -1){
-            $this->_report->setNumOfInstalledPkgs($this->getPakiti()->getManager("PkgsManager")->getInstalledPkgsCount($this->_host));
+            $this->_report->setNumOfInstalledPkgs($this->getPakiti()->getManager("PkgsManager")->getPkgsCount(null, -1, -1, $this->_host->getId()));
         }
 
         # Set HostGroup
@@ -606,7 +606,7 @@ class FeederModule extends DefaultModule
 
         $pkgsManager = $this->getPakiti()->getManager("PkgsManager");
         if($this->_host->getId() != -1){
-            $installedPkgs = $pkgsManager->getInstalledPkgs($this->_host);
+            $installedPkgs = $pkgsManager->getPkgs(null, -1, -1, $this->_host->getId());
         }
 
         $installedPkgsArray = array();

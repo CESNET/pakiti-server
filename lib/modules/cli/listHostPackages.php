@@ -51,7 +51,7 @@ $hostname = !empty($opt["h"]) ? $opt["h"] :
  
 $host = $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
 
-$pkgs = $pakiti->getManager("PkgsManager")->getInstalledPkgs($host);
+$pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
 
 print "name\tversion\trelease\tarch\n";
 print "-------------------------------------------------------------------\n";

@@ -64,44 +64,29 @@ class PkgsManager extends DefaultManager {
     return $new;
   }
 
-  public function getInstalledPkgsAsArray(Host $host) {
-    if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
-    }
-    Utils::log(LOG_DEBUG, "Getting the packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
-
-    return $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsAsArray($host);
-  }
-
-  /*
-   * Returns the array of the pkgs. Array is sorted by the key (pkgName).
-   */
-  public function getInstalledPkgs(Host &$host, $orderBy = "id", $pageSize = -1, $pageNum = -1) {
-    if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
-    }
-    Utils::log(LOG_DEBUG, "Getting the packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
-    
-    $pkgs =& $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgs($host, $orderBy, $pageSize, $pageNum);
-
-    return $pkgs;
-  }
-
-    /*
-     * Returns count of installed pkgs.
+    /**
+     * Get pkgs
      */
-  public function getInstalledPkgsCount(Host &$host) {
-    if (($host == null) || ($host->getId() == -1)) {
-      Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-      throw new Exception("Host object is not valid or Host.id is not set");
-    }
-    Utils::log(LOG_DEBUG, "Getting the count of installed packages stored in the DB [hostId=" . $host->getId() . "]", __FILE__, __LINE__);
-    
-    return $this->getPakiti()->getDao("InstalledPkg")->getInstalledPkgsCount($host->getId());
-  }
+    public function getPkgs($orderBy = null, $pageSize = -1, $pageNum = -1, $hostId = -1, $search = null)
+    {
+        Utils::log(LOG_DEBUG, "Getting all pkgs", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Pkg");
+        $pkgsIds = $dao->getPkgsIds($orderBy, $pageSize, $pageNum, $hostId, $search);
 
+        $pkgs = array();
+        foreach ($pkgsIds as $id) {
+            array_push($pkgs, $dao->getById($id));
+        }
+        return $pkgs;
+    }
+
+    /**
+     * Get pkgs count
+     */
+    public function getPkgsCount($hostId = -1, $search = null) {
+        Utils::log(LOG_DEBUG, "Getting pkgs count", __FILE__, __LINE__);
+        return sizeof($this->getPakiti()->getDao("Pkg")->getPkgsIds(null, -1, -1, $hostId, $search));
+    }
 
   /** Return Packages by CveName and Os Group
    * @param $cveName
@@ -135,11 +120,6 @@ class PkgsManager extends DefaultManager {
     Utils::log(LOG_DEBUG, "Getting unused packages from DB", __FILE__, __LINE__);
     $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch, Pkg.type as _type from Pkg where Pkg.id not in (select pkgId from InstalledPkg)";
     return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
-  }
-
-  public function getPkgsCount(){
-    Utils::log(LOG_DEBUG, "Getting packages count", __FILE__, __LINE__);
-    return $this->getPakiti()->getDao("Pkg")->getPkgsCount();
   }
 
   public function getPkgId($name, $version, $release, $arch, $type)
@@ -220,14 +200,14 @@ class PkgsManager extends DefaultManager {
   {
     Utils::log(LOG_DEBUG, "Assign Pkgs with Host", __FILE__, __LINE__);
 
-    $installedPkgDao = $this->getPakiti()->getDao("InstalledPkg");
+    $dao = $this->getPakiti()->getDao("Pkg");
     $pkgsIdsToAdd = array_diff($pkgsIds, $installedPkgsIds);
     $pkgsIdsToRemove = array_diff($installedPkgsIds, $pkgsIds);
     foreach($pkgsIdsToAdd as $pkgId){
-      $installedPkgDao->createByHostIdAndPkgId($hostId, $pkgId);
+      $dao->assignPkgToHost($pkgId, $hostId);
     }
     foreach($pkgsIdsToRemove as $pkgId){
-      $installedPkgDao->removeByHostIdAndPkgId($hostId, $pkgId);
+      $dao->unassignPkgToHost($pkgId, $hostId);
     }
   }
 
