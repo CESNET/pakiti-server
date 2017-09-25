@@ -499,7 +499,7 @@ class FeederModule extends DefaultModule
 
         # Get number of installed packages and set to the new report
         if ($this->_report->getNumOfInstalledPkgs() == -1) {
-            $this->_report->setNumOfInstalledPkgs($this->getPakiti()->getManager("PkgsManager")->getPkgsCount(null, -1, -1, $this->_host->getId()));
+            $this->_report->setNumOfInstalledPkgs($this->getPakiti()->getManager("PkgsManager")->getPkgsCount($this->_host->getId()));
         }
 
         # Set HostGroup
