@@ -30,135 +30,160 @@
 /**
  * @author Michal Prochazka
  */
-class Report {
-	private $_id = -1;
-	private $_receivedOn;
-	private $_processedOn;
-	private $_throughProxy;
-	private $_proxyHostname = null;
-	private $_hostGroup;
-	private $_source;
-	private $_numOfInstalledPkgs = -1;
-	private $_numOfVulnerablePkgsSec = 0;
-	private $_numOfVulnerablePkgsNorm = 0;
-	private $_numOfCves = -1;
-	private $_numOfCvesWithTag = -1;
-	private $_headerHash;
-	private $_pkgsHash;
-	
-	public function Report() {
-	}
-	
-	public function getId() {
-	  return $this->_id;
-	}
-	
-  public function getReceivedOn() {
-	  return $this->_receivedOn;
-	}
-	
-  public function getProcessedOn() {
-	  return $this->_processedOn;
-	}
-	
-  public function getThroughProxy() {
-	  return $this->_throughProxy;
-	}
-	
-  public function getHostGroup() {
-	  return $this->_hostGroup;
-	}
-	
-  public function getSource() {
-	  return $this->_source;
-	}
-	
-  public function getNumOfInstalledPkgs() {
-	  return $this->_numOfInstalledPkgs;
-	}
-	
-  public function getNumOfVulnerablePkgsSec() {
-	  return $this->_numOfVulnerablePkgsSec;
-	}
-	
-  public function getNumOfVulnerablePkgsNorm() {
-	  return $this->_numOfVulnerablePkgsNorm;
-	}
-	
-  public function getNumOfCves() {
-	  return $this->_numOfCves;
-	}
+class Report
+{
+    private $_id = -1;
+    private $_receivedOn;
+    private $_processedOn;
+    private $_throughProxy;
+    private $_proxyHostname = null;
+    private $_hostGroup;
+    private $_source;
+    private $_numOfInstalledPkgs = -1;
+    private $_numOfVulnerablePkgsSec = 0;
+    private $_numOfVulnerablePkgsNorm = 0;
+    private $_numOfCves = -1;
+    private $_numOfCvesWithTag = -1;
+    private $_headerHash;
+    private $_pkgsHash;
 
-  public function getNumOfCvesWithTag() {
-	  return $this->_numOfCvesWithTag;
-	}
+    public function getId()
+    {
+        return $this->_id;
+    }
 
-  public function getProxyHostname() {
-	  return $this->_proxyHostname;
-	}
+    public function getReceivedOn()
+    {
+        return $this->_receivedOn;
+    }
 
-  public function getHeaderHash() {
-	  return $this->_headerHash;
-	}
+    public function getProcessedOn()
+    {
+        return $this->_processedOn;
+    }
 
-  public function getPkgsHash() {
-	  return $this->_pkgsHash;
-	}
+    public function getThroughProxy()
+    {
+        return $this->_throughProxy;
+    }
 
-  public function setId($val) {
-	  $this->_id = $val;
-	}
-	
-  public function setReceivedOn($val) {
-	  $this->_receivedOn = $val;
-	}
-	
-  public function setProcessedOn($val) {
-	  $this->_processedOn = $val;
-	}
-	
-  public function setTroughtProxy($val) {
-	  $this->_throughProxy = $val;
-	}
+    public function getHostGroup()
+    {
+        return $this->_hostGroup;
+    }
 
-  public function setHostGroup($val) {
-	  $this->_hostGroup = $val;
-	}
+    public function getSource()
+    {
+        return $this->_source;
+    }
 
-  public function setSource($val) {
-	  $this->_source = $val;
-	}
-	
-  public function setNumOfInstalledPkgs($val) {
-	  $this->_numOfInstalledPkgs = $val;
-	}
-	
-  public function setNumOfVulnerablePkgsSec($val) {
-	  $this->_numOfVulnerablePkgsSec = $val;
-	}
-	
-  public function setNumOfVulnerablePkgsNorm($val) {
-	  $this->_numOfVulnerablePkgsNorm = $val;
-	}
-	
-  public function setNumOfCves($val) {
-	  $this->_numOfCves = $val;
-	}
+    public function getNumOfInstalledPkgs()
+    {
+        return $this->_numOfInstalledPkgs;
+    }
 
-  public function setNumOfCvesWithTag($val) {
-	  $this->_numOfCvesWithTag = $val;
-	}
+    public function getNumOfVulnerablePkgsSec()
+    {
+        return $this->_numOfVulnerablePkgsSec;
+    }
 
-  public function setProxyHostname($val) {
-	  $this->_proxyHostname = $val;
-	}
+    public function getNumOfVulnerablePkgsNorm()
+    {
+        return $this->_numOfVulnerablePkgsNorm;
+    }
 
-  public function setHeaderHash($val) {
-	  return $this->_headerHash = $val;
-	}
+    public function getNumOfCves()
+    {
+        return $this->_numOfCves;
+    }
 
-  public function setPkgsHash($val) {
-	  return $this->_pkgsHash = $val;
-	}
+    public function getNumOfCvesWithTag()
+    {
+        return $this->_numOfCvesWithTag;
+    }
+
+    public function getProxyHostname()
+    {
+        return $this->_proxyHostname;
+    }
+
+    public function getHeaderHash()
+    {
+        return $this->_headerHash;
+    }
+
+    public function getPkgsHash()
+    {
+        return $this->_pkgsHash;
+    }
+
+    public function setId($val)
+    {
+        $this->_id = $val;
+    }
+
+    public function setReceivedOn($val)
+    {
+        $this->_receivedOn = $val;
+    }
+
+    public function setProcessedOn($val)
+    {
+        $this->_processedOn = $val;
+    }
+
+    public function setTroughtProxy($val)
+    {
+        $this->_throughProxy = $val;
+    }
+
+    public function setHostGroup($val)
+    {
+        $this->_hostGroup = $val;
+    }
+
+    public function setSource($val)
+    {
+        $this->_source = $val;
+    }
+
+    public function setNumOfInstalledPkgs($val)
+    {
+        $this->_numOfInstalledPkgs = $val;
+    }
+
+    public function setNumOfVulnerablePkgsSec($val)
+    {
+        $this->_numOfVulnerablePkgsSec = $val;
+    }
+
+    public function setNumOfVulnerablePkgsNorm($val)
+    {
+        $this->_numOfVulnerablePkgsNorm = $val;
+    }
+
+    public function setNumOfCves($val)
+    {
+        $this->_numOfCves = $val;
+    }
+
+    public function setNumOfCvesWithTag($val)
+    {
+        $this->_numOfCvesWithTag = $val;
+    }
+
+    public function setProxyHostname($val)
+    {
+        $this->_proxyHostname = $val;
+    }
+
+    public function setHeaderHash($val)
+    {
+        return $this->_headerHash = $val;
+    }
+
+    public function setPkgsHash($val)
+    {
+        return $this->_pkgsHash = $val;
+    }
 }
-?>

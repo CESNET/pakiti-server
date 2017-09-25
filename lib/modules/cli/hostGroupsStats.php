@@ -30,21 +30,21 @@
 
 require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-$shortopts = "hf:t:"; # Command
+$shortopts = "hf:t:";
 
 $longopts = array(
-      "help",
-      "from:",
-      "to:"
+    "help",
+    "from:",
+    "to:"
 );
 
 function usage()
 {
     die("Usage: hostGroupsStats.php [OPTIONS]
-    -h, --help \t Display this help and exit.
-    -f, --from \t The start date(Y-m-d) of the statistics (incl.)
-    -t, --to \t The last date(Y-m-d) of the statistics (incl.)
-    \n");
+        -h, --help \t Display this help and exit.
+        -f, --from \t The start date(Y-m-d) of the statistics (incl.)
+        -t, --to \t The last date(Y-m-d) of the statistics (incl.)
+        \n");
 }
 
 $opt = getopt($shortopts, $longopts);

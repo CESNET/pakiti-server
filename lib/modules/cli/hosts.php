@@ -33,9 +33,9 @@ require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 $shortopts = "c:h";
 
 $longopts = array(
-      "id:",
-      "inactiveDays:",
-      "help",
+    "id:",
+    "inactiveDays:",
+    "help",
 );
 
 function usage()

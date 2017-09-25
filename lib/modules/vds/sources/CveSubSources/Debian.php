@@ -42,19 +42,18 @@ class Debian extends SubSource implements ISubSource
     public function loadDSA()
     {
         $path = realpath('/tmp/pakiti-debian');
-        if ($path === false OR !is_dir($path)) {
+        if ($path === false or !is_dir($path)) {
             mkdir('/tmp/pakiti-debian', $mode = 0755, $recursive = true);
         }
 
         chdir('/tmp/pakiti-debian/');
         $path = realpath('/tmp/pakiti-debian/DSA');
-        if ($path === false OR !is_dir($path)) {
+        if ($path === false or !is_dir($path)) {
             exec('svn checkout '.$this->getSubSourceDefs()[0]->getUri().' 2>&1', $output, $return_code);
             if ($return_code) {
                 Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
                 throw new Exception("An error occurred while trying to checkout svn: " . join("\n", $output));
             }
-
         } else {
             exec('svn up DSA 2>&1', $output, $return_code);
             if ($return_code) {
@@ -62,7 +61,6 @@ class Debian extends SubSource implements ISubSource
                 throw new Exception("An error occurred while trying to update svn: " . join("\n", $output));
             }
         }
-
     }
 
     public function processDSA()
@@ -88,8 +86,9 @@ class Debian extends SubSource implements ISubSource
                 $ret = preg_match('/^\[.+\] (DSA-\S+) (.*)$/', $line, $matches);
                 if ($ret === 1) {
                     if (!empty($rec)) {
-                        if (array_key_exists('cves', $rec))
+                        if (array_key_exists('cves', $rec)) {
                             array_push($defs, $rec);
+                        }
                     }
 
                     $rec = array();
@@ -105,13 +104,15 @@ class Debian extends SubSource implements ISubSource
                 $ret = preg_match('/^\s+{(.+)}\s*$/', $line, $matches);
                 if ($ret === 1) {
                     $cves = preg_split("/\s/", $matches[1]);
-                    if (array_key_exists('cves', $rec))
-                        die ("Format error (multiple CVE lines) at " . $num);
+                    if (array_key_exists('cves', $rec)) {
+                        die("Format error (multiple CVE lines) at " . $num);
+                    }
                     $rec['cves'] = array();
-                    foreach ($cves as $cve)
+                    foreach ($cves as $cve) {
                         if (!empty($cve)) {
                             array_push($rec['cves'], $cve);
                         }
+                    }
                     continue;
                 }
 
@@ -122,16 +123,14 @@ class Debian extends SubSource implements ISubSource
                     $name = $matches[2];
                     $list = preg_split("/\s+/", $matches[3]);
                     $package_version = $list[0];
-                    if ($package_version == "<not-affected>" ||
-                        $package_version == "<unfixed>" ||
-                        $package_version == "<end-of-life>"
-                    ) {
+                    if ($package_version == "<not-affected>" || $package_version == "<unfixed>" || $package_version == "<end-of-life>") {
                         continue;
                     }
                     /* see deb-version(5) for version number format */
                     $ret = preg_match('/^[\.+-:~A-Za-z0-9]+$/', $package_version);
-                    if ($ret !== 1)
-                        die ("Format error at line " . $num);
+                    if ($ret !== 1) {
+                        die("Format error at line " . $num);
+                    }
                     /* rsplit('-', $package_version): */
                     $ver = explode('-', $package_version);
                     $debian_revision = array_pop($ver);
@@ -141,15 +140,17 @@ class Debian extends SubSource implements ISubSource
                     $package['version'] = $upstream_version;
                     $package['release'] = $debian_revision;
                     $package['operator'] = '<';
-                    if (!array_key_exists('osGroup', $rec))
+                    if (!array_key_exists('osGroup', $rec)) {
                         $rec['osGroup'] = array();
-                    if (!array_key_exists($deb_release, $rec['osGroup']))
+                    }
+                    if (!array_key_exists($deb_release, $rec['osGroup'])) {
                         $rec['osGroup'][$deb_release] = array();
+                    }
                     array_push($rec['osGroup'][$deb_release], $package);
                     continue;
                 }
 
-                /*Ignore NOTE */
+                /* Ignore NOTE */
                 $ret = preg_match('/^\s+NOTE:/', $line);
                 if ($ret === 1) {
                     continue;
@@ -159,16 +160,15 @@ class Debian extends SubSource implements ISubSource
                 throw new Exception("Format error at line " . $num);
             }
 
-            //Add last one
+            # Add last one
             if (!empty($rec)) {
-                if (array_key_exists('cves', $rec))
+                if (array_key_exists('cves', $rec)) {
                     array_push($defs, $rec);
+                }
             }
 
             $this->updateLastSubSourceDefHash($this->getSubSourceDefs()[0], $currentSubSourceHash);
-
         }
-
 
         fclose($dsaFile);
         $this->updateSubSourceLastChecked($this->getSubSourceDefs()[0]);
@@ -179,9 +179,8 @@ class Debian extends SubSource implements ISubSource
     public function retrieveDefinitions()
     {
         Utils::log(LOG_DEBUG, "Retreiving definitions from the " . Debian::getName(), __FILE__, __LINE__);
-
         $defs = array();
-        if(!empty($this->getSubSourceDefs())){
+        if (!empty($this->getSubSourceDefs())) {
             $this->loadDSA();
             $defs = $this->processDSA();
         }

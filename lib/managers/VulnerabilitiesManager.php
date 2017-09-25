@@ -51,7 +51,7 @@ class VulnerabilitiesManager extends DefaultManager
 
         $vulnerabilityDao = $this->getPakiti()->getDao("Vulnerability");
         $cveDefsManager = $this->getPakiti()->getManager("CveDefsManager");
-        foreach($pkgs as $pkg){
+        foreach ($pkgs as $pkg) {
             $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByPkgNameArch($pkg->getName(), $pkg->getArch());
             foreach ($potentialVulnerabilities as $vulnerability) {
                 $confirmed = false;
@@ -64,7 +64,7 @@ class VulnerabilitiesManager extends DefaultManager
                         }
                         break;
                 }
-                if($confirmed) {
+                if ($confirmed) {
                     $cveDefsManager->assignPkgToCveDef($pkg->getId(), $vulnerability->getCveDefId(), $vulnerability->getOsGroupId());
                 }
             }
@@ -75,13 +75,10 @@ class VulnerabilitiesManager extends DefaultManager
     /**
      * Find vulnerabilities for all pkgs
      * Save vulnerable pkgId and corresponding cveDefId and osGroupId to PkgCveDef table
-     * @throws Exception
-     *
      */
     public function calculateVulnerabilitiesForEachPkg()
     {
         Utils::log(LOG_DEBUG, "Calculate Vulnerabilities for each pkg", __FILE__, __LINE__);
-
         $pkgs = $this->getPakiti()->getManager("PkgsManager")->getPkgs();
         $this->calculateVulnerabilitiesForPkgs($pkgs);
     }
@@ -107,10 +104,11 @@ class VulnerabilitiesManager extends DefaultManager
      * Returns 1 if $a is greater than $b
      * Returns -1 if $a is lower than $b
      */
-
     private function vercmp($os, $ver_a, $rel_a, $ver_b, $rel_b)
     {
-        if (($ver_a === $ver_b) && ($rel_a === $rel_b)) return 0;
+        if (($ver_a === $ver_b) && ($rel_a === $rel_b)) {
+            return 0;
+        }
         switch ($os) {
             case "dpkg":
                 # We need to split version and release
@@ -137,16 +135,26 @@ class VulnerabilitiesManager extends DefaultManager
                 $epoch_b = substr($ver_b, 0, strpos($ver_b, ':'));
 
                 # If epoch is not there => 0
-                if ($epoch_a == "") $epoch_a = "0";
-                if ($epoch_b == "") $epoch_b = "0";
+                if ($epoch_a == "") {
+                    $epoch_a = "0";
+                }
+                if ($epoch_b == "") {
+                    $epoch_b = "0";
+                }
 
-                if ($epoch_a > $epoch_b) return 1;
-                if ($epoch_a < $epoch_b) return -1;
+                if ($epoch_a > $epoch_b) {
+                    return 1;
+                }
+                if ($epoch_a < $epoch_b) {
+                    return -1;
+                }
 
                 $cmp_ret = $this->rpmvercmp($this->addepoch($ver_a), $this->addepoch($ver_b));
-                if ($cmp_ret == 0)
+                if ($cmp_ret == 0) {
                     return $this->rpmvercmp($rel_a, $rel_b);
-                else return $cmp_ret;
+                } else {
+                    return $cmp_ret;
+                }
                 break;
             default:
                 return $this->rpmvercmp($ver_a . "-" . $rel_a, $ver_b . "-" . $rel_b);
@@ -160,18 +168,22 @@ class VulnerabilitiesManager extends DefaultManager
         $j = 0;
         $l = strlen($a);
         while ($i < $l) {
-            while ($i < $l && !ctype_alnum($a[$i]))
+            while ($i < $l && !ctype_alnum($a[$i])) {
                 $i++;
-            if ($i == $l)
+            }
+            if ($i == $l) {
                 break;
+            }
 
             $start = $i;
             if (ctype_digit($a[$i])) {
-                while ($i < $l && ctype_digit($a[$i]))
+                while ($i < $l && ctype_digit($a[$i])) {
                     $i++;
+                }
             } else {
-                while ($i < $l && ctype_alpha($a[$i]))
+                while ($i < $l && ctype_alpha($a[$i])) {
                     $i++;
+                }
             }
 
             $arr[$j] = substr($a, $start, $i - $start);
@@ -194,7 +206,9 @@ class VulnerabilitiesManager extends DefaultManager
             while (($i < $l && !ctype_digit($a[$i])) || ($j < $k && !ctype_digit($b[$j]))) {
                 $vc = $this->order($a[$i]);
                 $rc = $this->order($b[$j]);
-                if ($vc != $rc) return $vc - $rc;
+                if ($vc != $rc) {
+                    return $vc - $rc;
+                }
                 $i++;
                 $j++;
             }
@@ -218,8 +232,12 @@ class VulnerabilitiesManager extends DefaultManager
             if (($a_has_num && $b_has_num) && $a_num != $b_num) {
                 return $a_num == $b_num ? 0 : ($a_num > $b_num ? 1 : -1);
             }
-            if ($a_has_num && !$b_has_num) return 1;
-            if (!$a_has_num && $b_has_num) return -1;
+            if ($a_has_num && !$b_has_num) {
+                return 1;
+            }
+            if (!$a_has_num && $b_has_num) {
+                return -1;
+            }
             if ($a_has_num == $b_has_num && ($i == $l || $j == $k)) {
                 return $l == $k ? 0 : ($l > $k ? 1 : -1);
             }
@@ -229,48 +247,65 @@ class VulnerabilitiesManager extends DefaultManager
     }
 
 
-    /*
+    /**
      * Used by dpkgvercmp
      */
     private function order($val)
     {
-        if ($val == '') return 0;
-        if ($val == '~') return -1;
-        if (ctype_digit($val)) return 0;
-        if (!ord($val)) return 0;
-        if (ctype_alpha($val)) return ord($val);
+        if ($val == '') {
+            return 0;
+        }
+        if ($val == '~') {
+            return -1;
+        }
+        if (ctype_digit($val)) {
+            return 0;
+        }
+        if (!ord($val)) {
+            return 0;
+        }
+        if (ctype_alpha($val)) {
+            return ord($val);
+        }
         return ord($val) + 256;
     }
 
 
     /*
-    * Compare  RPM versions
-    * Returns 0 if $a and $b are equal
-    * Returns 1 if $a is greater than $b
-    * Returns -1 if $a is lower than $b
-    */
-
+     * Compare RPM versions
+     * Returns 0 if $a and $b are equal
+     * Returns 1 if $a is greater than $b
+     * Returns -1 if $a is lower than $b
+     */
     private function rpmvercmp($a, $b)
     {
-        if (strcmp($a, $b) == 0) return 0;
+        if (strcmp($a, $b) == 0) {
+            return 0;
+        }
         $a_arr = $this->rpm_split($a);
         $b_arr = $this->rpm_split($b);
         $arr_len = count($a_arr);
         $barr_len = count($b_arr) - 1;
         for ($i = 0; $i < $arr_len; $i++) {
-            if ($i > $barr_len)
+            if ($i > $barr_len) {
                 return 1;
-            if (ctype_digit($a_arr[$i]) && ctype_alpha($b_arr[$i]))
+            }
+            if (ctype_digit($a_arr[$i]) && ctype_alpha($b_arr[$i])) {
                 return 1;
-            if (ctype_alpha($a_arr[$i]) && ctype_digit($b_arr[$i]))
+            }
+            if (ctype_alpha($a_arr[$i]) && ctype_digit($b_arr[$i])) {
                 return -1;
-            if ($a_arr[$i] > $b_arr[$i])
+            }
+            if ($a_arr[$i] > $b_arr[$i]) {
                 return 1;
-            if ($a_arr[$i] < $b_arr[$i])
+            }
+            if ($a_arr[$i] < $b_arr[$i]) {
                 return -1;
+            }
         }
-        if ($i <= $barr_len)
+        if ($i <= $barr_len) {
             return -1;
+        }
         return 0;
     }
 
@@ -283,16 +318,23 @@ class VulnerabilitiesManager extends DefaultManager
     private function dpkgvercmp($vera, $rela, $verb, $relb)
     {
         # Get epoch
-
         $epoch_a = substr($vera, 0, strpos($vera, ':'));
         $epoch_b = substr($verb, 0, strpos($verb, ':'));
 
         # If epoch is not there => 0
-        if ($epoch_a == "") $epoch_a = "0";
-        if ($epoch_b == "") $epoch_b = "0";
+        if ($epoch_a == "") {
+            $epoch_a = "0";
+        }
+        if ($epoch_b == "") {
+            $epoch_b = "0";
+        }
 
-        if ($epoch_a > $epoch_b) return 1;
-        if ($epoch_a < $epoch_b) return -1;
+        if ($epoch_a > $epoch_b) {
+            return 1;
+        }
+        if ($epoch_a < $epoch_b) {
+            return -1;
+        }
 
         # Compare versions
         $r = $this->dpkgvercmp_in($this->addepoch($vera), $this->addepoch($verb));
@@ -310,7 +352,7 @@ class VulnerabilitiesManager extends DefaultManager
      */
     private function addepoch($ver)
     {
-        if(strpos($ver, ':') === false) {
+        if (strpos($ver, ':') === false) {
             return "0:" . $ver;
         }
         return $ver;
@@ -320,6 +362,4 @@ class VulnerabilitiesManager extends DefaultManager
     {
         return $this->getPakiti()->getDao("Vulnerability")->createMultiple($vulnerabilities);
     }
-
-
 }

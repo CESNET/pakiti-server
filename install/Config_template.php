@@ -131,7 +131,7 @@ final class Config
     public static $GUI_HOSTS_FAVORITE_FILTERS = array(
         "With tagged CVEs in the last 24 hours" => "tag=true&listTaggedCves=true&activity=24h",
         "Inactive longer than 7 days" => "activity=-7d",
-        "Report in the last 48 hours sorted by hostname" => "listTaggedCves=true&activity=48h&sortBy=hostname"
+        "Report in the last 48 hours sorted by hostname" => "listTaggedCves=true&activity=48h&sortBy=hostname",
     );
 
     # Configurable footer
@@ -214,5 +214,4 @@ final class Config
         '^\s*Debian ([\w.-\/]+)' => 'Debian ${1}',
         '^\s*openSUSE ([\w.-]+) .*' => 'openSUSE ${1}',
     );
-
 }

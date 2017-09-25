@@ -27,22 +27,19 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require_once(realpath(dirname(__FILE__)) . '/RepositoryPkg.php');
-require_once(realpath(dirname(__FILE__)) . '/DefaultException.php');
-
 /**
  * @author Michal Prochazka
  */
-class PkgException {
-	/**
-	 * @AssociationType RepositoryPkg
-	 * @AssociationMultiplicity 1
-	 */
-	public $_repositoryPkg;
-	/**
-	 * @AssociationType Exception
-	 * @AssociationMultiplicity 1
-	 */
-	public $_exception;
+class PkgException
+{
+    /**
+     * @AssociationType RepositoryPkg
+     * @AssociationMultiplicity 1
+     */
+    public $_repositoryPkg;
+    /**
+     * @AssociationType Exception
+     * @AssociationMultiplicity 1
+     */
+    public $_exception;
 }
-?>

@@ -203,7 +203,6 @@ class OvalSUSE extends SubSource implements ISubSource
                 }
             }
         }
-
     }
 
     protected function processCriterias(&$xpath, $criteriaElement, &$res, $os, $packages)
@@ -280,5 +279,4 @@ class OvalSUSE extends SubSource implements ISubSource
             }
         }
     }
-
 }

@@ -206,7 +206,6 @@ class LocalOval extends SubSource implements ISubSource
                 }
             }
         }
-
     }
 
     protected function processCriterias(&$xpath, $criteriaElement, &$res, $oses, $packages)
@@ -287,5 +286,4 @@ class LocalOval extends SubSource implements ISubSource
             }
         }
     }
-
 }

@@ -30,7 +30,8 @@
 /**
  * @author Michal Prochazka
  */
-class Pkg {
+class Pkg
+{
     private $_id = -1;
     private $_name;
     private $_version;
@@ -38,111 +39,72 @@ class Pkg {
     private $_arch;
     private $_type;
 
-    public function getVersionRelease() {
+    public function getVersionRelease()
+    {
         if (!empty($this->_release)) {
             return $this->_version . "-" . $this->_release;
-        } else return $this->_version;
+        } else {
+            return $this->_version;
+        }
     }
 
-    public function Pkg() {
-    }
-
-    /**
-     * @return mixed
-     */
     public function getId()
     {
         return $this->_id;
     }
 
-    /**
-     * @param mixed $id
-     */
     public function setId($id)
     {
         $this->_id = $id;
     }
 
-    /**
-     * @return mixed
-     */
     public function getName()
     {
         return $this->_name;
     }
 
-    /**
-     * @param mixed $name
-     */
     public function setName($name)
     {
         $this->_name = $name;
     }
 
-    /**
-     * @return mixed
-     */
     public function getVersion()
     {
         return $this->_version;
     }
 
-    /**
-     * @param mixed $version
-     */
     public function setVersion($version)
     {
         $this->_version = $version;
     }
 
-    /**
-     * @return mixed
-     */
     public function getRelease()
     {
         return $this->_release;
     }
 
-    /**
-     * @param mixed $release
-     */
     public function setRelease($release)
     {
         $this->_release = $release;
     }
 
-    /**
-     * @return mixed
-     */
     public function getArch()
     {
         return $this->_arch;
     }
 
-    /**
-     * @param mixed $arch
-     */
     public function setArch($arch)
     {
         $this->_arch = $arch;
     }
 
-    /**
-     * @return mixed
-     */
     public function getType()
     {
         return $this->_type;
     }
 
-    /**
-     * @param mixed $type
-     */
     public function setType($type)
     {
         $this->_type = $type;
     }
-
-
 }
-?>

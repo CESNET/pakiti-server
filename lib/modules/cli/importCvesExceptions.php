@@ -30,12 +30,12 @@
 
 require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-$shortopts = "hu:r"; # Command
+$shortopts = "hu:r";
 
 $longopts = array(
-      "help",
-      "url:",
-      "remove"
+    "help",
+    "url:",
+    "remove"
 );
 
 function usage()
@@ -59,7 +59,6 @@ if ($url == null) {
     if ($xml == null) {
         die("Xml parsing error! Check log for curl errors.");
     }
-
 
     foreach ($xml->cveException as $cveExceptionNode) {
 
@@ -107,14 +106,11 @@ if ($url == null) {
 
         if (isset($opt["r"]) || isset($opt["remove"])) {
             $allCvesExceptionsIds = $pakiti->getManager("CveExceptionsManager")->getCvesExceptionsIds();
-            foreach($allCvesExceptionsIds as $id){
-                if(!in_array($id, $cvesExceptionsIds)){
+            foreach ($allCvesExceptionsIds as $id) {
+                if (!in_array($id, $cvesExceptionsIds)) {
                     $pakiti->getManager("CveExceptionsManager")->removeCveExceptionById($id);
                 }
             }
         }
-
     }
 }
-
-?>

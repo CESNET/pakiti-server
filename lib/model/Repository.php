@@ -27,30 +27,27 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require_once(realpath(dirname(__FILE__)) . '/Os.php');
-require_once(realpath(dirname(__FILE__)) . '/RepositoryDef.php');
-
 /**
  * @author Michal Prochazka
  */
-class Repository {
-	/**
-	 * @AttributeType int
-	 */
-	private $_id;
-	/**
-	 * @AttributeType String
-	 */
-	private $_name;
-	/**
-	 * @AssociationType Os
-	 * @AssociationMultiplicity 0..*
-	 */
-	public $_os = array();
-	/**
-	 * @AssociationType RepositoryDef
-	 * @AssociationMultiplicity 0..*
-	 */
-	public $_repositoriesDefs = array();
+class Repository
+{
+    /**
+     * @AttributeType int
+     */
+    private $_id;
+    /**
+     * @AttributeType String
+     */
+    private $_name;
+    /**
+     * @AssociationType Os
+     * @AssociationMultiplicity 0..*
+     */
+    public $_os = array();
+    /**
+     * @AssociationType RepositoryDef
+     * @AssociationMultiplicity 0..*
+     */
+    public $_repositoriesDefs = array();
 }
-?>

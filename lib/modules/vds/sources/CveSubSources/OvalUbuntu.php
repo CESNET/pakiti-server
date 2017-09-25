@@ -69,7 +69,7 @@ class OvalUbuntu extends SubSource implements ISubSource
 
             # Go through all definitions
             foreach ($xDefinitions as $xDefinition) {
-                if($xDefinition->getAttribute('class') != "vulnerability" || empty($xDefinition->getElementsByTagName('reference')->item(0))){
+                if ($xDefinition->getAttribute('class') != "vulnerability" || empty($xDefinition->getElementsByTagName('reference')->item(0))) {
                     continue;
                 }
                 $def = array();
@@ -132,7 +132,7 @@ class OvalUbuntu extends SubSource implements ISubSource
     protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$oses, &$packages)
     {
         $operator = $criteriaElement->attributes->getNamedItem('operator');
-        if(!empty($operator)){
+        if (!empty($operator)) {
             $operator = $operator->nodeValue;
         } else {
             $operator = "AND";
@@ -156,88 +156,6 @@ class OvalUbuntu extends SubSource implements ISubSource
             # Empty package variable
             $packages = array();
         }
-        # Check if the child nodes are criterion or criteria
-        $criterias_query = 'def:criteria';
-        $criterions_query = 'def:criterion';
-
-        $criterias = $xpath->query($criterias_query, $criteriaElement);
-        $criterions = $xpath->query($criterions_query, $criteriaElement);
-
-        if ($criterions->length > 0) {
-            # We have found criterions, so parse them. Try to find os version and packages names/versions
-            foreach ($criterions as $criterion) {
-                $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
-                //print "Comment: $comment\n";
-                if (strpos($comment, "was vulnerable but has been fixed") !== false) {
-                    if (preg_match("/^The '(.*)' package in (.*) was vulnerable but has been fixed \(note: '([^-]*)-(.*)'\).$/", $comment, $values) === 1) {
-                        //array_push($oses, $values[2]);
-                        $package = array();
-                        $package['name'] = $values[1];
-                        $package['version'] = $values[3];
-                        $package['release'] = $values[4];
-                        $package['operator'] = '<';
-                        array_push($packages, $package);
-                    }
-                }
-            }
-
-            # Criterions can contain both os and package under one criteria
-            if (!empty($oses) && !empty($packages)) {
-                //print "Storing $os, $package\n";
-                foreach ($oses as $os) {
-                    if (!array_key_exists($os, $res['osGroup'])) {
-                        $res['osGroup'][$os] = array();
-                    }
-                    foreach ($packages as $item) {
-                        array_push($res['osGroup'][$os], $item);
-                    }
-                }
-                # Empty package variable
-                $packages = array();
-            }
-        }
-
-        if ($criterias->length > 0) {
-            # We have foung criterias, so pass them for further processing
-            foreach ($criterias as $criteria) {
-                if ($operator == "AND") {
-                    $this->processCriteriasWithReference($xpath, $criteria, $res, $oses, $packages);
-                } else {
-                    $this->processCriterias($xpath, $criteria, $res, $oses, $packages);
-                }
-            }
-        }
-
-    }
-
-    protected function processCriterias(&$xpath, $criteriaElement, &$res, $oses, $packages)
-    {
-        $operator = $criteriaElement->attributes->getNamedItem('operator');
-        if(!empty($operator)){
-            $operator = $operator->nodeValue;
-        } else {
-            $operator = "AND";
-        }
-
-        if (!array_key_exists('osGroup', $res)) {
-            $res['osGroup'] = array();
-        }
-
-        # If we have $os and $package filled, store id
-        if (!empty($oses) && !empty($packages)) {
-            //print "Storing $os, $package\n";
-            foreach ($oses as $os) {
-                if (!array_key_exists($os, $res['osGroup'])) {
-                    $res['osGroup'][$os] = array();
-                }
-                foreach ($packages as $item) {
-                    array_push($res['osGroup'][$os], $item);
-                }
-            }
-            # Empty package variable
-            $packages = array();
-        }
-
         # Check if the child nodes are criterion or criteria
         $criterias_query = 'def:criteria';
         $criterions_query = 'def:criterion';
@@ -291,4 +209,84 @@ class OvalUbuntu extends SubSource implements ISubSource
         }
     }
 
+    protected function processCriterias(&$xpath, $criteriaElement, &$res, $oses, $packages)
+    {
+        $operator = $criteriaElement->attributes->getNamedItem('operator');
+        if (!empty($operator)) {
+            $operator = $operator->nodeValue;
+        } else {
+            $operator = "AND";
+        }
+
+        if (!array_key_exists('osGroup', $res)) {
+            $res['osGroup'] = array();
+        }
+
+        # If we have $os and $package filled, store id
+        if (!empty($oses) && !empty($packages)) {
+            //print "Storing $os, $package\n";
+            foreach ($oses as $os) {
+                if (!array_key_exists($os, $res['osGroup'])) {
+                    $res['osGroup'][$os] = array();
+                }
+                foreach ($packages as $item) {
+                    array_push($res['osGroup'][$os], $item);
+                }
+            }
+            # Empty package variable
+            $packages = array();
+        }
+
+        # Check if the child nodes are criterion or criteria
+        $criterias_query = 'def:criteria';
+        $criterions_query = 'def:criterion';
+
+        $criterias = $xpath->query($criterias_query, $criteriaElement);
+        $criterions = $xpath->query($criterions_query, $criteriaElement);
+
+        if ($criterions->length > 0) {
+            # We have found criterions, so parse them. Try to find os version and packages names/versions
+            foreach ($criterions as $criterion) {
+                $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
+                //print "Comment: $comment\n";
+                if (strpos($comment, "was vulnerable but has been fixed") !== false) {
+                    if (preg_match("/^The '(.*)' package in (.*) was vulnerable but has been fixed \(note: '([^-]*)-(.*)'\).$/", $comment, $values) === 1) {
+                        //array_push($oses, $values[2]);
+                        $package = array();
+                        $package['name'] = $values[1];
+                        $package['version'] = $values[3];
+                        $package['release'] = $values[4];
+                        $package['operator'] = '<';
+                        array_push($packages, $package);
+                    }
+                }
+            }
+
+            # Criterions can contain both os and package under one criteria
+            if (!empty($oses) && !empty($packages)) {
+                //print "Storing $os, $package\n";
+                foreach ($oses as $os) {
+                    if (!array_key_exists($os, $res['osGroup'])) {
+                        $res['osGroup'][$os] = array();
+                    }
+                    foreach ($packages as $item) {
+                        array_push($res['osGroup'][$os], $item);
+                    }
+                }
+                # Empty package variable
+                $packages = array();
+            }
+        }
+
+        if ($criterias->length > 0) {
+            # We have foung criterias, so pass them for further processing
+            foreach ($criterias as $criteria) {
+                if ($operator == "AND") {
+                    $this->processCriteriasWithReference($xpath, $criteria, $res, $oses, $packages);
+                } else {
+                    $this->processCriterias($xpath, $criteria, $res, $oses, $packages);
+                }
+            }
+        }
+    }
 }

@@ -76,9 +76,9 @@ class Acl
     }
 
     /**
-    * Get user ID
-    * @return -1 if AUTHZ_MODE is none or user is admin
-    */
+     * Get user ID
+     * @return -1 if AUTHZ_MODE is none or user is admin
+     */
     public function getUserId()
     {
         if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_NONE) {
@@ -99,18 +99,18 @@ class Acl
     }
 
     /**
-    * Get user
-    * @return User
-    */
+     * Get user
+     * @return User
+     */
     public function getUser()
     {
         return $this->_user;
     }
 
     /**
-    * Check if user has permission to source
-    * @return true if user has permission to source
-    */
+     * Check if user has permission to source
+     * @return true if user has permission to source
+     */
     public function permission($source)
     {
         if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_NONE) {

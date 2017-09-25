@@ -38,7 +38,7 @@ try {
     # Asynchronous mode - only store the results and exit
     #----------------------------------------------------
     if (Config::$FEEDER_MODE == Constants::$FEEDER_ASYNCHRONOUS_MODE) {
-        if ($report == Constants::$STORE_ONLY || $report == NULL) {
+        if ($report == Constants::$STORE_ONLY || $report == null) {
             # Store incomming report
             $feeder->storeReportToFile();
         } else {
@@ -50,7 +50,7 @@ try {
     # Synchronous mode - process data immediatelly
     #---------------------------------------------
     elseif (Config::$FEEDER_MODE == Constants::$FEEDER_SYNCHRONOUS_MODE) {
-        if (Config::$BACKUP === TRUE) {
+        if (Config::$BACKUP === true) {
             # Store incomming report
             $feeder->storeReportToFile();
         }
@@ -78,4 +78,3 @@ try {
     print Constants::$RETURN_ERROR;
     exit;
 }
-?>

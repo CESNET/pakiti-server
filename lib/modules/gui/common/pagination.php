@@ -29,12 +29,6 @@
 ?>
 
 <?php
-# getNumOfPages
-# getPageNum
-# getQueryString
-?>
-
-<?php
     # Calculate start and end pagination
     if ($html->getNumOfPages() <= $html->getPaginationSize()) {
         $start = 0;
@@ -58,6 +52,7 @@
         }
     }
 ?>
+
 <div class="text-center">
     <nav aria-label="Page navigation">
         <ul class="pagination pagination-sm">
