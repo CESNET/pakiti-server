@@ -689,11 +689,16 @@ class FeederModule extends DefaultModule
                     # If the host uses dpkg we need to split version manually to version and release by the dash.
                     # Suppress warnings, if the version doesn't contain dash, only version will be filled, release will be empty
                     if ($type == Constants::$PACKAGER_SYSTEM_DPKG) {
-                        @list($pkgVersion, $pkgRelease) = explode('-', $pkgVersion);
+                        $version = $pkgVersion;
+                        $pos = strrpos($version, '-');
+                        if ($pos !== false) {
+                            $pkgVersion = substr($version, 0, $pos);
+                            $pkgRelease = substr($version, ($pos + 1) - strlen($version), strlen($version) - ($pos + 1));
+                        }
                     }
                     break;
                 case "5":
-                    if (preg_match("/(.*)[ \t](.*)-(.*)[ \t](.*)/", $tok, $entries) == 1) {
+                    if (preg_match("/(.*)[ \t](.*)-([^-]*)[ \t](.*)/", $tok, $entries) == 1) {
                         $pkgName = $entries[1];
                         $pkgVersion = $entries[2];
                         $pkgRelease = $entries[3];
