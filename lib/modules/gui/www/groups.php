@@ -56,7 +56,7 @@ switch (Utils::getHttpPostVar("act")) {
 $html->setTitle("Host groups");
 $html->setMenuActiveItem("groups.php");
 $html->setDefaultSorting("name");
-$html->setNumOfEntities($html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $_activity, $html->getUserId()));
+$html->setNumOfEntities($html->getPakiti()->getManager("HostGroupsManager")->getHostGroupsCount($html->getUserId()));
 
 $hostgroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $html->getUserId());
 
