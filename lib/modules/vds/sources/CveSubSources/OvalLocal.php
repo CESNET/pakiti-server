@@ -33,14 +33,14 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
 /**
  * @author Jakub Mlcak
  */
-class LocalOval extends SubSource implements ISubSource
+class OvalLocal extends SubSource implements ISubSource
 {
     private static $NAME = "Local OVAL";
     private static $TYPE = "Local";
 
     public function retrieveDefinitions()
     {
-        Utils::log(LOG_DEBUG, "Retreiving definitions from the ".LocalOval::getName()." OVAL", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Retreiving definitions from the ".OvalLocal::getName()." OVAL", __FILE__, __LINE__);
 
         $defs = array();
         foreach ($this->getSubSourceDefs() as $subSourceDef) {
@@ -120,12 +120,12 @@ class LocalOval extends SubSource implements ISubSource
    
     public function getName()
     {
-        return LocalOval::$NAME;
+        return OvalLocal::$NAME;
     }
   
     public function getType()
     {
-        return LocalOval::$TYPE;
+        return OvalLocal::$TYPE;
     }
 
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference
