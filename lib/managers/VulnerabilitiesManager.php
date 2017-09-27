@@ -111,44 +111,9 @@ class VulnerabilitiesManager extends DefaultManager
         }
         switch ($os) {
             case "dpkg":
-                # We need to split version and release
-                if (strpos($ver_a, '-')) {
-                    $vera = substr($ver_a, 0, strpos($ver_a, '-'));
-                    $rela = substr($ver_a, strpos($ver_a, '-') + 1);
-                } else {
-                    $vera = $ver_a;
-                    $rela = $rel_a;
-                }
-                if (strpos($ver_b, '-')) {
-                    $verb = substr($ver_b, 0, strpos($ver_b, '-'));
-                    $relb = substr($ver_b, strpos($ver_b, '-') + 1);
-                } else {
-                    $verb = $ver_b;
-                    $relb = $rel_b;
-                }
-
                 return $this->dpkgvercmp($vera, $rela, $verb, $relb);
                 break;
             case "rpm":
-                # Get epoch
-                $epoch_a = substr($ver_a, 0, strpos($ver_a, ':'));
-                $epoch_b = substr($ver_b, 0, strpos($ver_b, ':'));
-
-                # If epoch is not there => 0
-                if ($epoch_a == "") {
-                    $epoch_a = "0";
-                }
-                if ($epoch_b == "") {
-                    $epoch_b = "0";
-                }
-
-                if ($epoch_a > $epoch_b) {
-                    return 1;
-                }
-                if ($epoch_a < $epoch_b) {
-                    return -1;
-                }
-
                 $cmp_ret = $this->rpmvercmp($this->addepoch($ver_a), $this->addepoch($ver_b));
                 if ($cmp_ret == 0) {
                     return $this->rpmvercmp($rel_a, $rel_b);
@@ -317,25 +282,6 @@ class VulnerabilitiesManager extends DefaultManager
      */
     private function dpkgvercmp($vera, $rela, $verb, $relb)
     {
-        # Get epoch
-        $epoch_a = substr($vera, 0, strpos($vera, ':'));
-        $epoch_b = substr($verb, 0, strpos($verb, ':'));
-
-        # If epoch is not there => 0
-        if ($epoch_a == "") {
-            $epoch_a = "0";
-        }
-        if ($epoch_b == "") {
-            $epoch_b = "0";
-        }
-
-        if ($epoch_a > $epoch_b) {
-            return 1;
-        }
-        if ($epoch_a < $epoch_b) {
-            return -1;
-        }
-
         # Compare versions
         $r = $this->dpkgvercmp_in($this->addepoch($vera), $this->addepoch($verb));
 

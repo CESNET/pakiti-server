@@ -131,10 +131,14 @@ class Debian extends SubSource implements ISubSource
                     if ($ret !== 1) {
                         die("Format error at line " . $num);
                     }
-                    /* rsplit('-', $package_version): */
-                    $ver = explode('-', $package_version);
-                    $debian_revision = array_pop($ver);
-                    $upstream_version = implode('-', $ver);
+                    $pos = strrpos($package_version, '-');
+                    if($pos !== false){
+                        $upstream_version = substr($package_version, 0, $pos);
+                        $debian_revision = substr($package_version, ($pos + 1) - strlen($package_version), strlen($package_version) - ($pos + 1));
+                    } else {
+                        $upstream_version = $package_version;
+                        $debian_revision = "";
+                    }
                     $package = array();
                     $package['name'] = $name;
                     $package['version'] = $upstream_version;
