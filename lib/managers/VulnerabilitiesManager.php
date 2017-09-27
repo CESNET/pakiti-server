@@ -33,11 +33,6 @@
  */
 class VulnerabilitiesManager extends DefaultManager
 {
-    public function getVulnerabilityById($id)
-    {
-        return $this->getPakiti()->getDao("Vulnerability")->getById($id);
-    }
-
     /**
      * Find vulnerabilities for pkgs
      * Save vulnerable pkgId and corresponding cveDefId and osGroupId to PkgCveDef table

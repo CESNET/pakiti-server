@@ -103,12 +103,6 @@ class ReportDao
         $this->db->query("delete from Report where id=".$report->getId());
     }
 
-    public function deleteReportsByHostId($hostId)
-    {
-        $this->db->query("delete from Report, ReportHost using Report inner join ReportHost inner join Host
-            where Report.id=ReportHost.reportId and ReportHost.hostId={$hostId}");
-    }
-
     public function getReportsIds($orderBy, $pageSize, $pageNum)
     {
         $sql = "select id from Report";

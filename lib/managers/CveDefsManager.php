@@ -53,16 +53,4 @@ class CveDefsManager extends DefaultManager
     {
         $this->getPakiti()->getManager("DbManager")->query("insert ignore into PkgCveDef set pkgId={$pkgId}, cveDefId={$cveDefId}, osGroupId={$osGroupId}");
     }
-
-    public function getCvesByName($name)
-    {
-        $cves = $this->getPakiti()->getDao("Cve")->getCvesByName($name);
-        foreach ($cves as $cve) {
-            if (is_object($cve)) {
-                $cve->setTag($this->getPakiti()->getManager("CveTagsManager")->getCveTagsByCveName($cve->getName()));
-                $cve->setCveExceptions($this->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsByCveName($cve->getName()));
-            }
-        }
-        return $cves;
-    }
 }

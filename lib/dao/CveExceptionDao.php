@@ -101,14 +101,6 @@ class CveExceptionDao
         return $this->getBy($id, "id");
     }
 
-    public function getByCveNamePkgIdOsGroupId($cveName, $pkgId, $osGroupId)
-    {
-        return $this->db->queryObject("select id as _id, cveName as _cveName, pkgId as _pkgId, osGroupId as _osGroupId, `reason` as _reason, modifier as _modifier, `timestamp` as _timestamp from CveException
-            where cveName='" . $this->db->escape($cveName) . "'
-            and pkgId='" . $this->db->escape($pkgId) . "'
-            and osGroupId='" . $this->db->escape($osGroupId) . "'", "CveException");
-    }
-
     public function getIdByCveNamePkgIdOsGroupId($cveName, $pkgId, $osGroupId)
     {
         $sql = "select id from CveException
