@@ -41,22 +41,21 @@ $html->checkPermission("exceptions");
 switch (Utils::getHttpPostVar("act")) {
     case "create":
         $cveName = Utils::getHttpGetVar("cveName");
-        $ids = Utils::getHttpPostVar("ids");
-        if ($cveName != "N/A" && $ids != "N/A") {
-            @list ($pkgId, $osGroupId) = explode(' ', Utils::getHttpPostVar("ids"));
-            // Check if exists
-            $id = $pakiti->getManager("CveExceptionsManager")->getCveExceptionIdByCveNamePkgIdOsGroupId($cveName, $pkgId, $osGroupId);
-            if ($id == -1) {
+        $reason = Utils::getHttpPostVar("reason");
+        $pkgs = Utils::getHttpPostVar("pkgs");
+        if (!empty($pkgs)) {
+            foreach ($pkgs as $pkg) {
+                @list ($pkgId, $osGroupId) = explode(' ', $pkg);
                 $exception = new CveException();
                 $exception->setCveName($cveName);
                 $exception->setPkgId($pkgId);
                 $exception->setOsGroupId($osGroupId);
-                $exception->setReason(Utils::getHttpPostVar("reason"));
+                $exception->setReason($reason);
                 $exception->setModifier($html->getUsername());
                 $pakiti->getManager("CveExceptionsManager")->storeCveException($exception);
-            } else {
-                $html->setError("CveException already exists");
             }
+        } else {
+            $html->setError("No selected packages");
         }
         break;
     case "delete":
@@ -202,21 +201,21 @@ $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsBy
                             <input type="text" class="form-control" name="cveName" id="cveName" value="<?php echo $selectedCveName; ?>" disabled>
                         </div>
                         <div class="form-group">
-                            <label for="ids">Pkg</label>
-                            <select class="form-control" name="ids" id="ids">
-                                <option value="N/A" selected></option>
-                                <?php foreach ($osGroups as $osGroup) { ?>
-                                    <?php $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroup($selectedCveName, $osGroup); ?>
-                                    <?php foreach ($pkgs as $pkg) { ?>
-                                        <option value="<?php echo $pkg->getId() . ' ' . $osGroup->getId(); ?>"><?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName(); ?></option>
-                                    <?php } ?>
-                                <?php } ?>
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label for="reason">Reason</label>
                             <input type="text" class="form-control" name="reason" id="reason">
                         </div>
+                        <label>Packages</label>
+                        <?php foreach ($osGroups as $osGroup) { ?>
+                            <?php $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroup($selectedCveName, $osGroup); ?>
+                            <?php foreach ($pkgs as $pkg) { ?>
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="pkgs[]" value="<?php echo $pkg->getId() . ' ' . $osGroup->getId(); ?>">
+                                        <?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName(); ?>
+                                    </label>
+                                </div>
+                            <?php } ?>
+                        <?php } ?>
                         <div class="text-right">
                             <button type="submit" class="btn btn-success">Add</button>
                             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
