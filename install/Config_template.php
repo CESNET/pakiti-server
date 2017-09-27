@@ -155,66 +155,35 @@ final class Config
     # Mapping OS groups to OSes by regular expression
     public static $OS_GROUPS_MAPPING = array(
         # Debian
-        "stretch" => "Debian(.*) 9(.*)",
-        "jessie" => "Debian(.*) 8(.*)",
-        "wheezy" => "Debian(.*) 7(.*)",
-        "squeeze" => "Debian(.*) 6(.*)",
-        "lenny" => "Debian(.*) 5(.*)",
-        "etch" => "Debian(.*) 4(.*)",
-        "sarge" => "Debian(.*) 3.1(.*)",
-        "woody" => "Debian(.*) 3.0(.*)",
+        "stretch" => "Debian.* 9.*",
+        "jessie" => "Debian.* 8.*",
+        "wheezy" => "Debian.* 7.*",
+        "squeeze" => "Debian.* 6.*",
+        "lenny" => "Debian.* 5.*",
+        "etch" => "Debian.* 4.*",
+        "sarge" => "Debian.* 3\.1.*",
+        "woody" => "Debian.* 3\.0.*",
         # Red Hat
-        "Red Hat Enterprise Linux 7" => "(CentOS Linux(.*) 7(.*))|(Scientific Linux(.*) 7(.*))",
-        "Red Hat Enterprise Linux 6" => "(CentOS Linux(.*) 6(.*))|(Scientific Linux(.*) 6(.*))",
-        "Red Hat Enterprise Linux 5" => "(CentOS Linux(.*) 5(.*))|(Scientific Linux(.*) 5(.*))",
-        "Red Hat Enterprise Linux 4" => "(CentOS Linux(.*) 4(.*))|(Scientific Linux(.*) 4(.*))",
-        "Red Hat Enterprise Linux 3" => "(CentOS Linux(.*) 3(.*))|(Scientific Linux(.*) 3(.*))",
+        "Red Hat Enterprise Linux 7" => "(Red\s*Hat.* 7.*)|(CentOS.* 7.*)|(Scientific.* 7.*)",
+        "Red Hat Enterprise Linux 6" => "(Red\s*Hat.* 6.*)|(CentOS.* 6.*)|(Scientific.* 6.*)",
+        "Red Hat Enterprise Linux 5" => "(Red\s*Hat.* 5.*)|(CentOS.* 5.*)|(Scientific.* 5.*)",
+        "Red Hat Enterprise Linux 4" => "(Red\s*Hat.* 4.*)|(CentOS.* 4.*)|(Scientific.* 4.*)",
+        "Red Hat Enterprise Linux 3" => "(Red\s*Hat.* 3.*)|(CentOS.* 3.*)|(Scientific.* 3.*)",
         # SUSE
-        "SUSE Linux Enterprise Server 12 SP3" => "SUSE Linux(.*) 12.3(.*)",
-        "SUSE Linux Enterprise Server 12 SP2" => "SUSE Linux(.*) 12.2(.*)",
-        "SUSE Linux Enterprise Server 12 SP1" => "SUSE Linux(.*) 12.1(.*)",
-        "SUSE Linux Enterprise Server 11 SP4" => "SUSE Linux(.*) 11.4(.*)",
-        "SUSE Linux Enterprise Server 11 SP3" => "SUSE Linux(.*) 11.3(.*)",
-        "SUSE Linux Enterprise Server 11 SP2" => "SUSE Linux(.*) 11.2(.*)",
-        "SUSE Linux Enterprise Server 11 SP1" => "SUSE Linux(.*) 11.1(.*)",
+        "SUSE Linux Enterprise Server 12 SP3" => "SUSE.* 12\.3.*",
+        "SUSE Linux Enterprise Server 12 SP2" => "SUSE.* 12\.2.*",
+        "SUSE Linux Enterprise Server 12 SP1" => "SUSE.* 12\.1.*",
+        "SUSE Linux Enterprise Server 11 SP4" => "SUSE.* 11\.4.*",
+        "SUSE Linux Enterprise Server 11 SP3" => "SUSE.* 11\.3.*",
+        "SUSE Linux Enterprise Server 11 SP2" => "SUSE.* 11\.2.*",
+        "SUSE Linux Enterprise Server 11 SP1" => "SUSE.* 11\.1.*",
         # openSUSE
-        "openSUSE 13.2" => "openSUSE(.*) 13.2(.*)",
-        "openSUSE Leap 42.2" => "openSUSE(.*) 42.2(.*)",
-        "openSUSE Leap 42.3" => "openSUSE(.*) 42.3(.*)",
+        "openSUSE 13.2" => "openSUSE.* 13\.2.*",
+        "openSUSE Leap 42.2" => "openSUSE.* 42\.2.*",
+        "openSUSE Leap 42.3" => "openSUSE.* 42\.3.*",
         # Ubuntu
-        "Ubuntu 12.04 LTS" => "Ubuntu(.*) 12.04(.*)",
-        "Ubuntu 14.04 LTS" => "Ubuntu(.*) 14.04(.*)",
-        "Ubuntu 16.04 LTS" => "Ubuntu(.*) 16.04(.*)",
-    );
-
-    # OS names definiton, used for guess OS from installed packages
-    public static $OS_NAMES_DEFINITIONS = array(
-        "sl-release"     => "Scientific Linux",
-        "redhat-release" => "Red Hat Linux",
-        "sles-release"   => "SUSE Linux",
-        "hpc-release"    => "HPC Linux",
-        "centos-release" => "CentOS Linux",
-        "fedora-release" => "Fedora Linux",
-        "redhat-release-server" => "Red Hat Linux Server",
-        "redhat-release-client" => "Red Hat Linux Client",
-        "redhat-release-workstation" => "Red Hat Linux Workstation",
-        "redhat-release-computenode" => "Red Hat Linux ComputeNode",
-    );
-
-    # OS names mapping, used for cannonization of the OS name sent by the client. ? will be replaced by the version/release.
-    public static $OS_NAMES_MAPPING = array(
-        '^\s*ScientificSL ([\w.-]+)' => 'Scientific Linux ${1}',
-        '^\s*Scientific ([\w.-]+)' => 'Scientific Linux ${1}',
-        '^\s*ScientificCERNSLC ([\w.-]+)' => 'Scientific Linux ${1}.cern',
-        '^\s*RedHatEnterpriseServer ([\w.-]+)' => 'Red Hat Linux Server ${1}',
-        '^\s*Scientific Linux SL release ([\w.-]+) .*' => 'Scientific Linux ${1}',
-        '^\s*Scientific Linux CERN SLC release ([\w.-]+) .*' => 'Scientific Linux ${1}.cern',
-        '^\s*Ubuntu ([\w.-]+)' => 'Ubuntu ${1}',
-        '^\s*CentOS ([\w.-]+)' => 'CentOS Linux ${1}',
-        '^\s*CentOS release ([\w.-]+) .*' => 'CentOS Linux ${1}',
-        '^\s*Fedora ([\w.-]+)' => 'Fedora Linux ${1}',
-        '^\s*SUSE LINUX ([\w.-]+)' => 'SUSE Linux ${1}',
-        '^\s*Debian ([\w.-\/]+)' => 'Debian ${1}',
-        '^\s*openSUSE ([\w.-]+) .*' => 'openSUSE ${1}',
+        "Ubuntu 12.04 LTS" => "Ubuntu.* 12\.04.*",
+        "Ubuntu 14.04 LTS" => "Ubuntu.* 14\.04.*",
+        "Ubuntu 16.04 LTS" => "Ubuntu.* 16\.04.*",
     );
 }
