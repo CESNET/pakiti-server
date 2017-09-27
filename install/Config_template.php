@@ -90,6 +90,9 @@ final class Config
         "kernel-headers",
         "kernel-debug",
         "kernel-source",
+        "kernel-firmware",
+        "kernel-debug-devel",
+        "kernel-kdump",
         # SUSE
         "kernel-syms",
         "kernel-macros",
