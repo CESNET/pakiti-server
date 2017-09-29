@@ -729,7 +729,8 @@ class FeederModule extends DefaultModule
                 # Remove epoch from the version
                 $versionWithoutEpoch = Utils::removeEpoch($pkgVersion);
                 # Compare result of the uname -r with the package version
-                if ($kernel != $versionWithoutEpoch . "-" . $pkgRelease) {
+                # Due to some other strings clued to the kernel version, we are looking for substring
+                if (strpos($kernel, $versionWithoutEpoch . "-" . $pkgRelease) === false) {
                     # This verion of the kernel isn't booted
                     $tok = strtok("\n");
                     continue;
