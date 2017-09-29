@@ -111,7 +111,7 @@ class VulnerabilitiesManager extends DefaultManager
         }
         switch ($os) {
             case "dpkg":
-                return $this->dpkgvercmp($vera, $rela, $verb, $relb);
+                return $this->dpkgvercmp($ver_a, $rel_a, $ver_b, $rel_b);
                 break;
             case "rpm":
                 $cmp_ret = $this->rpmvercmp($this->addepoch($ver_a), $this->addepoch($ver_b));
