@@ -181,15 +181,6 @@ class HostsManager extends DefaultManager
         return $hosts;
     }
 
-    public function setLastReportId(Host &$host, Report &$report)
-    {
-        if ($host == null || $host->getId() == -1 || $report == null || $report->getId() == -1) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Host or Report pobject is not valid or Host.id or Report.id is not set");
-        }
-        return $this->getPakiti()->getDao("Host")->setLastReportId($host->getId(), $report->getId());
-    }
-
     public function recalculateCvesCountForHost($hostId)
     {
         Utils::log(LOG_DEBUG, "Recalculating numOfCves for Host[".$hostId."]", __FILE__, __LINE__);
@@ -216,31 +207,6 @@ class HostsManager extends DefaultManager
         foreach ($ids as $id) {
             $this->recalculateCvesCountForHost($id);
         }
-    }
-
-    /**
-     * Get list of all archs
-     */
-    public function getArchs($orderBy, $pageSize = -1, $pageNum = -1)
-    {
-        Utils::log(LOG_DEBUG, "Getting all archs", __FILE__, __LINE__);
-        $archsIds =& $this->getPakiti()->getDao("Arch")->getArchsIds($orderBy, $pageSize, $pageNum);
-
-        $archs = array();
-        foreach ($archsIds as $archId) {
-            array_push($archs, $this->getPakiti()->getDao("Arch")->getById($archId));
-        }
-        return $archs;
-    }
-
-    /**
-     * Get arch id
-     */
-    public function getArchId($name)
-    {
-        Utils::log(LOG_DEBUG, "Getting arch Id by Name", __FILE__, __LINE__);
-        $arch = $this->getPakiti()->getDao("Arch")->getByName($name);
-        return $arch->getId();
     }
 
     /**

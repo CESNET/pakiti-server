@@ -59,34 +59,6 @@ class CveDao
             and cveDefId ='" . $this->db->escape($cveDefId) . "'", "Cve");
     }
 
-    public function getCvesByName($name)
-    {
-        return $this->db->queryObjects("select id as _id, name as _name, cveDefId as _cveDefId from Cve
-            where name='" . $this->db->escape($name) . "'", "Cve");
-    }
-
-    public function getCveNameById($cveId)
-    {
-        return $this->db->queryToSingleValue("select name from Cve
-            where id='" . $this->db->escape($cveId) . "'");
-    }
-
-    public function getCvesByCveDefId($cveDefId)
-    {
-        return $this->db->queryObjects("select id as _id, name as _name, cveDefId as _cveDefId from Cve
-            where Cve.cveDefId={$cveDefId}", "Cve");
-    }
-
-    public function getCvesByCveDef(CveDef $cveDef)
-    {
-        return $this->getCvesByCveDefId($cveDef->getId());
-    }
-
-    public function getAllCves()
-    {
-        return $this->db->queryObjects("select id as _id, name as _name, cveDefId as _cveDefId from Cve", "Cve");
-    }
-
     public function getNamesForPkgAndOs($pkgId, $osId, $tag = null)
     {
         $select = "distinct(Cve.name)";

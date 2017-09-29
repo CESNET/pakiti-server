@@ -113,16 +113,6 @@ class ReportsManager extends DefaultManager
         return $report;
     }
 
-    public function updateReport(Report &$report)
-    {
-        if ($report == null || $report->getId() == -1) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Report object is not valid or Report.id is not set");
-        }
-        Utils::log(LOG_DEBUG, "Updating the report", __FILE__, __LINE__);
-        $this->getPakiti()->getDao("Report")->update($report);
-    }
-
     /**
      * Retrieve both hashes for the report header and list of pkgs
      */
@@ -140,34 +130,5 @@ class ReportsManager extends DefaultManager
             Constants::$REPORT_LAST_PKGS_HASH => $row["lastReportPkgsHash"]
         );
         return $ret;
-    }
-
-    /**
-     * Store the hashes of the report header and pkgs
-     */
-    public function storeReportHashes(Host &$host, $headerHash, $pkgsHash)
-    {
-        if ($host == null || $host->getId() == -1) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Host object is not valid or Host.id is not set");
-        }
-        Utils::log(LOG_DEBUG, "Storing the report hashes [hostId=" . $host->getId() . ",headerHash=$headerHash,pkgsHash=$pkgsHash]", __FILE__, __LINE__);
-        $this->getPakiti()->getManager("DbManager")->query("update Host set
-            lastReportHeaderHash='" . $this->getPakiti()->getManager("DbManager")->escape($headerHash) . "',
-            lastReportPkgsHash='" . $this->getPakiti()->getManager("DbManager")->escape($pkgsHash) . "'
-            where id=" . $this->getPakiti()->getManager("DbManager")->escape($host->getId()));
-    }
-
-    /**
-     * Removes all host's reports
-     */
-    public function removeHostReports(Host &$host)
-    {
-        if ($host == null || $host->getId() == -1) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Host object is not valid or Host.id is not set");
-        }
-        Utils::log(LOG_DEBUG, "Removing all reports associated with the host [hostname='{$host->getHostname()}']", __FILE__, __LINE__);
-        $this->getPakiti()->getDao("Report")->deleteReportsByHostId($host->getId());
     }
 }

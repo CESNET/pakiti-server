@@ -64,13 +64,6 @@ class HostGroupsManager extends DefaultManager
         return $this->getPakiti()->getDao("HostGroup")->getById($id, $userId);
     }
 
-    public function getHostGroupByName($name)
-    {
-        Utils::log(LOG_DEBUG, "Getting host group by name [hostGroupName=$name]", __FILE__, __LINE__);
-        $dao = $this->getPakiti()->getDao("HostGroup");
-        return $dao->getById($dao->getIdByName($name));
-    }
-
     public function getHostGroupIdByName($name)
     {
         Utils::log(LOG_DEBUG, "Getting host group ID by name [hostGroupName=$name]", __FILE__, __LINE__);

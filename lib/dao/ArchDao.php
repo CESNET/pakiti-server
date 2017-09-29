@@ -83,18 +83,6 @@ class ArchDao
         return $id;
     }
 
-    public function getArchsIds($orderBy, $pageSize, $pageNum)
-    {
-        $sql = "select id from Arch order by name";
-
-        if ($pageSize != -1 && $pageNum != -1) {
-            $offset = $pageSize*$pageNum;
-            $sql .= " limit $offset,$pageSize";
-        }
-
-        return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
     public function getArchsNames()
     {
         $sql = "select name from Arch";

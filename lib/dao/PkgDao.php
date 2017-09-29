@@ -102,19 +102,6 @@ class PkgDao
     }
 
     /**
-     * Get the pkg by name, version, release and arch
-     */
-    public function getPkg($name, $version, $release, $arch, $type)
-    {
-        return $this->db->queryObject("select id as _id, name as _name, version as _version, `release` as _release, arch as _arch, type as _type from Pkg
-            where binary name='" . $this->db->escape($name) . "'
-            and version='" . $this->db->escape($version) . "'
-            and type='" . $this->db->escape($type) . "'
-            and `release`='" . $this->db->escape($release) . "'
-            and arch='" . $this->db->escape($arch) . "'", "Pkg");
-    }
-
-    /**
      * Get the pkg by its ID
      */
     public function getById($id)

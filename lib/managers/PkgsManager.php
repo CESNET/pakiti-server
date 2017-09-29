@@ -124,45 +124,9 @@ class PkgsManager extends DefaultManager
         return $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArchType($name, $version, $release, $arch, $type);
     }
 
-
-    /**
-     * Removes all installed packages associated with the host.
-     */
-    public function removeHostPackages(Host &$host)
-    {
-        if (($host == null) || ($host->getId() == -1)) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Host object is not valid or Host.id is not set");
-        }
-        Utils::log(LOG_DEBUG, "Removing installed packages [hostname=" . $host->getHostname() . "]", __FILE__, __LINE__);
-        $this->getPakiti()->getManager("DbManager")->query("delete from InstalledPkg where hostId={$host->getId()}");
-    }
-
-    /**
-     * Gets the package by the name.
-     */
-    public function getPkg($pkgName)
-    {
-        return $this->getPakiti()->getDao("Pkg")->getByName($pkgName);
-    }
-
     public function getPkgById($pkgId)
     {
         return $this->getPakiti()->getDao("Pkg")->getById($pkgId);
-    }
-
-    /**
-     * Adds the package name into the DB and returns the ID of the newly created record.
-     */
-    public function addPkg($pkgName, $pkgVersion, $pkgArch, $pkgRelease, $pkgType)
-    {
-        $this->getPakiti()->getManager("DbManager")->query("insert into Pkg set
-            name='" . $this->getPakiti()->getManager("DbManager")->escape($pkgName) . "',
-            version='" . $this->getPakiti()->getManager("DbManager")->escape($pkgVersion) . "',
-            arch='" . $this->getPakiti()->getManager("DbManager")->escape($pkgArch) . "',
-            type='" . $this->getPakiti()->getManager("DbManager")->escape($pkgType) . "',
-            `release`='" . $this->getPakiti()->getManager("DbManager")->escape($pkgRelease)."'");
-        return $this->getPakiti()->getManager("DbManager")->getLastInsertedId();
     }
 
     /**
@@ -175,15 +139,6 @@ class PkgsManager extends DefaultManager
             throw new Exception("Pkg object is not valid or Pkg.id is not set");
         }
         $this->getPakiti()->getDao("Pkg")->delete($pkg);
-    }
-
-    /**
-     * Adds the package name into the DB and returns the ID of the newly created record.
-     */
-    public function createPkg(&$pkg)
-    {
-        $this->getPakiti()->getDao("Pkg")->create($pkg);
-        return $pkg->getId();
     }
 
     /**
