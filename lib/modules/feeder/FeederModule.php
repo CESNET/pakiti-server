@@ -439,21 +439,17 @@ class FeederModule extends DefaultModule
     {
         Utils::log(LOG_DEBUG, "Preparing the report", __FILE__, __LINE__);
 
-        # Set host variables Kernel, Type
+        # Set host variables Kernel, Type, Os, Arch
         $this->_host->setKernel($this->_report_kernel);
         $this->_host->setType($this->_report_type);
-        
-        # Parse the packages list
-        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_host->getType(), $this->_host->getKernel(), $this->_protocolVersion);
+        $this->_host->setOsName($this->_report_os);
+        $this->_host->setArchName($this->_report_arch);
 
         # Guess DomainName
         $this->_host->setDomainName($this->guessDomain($this->_host->getHostname()));
 
-        # Guess OsName
-        $this->_host->setOsName($this->guessOs($this->_report_os, $this->_pkgs));
-
-        # Set ArchName
-        $this->_host->setArchName($this->_report_arch);
+        # Parse the packages list
+        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_host->getType(), $this->_host->getKernel(), $this->_protocolVersion);
 
         # Set the initial information about the report (using _pkgs)
         $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
@@ -818,62 +814,6 @@ class FeederModule extends DefaultModule
         } else {
             return $domain;
         }
-    }
-
-    /**
-     * Guesses the OS.
-     */
-    protected function guessOs($osName, $pkgs = array())
-    {
-        Utils::log(LOG_DEBUG, "Guessing the OS", __FILE__, __LINE__);
-
-        $osFullName = "unknown";
-        # Find the package which represents the OS name/release
-        $pkgsArray = array();
-        foreach ($pkgs as $pkg) {
-            $pkgsArray[$pkg->getName()][] = $pkg;
-        }
-        foreach (Config::$OS_NAMES_DEFINITIONS as $pkgName => &$osTmpName) {
-            if (array_key_exists($pkgName, $pkgsArray)) {
-                // Iterate over all archs
-            foreach ($pkgsArray[$pkgName] as $pkg) {
-                // Remove epoch if there is one
-                $osFullName = $osTmpName . " " . Utils::removeEpoch($pkg->getVersion());
-                // we have found OS Name, we can skip the others
-                break;
-            }
-            }
-        }
-        unset($osTmpName);
-
-        if ($osFullName == "unknown") {
-            # Try to guess the OS name from the data sent by the client itself?
-            if ($osName != "" || $osName != "unknown") {
-
-                # The Pakiti client has sent the OS name, so canonize it
-                foreach (Config::$OS_NAMES_MAPPING as $pattern => $replacement) {
-                    # Apply regex rules on the Os name sent by the client
-                    $tmpOsName = preg_replace("/".$pattern."/i", $replacement, $osName, 1, $count);
-
-                    if ($tmpOsName == null) {
-                        # Error occured, set the Os name to unknown
-                        $osFullName = "unknown";
-                    } elseif ($count > 0) {
-                        # If there was any replacement $count will contain number of replacements
-                        $osFullName = $tmpOsName;
-                        break;
-                    }
-                }
-
-                # We do not have a rule, so log this OS
-                if ($osFullName == "unknown") {
-                    $fh = fopen(Constants::$UNKNOWN_OS_NAMES_FILE, 'a');
-                    fwrite($fh, date(DATE_RFC822) . ": " . $osName . "\n");
-                    fclose($fh);
-                }
-            }
-        }
-        return $osFullName;
     }
 
     /**
