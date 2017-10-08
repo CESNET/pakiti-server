@@ -46,13 +46,13 @@ class UsersManager extends DefaultManager
 
         $new = false;
         $dao = $this->getPakiti()->getDao("User");
-        $user->setId($dao->getUserIdByUid($user->getUid()));
+        $user->setId($dao->getIdByUid($user->getUid()));
         if ($user->getId() == -1) {
             # User is missing, so store it
-            $dao->createUser($user);
+            $dao->create($user);
             $new = true;
         } else {
-            $dao->updateUser($user);
+            $dao->update($user);
         }
         return $new;
     }
@@ -61,33 +61,33 @@ class UsersManager extends DefaultManager
     {
         Utils::log(LOG_DEBUG, "Getting user by UID", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("User");
-        $id = $dao->getUserIdByUid($uid);
-        return $dao->getUserById($id);
+        $id = $dao->getIdByUid($uid);
+        return $dao->getById($id);
     }
 
     public function getUserIdByUid($uid)
     {
         Utils::log(LOG_DEBUG, "Getting user ID by UID", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("User");
-        return $dao->getUserIdByUid($uid);
+        return $dao->getIdByUid($uid);
     }
 
     public function getUserById($id)
     {
         Utils::log(LOG_DEBUG, "Getting user by ID", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("User");
-        return $dao->getUserById($id);
+        return $dao->getById($id);
     }
 
     public function getUsers()
     {
         Utils::log(LOG_DEBUG, "Getting users", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("User");
-        $usersIds = $dao->getUsersIds();
+        $usersIds = $dao->getIds();
 
         $users = array();
         foreach ($usersIds as $id) {
-            array_push($users, $dao->getUserById($id));
+            array_push($users, $dao->getById($id));
         }
         return $users;
     }
@@ -96,14 +96,14 @@ class UsersManager extends DefaultManager
     {
         Utils::log(LOG_DEBUG, "Counting users", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("User");
-        return sizeof($dao->getUsersIds());
+        return sizeof($dao->getIds());
     }
 
     public function deleteUser($id)
     {
         Utils::log(LOG_DEBUG, "Delete user[$id]", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("User");
-        return $dao->deleteUser($id);
+        return $dao->delete($id);
     }
 
     public function assignHostToUser($userId, $hostId)
