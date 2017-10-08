@@ -41,22 +41,20 @@ class UserDao
 
     public function createUser(User &$user)
     {
-        $user->setCreatedAt(date(Constants::$DATE_FORMAT));
         $sql = "insert into User set
             uid='".$this->db->escape($user->getUid())."',
             name='".$this->db->escape($user->getName())."',
             email='".$this->db->escape($user->getEmail())."',
-            admin=".$this->db->escape($user->isAdmin()).",
-            createdAt='".$this->db->escape($user->getCreatedAt())."'";
+            admin=".$this->db->escape($user->isAdmin());
         $this->db->query($sql);
 
-        # Set the newly assigned id and create date
+        # Set the newly assigned id
         $user->setId($this->db->getLastInsertedId());
     }
 
     public function getUserById($id)
     {
-        $sql = "select id as _id, uid as _uid, name as _name, email as _email, admin as _admin, createdAt as _createdAt from User
+        $sql = "select id as _id, uid as _uid, name as _name, email as _email, admin as _admin, `timestamp` as _timestamp from User
             where id='".$this->db->escape($id)."'";
         return $this->db->queryObject($sql, "User");
     }

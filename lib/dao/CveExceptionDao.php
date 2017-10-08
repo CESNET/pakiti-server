@@ -42,18 +42,15 @@ class CveExceptionDao
 
     public function create(CveException &$exception)
     {
-        $timestamp = new DateTime();
         $this->db->query("insert into `CveException` set
             pkgId='" . $this->db->escape($exception->getPkgId()) . "',
             `reason`='" . $this->db->escape($exception->getReason()) . "',
             cveName='" . $this->db->escape($exception->getCveName()) . "',
             osGroupId='" . $this->db->escape($exception->getOsGroupId()) . "',
-            modifier='" . $this->db->escape($exception->getModifier()) . "',
-            timestamp='" . $timestamp->format('Y-m-d H:i:s') . "'");
+            modifier='" . $this->db->escape($exception->getModifier()) . "'");
 
         # Set the newly assigned id
         $exception->setId($this->db->getLastInsertedId());
-        $exception->setTimestamp($timestamp->format('Y-m-d H:i:s'));
     }
 
     public function getCvesExceptions()
