@@ -94,7 +94,7 @@ class CveTagDao
 
     public function getById($id)
     {
-        $sql = "select id as _id, cveName as _cveName, tagName as _tagName, `reason` as _reason, infoUrl as _infoUrl, timestamp as _timestamp, enabled as _enabled, modifier as _modifier from CveTag
+        $sql = "select id as _id, cveName as _cveName, tagName as _tagName, `reason` as _reason, infoUrl as _infoUrl, `timestamp` as _timestamp, enabled as _enabled, modifier as _modifier from CveTag
             where id=".$this->db->escape($id);
         return $this->db->queryObject($sql, "CveTag");
     }

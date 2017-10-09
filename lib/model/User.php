@@ -37,7 +37,7 @@ class User
     private $_name;
     private $_email;
     private $_admin = 0;
-    private $_createdAt;
+    private $_timestamp;
 
     public function getId()
     {
@@ -93,13 +93,13 @@ class User
         }
     }
 
-    public function getCreatedAt()
+    public function getTimestamp()
     {
-        return $this->_createdAt;
+        return $this->_timestamp;
     }
 
-    public function setCreatedAt($val)
+    public function setTimestamp($val)
     {
-        $this->_createdAt = $val;
+        $this->_timestamp = $val;
     }
 }

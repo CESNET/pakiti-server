@@ -129,7 +129,7 @@ $hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups();
             <th>UID</th>
             <th>Name</th>
             <th>Email</th>
-            <th>CreatedAt</th>
+            <th>Timestamp</th>
             <th>Admin</th>
             <th>Hosts</th>
             <th>HostGroups</th>
@@ -146,7 +146,7 @@ $hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups();
                 <td><?php echo $user->getUid(); ?></td>
                 <td><?php echo $user->getName(); ?></td>
                 <td><?php echo $user->getEmail(); ?></td>
-                <td><?php echo $user->getCreatedAt(); ?></td>
+                <td><?php echo $user->getTimestamp(); ?></td>
                 <td>
                     <?php if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) { ?>
                         <input type="checkbox"<?php if ($user->isAdmin()) echo ' checked'; ?> disabled>

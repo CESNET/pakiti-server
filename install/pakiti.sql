@@ -203,7 +203,7 @@ create table `CveException` (
 	`osGroupId` integer(10) not null,
 	`reason` varchar(255) not null,
 	`modifier` varchar(255) not null,
-	`timestamp` datetime not null,
+	`timestamp` timestamp default CURRENT_TIMESTAMP,
 	primary key (`id`),
 	unique key `unique` (`cveName`, `pkgId`, `osGroupId`),
 	foreign key (`pkgId`) references Pkg(`id`) on delete cascade,
@@ -247,7 +247,7 @@ create table `User` (
 	`name` VARCHAR(255) not null,
 	`email` VARCHAR(255) not null,
 	`admin` integer(1) not null,
-	`createdAt` DATETIME not null,
+	`timestamp` timestamp default CURRENT_TIMESTAMP,
 	primary key (`id`),
 	unique key (`uid`)
 )ENGINE=INNODB;
