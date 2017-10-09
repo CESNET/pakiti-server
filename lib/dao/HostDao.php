@@ -136,15 +136,17 @@ class HostDao
         # tmpJoin variable indicates whether table is joined
         $tmpJoinHostHostGroup = false;
         $tmpJoinReport = false;
+        $tmpJoinOs = false;
 
         # Because os and arch are ids to other tables, we have to do different sorting
         switch ($orderBy) {
             case "os":
-                $join[] = "left join Os on Host.osId=Os.id";
+                $join[] = "inner join Os on Host.osId = Os.id";
+                $tmpJoinOs = true;
                 $order[] = "Os.name";
                 break;
             case "arch":
-                $join[] = "left join Arch on Host.archId=Arch.id";
+                $join[] = "inner join Arch on Host.archId = Arch.id";
                 $order[] = "Arch.name";
                 break;
             case "kernel":
@@ -157,7 +159,7 @@ class HostDao
                 $order[] = "Host.numOfCvesWithTag DESC";
                 break;
             case "lastReport":
-                $join[] = "left join Report on Host.lastReportId=Report.id";
+                $join[] = "left join Report on Host.lastReportId = Report.id";
                 $tmpJoinReport = true;
                 $order[] = "Report.receivedOn DESC";
                 break;
@@ -167,7 +169,14 @@ class HostDao
         $order[] = "Host.hostname";
 
         if ($search != null) {
-            $where[] = "lower(hostname) like '%".$this->db->escape(strtolower($search), true)."%'";
+            $search = trim($search);
+            if (!$tmpJoinOs) {
+                $join[] = "inner join Os on Host.osId = Os.id";
+                $tmpJoinOs = true;
+            }
+            $where[] = "lower(Host.hostname) like '%".$this->db->escape(strtolower($search), true)."%'
+                or lower(Os.name) like '%".$this->db->escape(strtolower($search), true)."%'
+                or lower(Host.kernel) like '%".$this->db->escape(strtolower($search), true)."%'";
         }
 
         if ($cveName != null || $tag != null) {
@@ -192,14 +201,17 @@ class HostDao
         }
 
         if ($hostGroupId != -1) {
-            $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
-            $tmpJoinHostHostGroup = true;
+            if (!$tmpJoinHostHostGroup) {
+                $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+                $tmpJoinHostHostGroup = true;
+            }
             $where[] = "HostHostGroup.hostGroupId = '".$this->db->escape($hostGroupId)."'";
         }
 
         if ($activeIn != null) {
             if (!$tmpJoinReport) {
                 $join[] = "left join Report on Host.lastReportId = Report.id";
+                $tmpJoinReport = true;
             }
             if (preg_match('/^(\+|-|)(\d+)(.|)$/', trim($activeIn), $matches) === 1) {
                 switch ($matches[1]) {
@@ -243,6 +255,7 @@ class HostDao
             } else {
                 if (!$tmpJoinHostHostGroup) {
                     $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+                    $tmpJoinHostHostGroup = true;
                 }
                 $join[] = "left join UserHostGroup on HostHostGroup.hostGroupId = UserHostGroup.hostGroupId";
                 $where[] = "(UserHostGroup.userId = $userId or UserHost.userId = $userId)";

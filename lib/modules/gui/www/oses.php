@@ -69,7 +69,7 @@ $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
     <tbody>
         <?php foreach ($oses as $os) { ?>
             <tr>
-                <td><?php echo $os->getName(); ?></td>
+                <td><a href="hosts.php?search=<?php echo $os->getName(); ?>"><?php echo $os->getName(); ?></a></td>
                 <td>
                     <?php $osOsGroups = $pakiti->getManager("OsGroupsManager")->getOsGroupsByOs($os->getId()); ?>
                     <?php foreach ($osOsGroups as $osOsGroup) { ?>

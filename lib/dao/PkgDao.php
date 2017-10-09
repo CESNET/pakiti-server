@@ -89,6 +89,7 @@ class PkgDao
         }
 
         if ($search != null) {
+            $search = trim($search);
             $where[] = "lower(Pkg.name) like '%".$this->db->escape(strtolower($search), true)."%'";
         }
 
