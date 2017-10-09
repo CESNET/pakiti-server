@@ -39,7 +39,7 @@ class UserDao
         $this->db = $dbManager;
     }
 
-    public function createUser(User &$user)
+    public function create(User &$user)
     {
         $sql = "insert into User set
             uid='".$this->db->escape($user->getUid())."',
@@ -52,14 +52,14 @@ class UserDao
         $user->setId($this->db->getLastInsertedId());
     }
 
-    public function getUserById($id)
+    public function getById($id)
     {
         $sql = "select id as _id, uid as _uid, name as _name, email as _email, admin as _admin, `timestamp` as _timestamp from User
             where id='".$this->db->escape($id)."'";
         return $this->db->queryObject($sql, "User");
     }
 
-    public function getUserIdByUid($uid)
+    public function getIdByUid($uid)
     {
         $sql = "select id from User
             where uid='".$this->db->escape($uid)."'";
@@ -71,13 +71,13 @@ class UserDao
         return $id;
     }
 
-    public function getUsersIds()
+    public function getIds()
     {
         $sql = "select id from User";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    public function updateUser(User &$user)
+    public function update(User &$user)
     {
         $sql = "update User set 
             uid='".$this->db->escape($user->getUid())."',
@@ -88,7 +88,7 @@ class UserDao
         $this->db->query($sql);
     }
 
-    public function deleteUser($id)
+    public function delete($id)
     {
         $sql = "delete from User
             where id='".$this->db->escape($id)."'";
