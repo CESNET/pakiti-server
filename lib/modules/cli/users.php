@@ -170,7 +170,7 @@ switch ($opt["c"]) {
                     print "user ".$user->getUid()." was updated\n";
                 }
 
-                $assignedHostsIds = $pakiti->getManager("HostsManager")->getHostsIds(null, -1, -1, null, null, null, -1, null, $user->getId(), true);
+                $assignedHostsIds = $pakiti->getManager("HostsManager")->getHostsIds(null, -1, -1, null, null, null, -1, null, -1, $user->getId(), true);
                 $hostsIdsToAdd = array_diff($hostsIds, $assignedHostsIds);
                 $hostsIdsToRemove = array_diff($assignedHostsIds, $hostsIds);
                 foreach ($hostsIdsToAdd as $hostId) {

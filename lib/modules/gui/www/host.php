@@ -59,9 +59,9 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
 <h1><?php echo $host->getHostname(); ?></h1>
 <ul class="nav nav-tabs">
     <li role="presentation" class="active"><a href="host.php?hostId=<?php echo $host->getId(); ?>">Detail</a></li>
-    <li role="presentation"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
-    <li role="presentation"><a href="packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
-    <li role="presentation"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
+    <li role="presentation"><a href="host_reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
+    <li role="presentation"><a href="host_packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
+    <li role="presentation"><a href="host_cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
 </ul>
 
 <br><br>

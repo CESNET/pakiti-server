@@ -79,11 +79,11 @@ foreach ($hostGroups as $hostGroup) {
     $numOfHosts = 0;
     $numOfVulnerableReports = 0;
     $numOfReports = 0;
-    $hosts = $pakiti->getManager("HostsManager")->getHostsByHostGroupId($hostGroup->getId());
-    foreach ($hosts as $host) {
+    $hostsIds = $pakiti->getManager("HostsManager")->getHostsIds(null, -1, -1, null, null, null, $hostGroup->getId(), null, -1, -1, false);
+    foreach ($hostsIds as $hostId) {
         $numOfReportsForHost = 0;
         $numOfVulnerableReportsForHost = 0;
-        $reports = $pakiti->getManager("ReportsManager")->getReportsByHostIdFromTo($host->getId(), $from, $to);
+        $reports = $pakiti->getManager("ReportsManager")->getReportsByHostIdFromTo($hostId, $from, $to);
         foreach ($reports as $report) {
             $numOfReportsForHost += 1;
             if ($report->getNumOfCvesWithTag() > 0) {

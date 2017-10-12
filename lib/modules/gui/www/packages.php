@@ -34,43 +34,29 @@ require(realpath(dirname(__FILE__)) . '/../Html.php');
 $html = new HtmlModule($pakiti);
 
 // Access control
-$html->checkPermission("host");
+$html->checkPermission("packages");
 
-$_id = $html->getHttpGetVar("hostId", -1);
 $_search = $html->getHttpGetVar("search", null);
 
-$host = $pakiti->getManager("HostsManager")->getHostById($_id, $html->getUserId());
-if ($host == null) {
-    $html->fatalError("Host with id " . $_id . " doesn't exist or access denied");
-    exit;
-}
+$html->setTitle("Packages");
+$html->setMenuActiveItem("packages.php");
+$html->setNumOfEntities($pakiti->getManager("PkgsManager")->getPkgsCount(-1, $_search));
 
-$html->setTitle("Host: " . $host->getHostname());
-$html->setNumOfEntities($pakiti->getManager("PkgsManager")->getPkgsCount($host->getId(), $_search));
-
-$pkgs = $pakiti->getManager("PkgsManager")->getPkgs($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $host->getId(), $_search);
+$pkgs = $pakiti->getManager("PkgsManager")->getPkgs($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), -1, $_search);
 
 // HTML
 ?>
 
 <?php include(realpath(dirname(__FILE__)) . "/../common/header.php"); ?>
 
-<h1><?php echo $host->getHostname(); ?></h1>
-<ul class="nav nav-tabs">
-    <li role="presentation"><a href="host.php?hostId=<?php echo $host->getId(); ?>">Detail</a></li>
-    <li role="presentation"><a href="reports.php?hostId=<?php echo $host->getId(); ?>">Reports</a></li>
-    <li role="presentation" class="active"><a href="packages.php?hostId=<?php echo $host->getId(); ?>">Packages</a></li>
-    <li role="presentation"><a href="cves.php?hostId=<?php echo $host->getId(); ?>">CVEs</a></li>
-</ul>
-
+<br>
 <br>
 
 <div class="row">
     <div class="col-md-4">
         <form>
-            <input type="hidden" name="hostId" value="<?php echo $host->getId(); ?>">
             <div class="input-group">
-                <input type="text" class="form-control" name="search" value="<?php if ($_search != null) echo $_search; ?>" placeholder="Search packages by name...">
+                <input type="text" class="form-control" name="search" value="<?php if ($_search != null) echo $_search; ?>" placeholder="Search term...">
                 <span class="input-group-btn">
                     <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
                 </span>
@@ -94,20 +80,27 @@ $pkgs = $pakiti->getManager("PkgsManager")->getPkgs($html->getSortBy(), $html->g
                 <?php } ?>
             </th>
             <th width="300">Installed version</th>
-            <th>
+            <th width="200">
                 <a href="<?php echo $html->getQueryString(array("sortBy" => "arch")); ?>">Architecture</a>
                 <?php if ($html->getSortBy() == "arch") { ?>
                     <span class="glyphicon glyphicon-menu-down" aria-hidden="true"></span>
                 <?php } ?>
             </th>
+            <th>Hosts</th>
         </tr>
     </thead>
     <tbody>
         <?php foreach ($pkgs as $pkg) { ?>
+            <?php $hosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, null, null, -1, null, $pkg->getId(), $html->getUserId(), false); ?>
             <tr>
                 <td><?php echo $pkg->getName(); ?></td>
                 <td><?php echo $pkg->getVersionRelease(); ?></td>
                 <td><?php echo $pkg->getArch(); ?></td>
+                <td>
+                    <?php foreach ($hosts as $host) { ?>
+                        <a href="host.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getHostname(); ?></a>
+                    <?php } ?>
+                </td>
             </tr>
         <?php } ?>
     </tbody>
