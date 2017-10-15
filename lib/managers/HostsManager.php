@@ -34,7 +34,7 @@
 class HostsManager extends DefaultManager
 {
     /**
-     * Create if not exist, else update it
+     * Create if not exist, else update and set id
      * @return false if already exist
      */
     public function storeHost(Host &$host)
@@ -45,38 +45,15 @@ class HostsManager extends DefaultManager
             throw new Exception("Host object is not valid");
         }
 
-        # Get the osId
-        $os = new Os();
-        $os->setName($host->getOsName());
-        $this->getPakiti()->getManager("OsesManager")->storeOs($os);
-        $host->setOsId($os->getId());
-        $host->setOs($os);
-
-        # Get the archId
-        $arch = new Arch();
-        $arch->setName($host->getArchName());
-        $this->getPakiti()->getManager("ArchsManager")->storeArch($arch);
-        $host->setArchId($arch->getId());
-        $host->setArch($arch);
-
-        # Get the domainId
-        $domain = new Domain();
-        $domain->setName($host->getDomainName());
-        $this->getPakiti()->getManager("DomainsManager")->storeDomain($domain);
-        $host->setDomainId($domain->getId());
-        $host->setDomain($domain);
-
         $new = false;
         $dao = $this->getPakiti()->getDao("Host");
-        $hostId = $dao->getIdByHostnameIpReporterHostnameReporterIp($host->getHostname(), $host->getIp(), $host->getReporterHostname(), $host->getReporterIp());
-        if ($hostId != -1) {
-            $host->setId($hostId);
-            # Host exist, so update it
-            $this->getPakiti()->getDao("Host")->update($host);
-        } else {
+        $host->setId($dao->getIdByHostnameIpReporterHostnameReporterIp($host->getHostname(), $host->getIp(), $host->getReporterHostname(), $host->getReporterIp()));
+        if ($host->getid() == -1) {
             # Host is missing, so store it
-            $this->getPakiti()->getDao("Host")->create($host);
+            $dao->create($host);
             $new = true;
+        } else {
+            $dao->update($host);
         }
         return $new;
     }
@@ -95,16 +72,9 @@ class HostsManager extends DefaultManager
      */
     public function getHostById($id, $userId = -1)
     {
-        Utils::log(LOG_DEBUG, "Getting the host by its ID [id=$id]", __FILE__, __LINE__);
-        $host =& $this->getPakiti()->getDao("Host")->getById($id, $userId);
-        if (is_object($host)) {
-            $host->setArch($this->getPakiti()->getDao("Arch")->getById($host->getArchId()));
-            $host->setOs($this->getPakiti()->getManager("OsesManager")->getOsById($host->getOsId()));
-            $host->setDomain($this->getPakiti()->getDao("Domain")->getById($host->getDomainId()));
-        } else {
-            return null;
-        }
-        return $host;
+        Utils::log(LOG_DEBUG, "Getting the host[$id]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Host");
+        return $dao->getById($id, $userId);
     }
 
     /**

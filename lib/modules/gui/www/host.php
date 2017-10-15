@@ -77,11 +77,11 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td width="300">Operating system</td>
-        <td><?php echo $host->getOs()->getName(); ?></td>
+        <td><?php echo $host->getOsName(); ?></td>
     </tr>
     <tr>
         <td>Architecture</td>
-        <td><?php echo $host->getArch()->getName(); ?></td>
+        <td><?php echo $host->getArchName(); ?></td>
     </tr>
     <tr>
         <td>Kernel</td>
@@ -89,7 +89,7 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td>Domain</td>
-        <td><?php echo $host->getDomain()->getName(); ?></td>
+        <td><?php echo $host->getDomainName(); ?></td>
     </tr>
     <tr>
         <td>Reporter hostname</td>

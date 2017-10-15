@@ -86,9 +86,9 @@ switch ($opt["c"]) {
             print
                 $host->getId()."\t".
                 $host->getHostname()."\t".
-                $host->getOs()->getName()."\t".
+                $host->getOsName()."\t".
                 $host->getKernel()."\t".
-                $host->getArch()->getName()."\t".
+                $host->getArchName()."\t".
                 $host->getNumOfCves()."\t".
                 $host->getNumOfCvesWithTag()."\n";
         }

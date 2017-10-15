@@ -69,9 +69,9 @@ foreach ($hosts as $host) {
                 $values = array();
                 $values[] = $host->getHostName();
                 $values[] = $hostGroup->getName();
-                $values[] = $host->getOs()->getName();
+                $values[] = $host->getOsName();
                 $values[] = $host->getKernel();
-                $values[] = $host->getArch()->getName();
+                $values[] = $host->getArchName();
                 $values[] = $cveName;
                 $values[] = $cveTag->getTagName();
                 fputcsv($out, $values);
