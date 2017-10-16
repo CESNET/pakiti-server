@@ -144,11 +144,11 @@ class FeederModule extends DefaultModule
         }
         if ($this->_reportProcessMode == Constants::$REPORT_ONLY) {
             $pkgs = $this->_pkgs;
-            $os = $this->_host->getOs();
+            $osId = $this->_host->getOsId();
         } else {
             $host = $this->getPakiti()->getManager("HostsManager")->getHostById($this->_host->getId());
             $pkgs = $this->getPakiti()->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
-            $os = $host->getOs();
+            $osId = $host->getOsId();
         }
 
         $cvesManager = $this->getPakiti()->getManager("CvesManager");
@@ -156,7 +156,7 @@ class FeederModule extends DefaultModule
 
         $result = "";
         foreach ($pkgs as $pkg) {
-            $cvesNames = $cvesManager->getCvesNamesForPkgAndOs($pkg->getId(), $os->getId(), true);
+            $cvesNames = $cvesManager->getCvesNamesForPkgAndOs($pkg->getId(), $osId, true);
             foreach ($cvesNames as $cveName) {
                 $cveTags = $cveTagsManager->getCveTagsByCveName($cveName);
                 foreach ($cveTags as $cveTag) {
@@ -409,9 +409,9 @@ class FeederModule extends DefaultModule
         try {
             # Store OS
             $os = new Os();
-            $os->setName($this->_host->getOsName());
+            $os->setName($this->_report_os);
             $this->getPakiti()->getManager("OsesManager")->storeOs($os);
-            $this->_host->setOs($os);
+            $this->_host->setOsId($os->getId());
 
             # Store packages
             $this->storePkgs();
@@ -442,24 +442,12 @@ class FeederModule extends DefaultModule
         # Set host variables Kernel, Type, Os, Arch
         $this->_host->setKernel($this->_report_kernel);
         $this->_host->setType($this->_report_type);
-        $this->_host->setOsName($this->_report_os);
-        $this->_host->setArchName($this->_report_arch);
-
-        # Guess DomainName
-        $this->_host->setDomainName($this->guessDomain($this->_host->getHostname()));
 
         # Parse the packages list
         $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_host->getType(), $this->_host->getKernel(), $this->_protocolVersion);
 
         # Set the initial information about the report (using _pkgs)
         $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
-
-        # Set HostGroup
-        if ($this->_report_site != null) {
-            $this->_host->setHostGroupName($this->_report_site);
-        } else {
-            $this->_host->setHostGroupName(Constants::$NA);
-        }
     }
 
     /**
@@ -469,13 +457,35 @@ class FeederModule extends DefaultModule
     {
         Utils::log(LOG_DEBUG, "Storing host to the DB", __FILE__, __LINE__);
 
-        # Get the hostGroupId
-        $hostGroup = new HostGroup();
-        $hostGroup->setName($this->_host->getHostGroupName());
-        $this->getPakiti()->getManager("HostGroupsManager")->storeHostGroup($hostGroup);
+        # Store Os
+        $os = new Os();
+        $os->setName($this->_report_os);
+        $this->getPakiti()->getManager("OsesManager")->storeOs($os);
+        $this->_host->setOsId($os->getId());
+
+        # Store arch
+        $arch = new Arch();
+        $arch->setName($this->_report_arch);
+        $this->getPakiti()->getManager("ArchsManager")->storeArch($arch);
+        $this->_host->setArchId($arch->getId());
+
+        # Store domain
+        $domain = new Domain();
+        $domain->setName($this->guessDomain($this->_report_hostname));
+        $this->getPakiti()->getManager("DomainsManager")->storeDomain($domain);
+        $this->_host->setDomainId($domain->getId());
 
         # Store Host
         $this->getPakiti()->getManager("HostsManager")->storeHost($this->_host);
+
+        # Store host group
+        $hostGroup = new HostGroup();
+        if ($this->_report_site != null) {
+            $hostGroup->setName($this->_report_site);
+        } else {
+            $hostGroup->setName(Constants::$NA);
+        }
+        $this->getPakiti()->getManager("HostGroupsManager")->storeHostGroup($hostGroup);
 
         # Assign Host to host group
         $this->getPakiti()->getManager("HostGroupsManager")->removeHostFromHostGroups($this->_host->getId());

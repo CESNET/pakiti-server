@@ -58,8 +58,7 @@ class HostDao
             numOfCves=".$this->db->escape($host->getNumOfCves()).",
             numOfCvesWithTag=".$this->db->escape($host->getNumOfCvesWithTag()).",
             lastReportId=".($host->getLastReportId() == -1 ? "NULL" : $this->db->escape($host->getLastReportId())).",
-            type='".$this->db->escape($host->getType())."',
-            ownRepositoriesDef=".$this->db->escape($host->getOwnRepositoriesDef()));
+            type='".$this->db->escape($host->getType())."'");
 
         # Set the newly assigned id
         $host->setId($this->db->getLastInsertedId());
@@ -94,13 +93,15 @@ class HostDao
             Host.reporterHostname as _reporterHostname,
             Host.kernel as _kernel,
             Host.type as _type,
-            Host.ownRepositoriesDef as _ownRepositoriesDef,
             Host.osId as _osId,
             Host.archId as _archId,
             Host.domainId as _domainId,
             Host.numOfCves as _numOfCves,
             Host.numOfCvesWithTag as _numOfCvesWithTag,
-            Host.lastReportId as _lastReportId";
+            Host.lastReportId as _lastReportId,
+            Arch.name as _archName,
+            Os.name as _osName,
+            Domain.name as _domainName";
         $from = "Host";
         $join = null;
         $where[] = "Host.id = $id";
@@ -111,6 +112,10 @@ class HostDao
             $join[] ="left join UserHost on Host.id = UserHost.hostId";
             $where[] = "(UserHostGroup.userId = $userId or UserHost.userId = $userId)";
         }
+
+        $join[] = "inner join Arch on Host.archId = Arch.id";
+        $join[] = "inner join Os on Host.osId = Os.id";
+        $join[] = "inner join Domain on Host.domainId = Domain.id";
 
         $sql = Utils::sqlSelectStatement($select, $from, $join, $where);
 
@@ -329,9 +334,6 @@ class HostDao
         }
         if ($host->getType() != $dbHost->getType()) {
             $entries['type'] = "'".$this->db->escape($host->getType())."'";
-        }
-        if ($host->getOwnRepositoriesDef() != $dbHost->getOwnRepositoriesDef()) {
-            $entries['ownRepositoriesDef'] = "'".$this->db->escape($host->getOwnRepositoriesDef())."'";
         }
 
         if (sizeof($entries) > 0) {

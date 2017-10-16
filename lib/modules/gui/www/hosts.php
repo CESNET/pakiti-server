@@ -246,11 +246,11 @@ $activity = array("Last 24 hours" => "24h", "Last 2 days" => "2d", "Last week" =
                         <?php echo $hostGroup->getName(); ?> 
                     <?php } ?> 
                 </td>
-                <td><?php echo $host->getOs()->getName() ?></td>
+                <td><?php echo $host->getOsName(); ?></td>
                 <td>
                     <span style="color: #<?php echo substr(md5($host->getKernel()), 0, 6); ?>;"><?php echo $host->getKernel(); ?></span>
                 </td>
-                <td><?php echo $host->getArch()->getName(); ?></td>
+                <td><?php echo $host->getArchName(); ?></td>
                 <td>
                     <a href="host_packages.php?hostId=<?php echo $host->getId(); ?>"><?php echo $report->getNumOfInstalledPkgs(); ?></a>
                 </td>
