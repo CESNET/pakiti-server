@@ -139,7 +139,7 @@ $hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups();
     </thead>
     <tbody>
         <?php foreach ($users as $user) { ?>
-            <?php $userHosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, null, null, -1, null, $user->getId(), true); ?>
+            <?php $userHosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, null, null, -1, null, -1, $user->getId(), true); ?>
             <?php $userHostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $user->getId()); ?>
 
             <tr>

@@ -82,6 +82,7 @@ class PkgDao
                 break;
         }
         $order[] = "Pkg.name";
+        $order[] = "Pkg.version";
 
         if ($hostId != -1) {
             $join[] = "inner join InstalledPkg on InstalledPkg.pkgId = Pkg.id";
@@ -90,7 +91,7 @@ class PkgDao
 
         if ($search != null) {
             $search = trim($search);
-            $where[] = "lower(Pkg.name) like '%".$this->db->escape(strtolower($search), true)."%'";
+            $where[] = "lower(concat(Pkg.name, ' ', Pkg.version, '-', Pkg.release)) like '%".$this->db->escape(strtolower($search), true)."%'";
         }
 
         if ($pageSize != -1 && $pageNum != -1) {

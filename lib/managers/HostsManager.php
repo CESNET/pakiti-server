@@ -119,10 +119,11 @@ class HostsManager extends DefaultManager
     /**
      * Get hosts
      */
-    public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1, $directlyAssignedToUser = false)
+    public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
-        Utils::log(LOG_DEBUG, "Getting all hosts", __FILE__, __LINE__);
-        $hostsIds = $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $userId, $directlyAssignedToUser);
+        Utils::log(LOG_DEBUG, "Getting hosts", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Host");
+        $hostsIds = $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $pkgId, $userId, $directlyAssignedToUser);
 
         $hosts = array();
         foreach ($hostsIds as $hostId) {
@@ -134,31 +135,20 @@ class HostsManager extends DefaultManager
     /**
      * Get hosts IDs
      */
-    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1, $directlyAssignedToUser = false)
+    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         Utils::log(LOG_DEBUG, "Getting hosts IDs", __FILE__, __LINE__);
-        return $this->getPakiti()->getDao("Host")->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $userId, $directlyAssignedToUser);
-    }
-
-    public function getHostsByHostGroupId($hostGroupId)
-    {
-        Utils::log(LOG_DEBUG, "Getting host IDs by HostGroup ID[".$hostGroupId."]", __FILE__, __LINE__);
-        $ids = $this->getPakiti()->getDao("Host")->getIdsByHostGroupId($hostGroupId);
-
-        $hosts = array();
-        foreach ($ids as $id) {
-            array_push($hosts, $this->getPakiti()->getDao("Host")->getById($id));
-        }
-        return $hosts;
+        $dao = $this->getPakiti()->getDao("Host");
+        return $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $pkgId, $userId, $directlyAssignedToUser);
     }
 
     /**
      * Get hosts count
      */
-    public function getHostsCount($search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1)
+    public function getHostsCount($search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1)
     {
         Utils::log(LOG_DEBUG, "Getting hosts count", __FILE__, __LINE__);
-        return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $cveName, $tag, $hostGroupId, $activeIn, $userId));
+        return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $cveName, $tag, $hostGroupId, $activeIn, $pkgId, $userId));
     }
 
     public function deleteHost($id)

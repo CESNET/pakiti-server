@@ -61,14 +61,14 @@ switch (Utils::getHttpPostVar("act")) {
     break;
 }
 
-$hostsCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $_activity, $html->getUserId());
+$hostsCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount($_search, $_cveName, $_tag, $_hostGroupId, $_activity, -1, $html->getUserId());
 
 $html->setTitle("List of hosts");
 $html->setMenuActiveItem("hosts.php");
 $html->setDefaultSorting("lastReport");
 $html->setNumOfEntities($hostsCount);
 
-$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $_activity, $html->getUserId());
+$hosts = $html->getPakiti()->getManager("HostsManager")->getHosts($html->getSortBy(), $html->getPageSize(), $html->getPageNum(), $_search, $_cveName, $_tag, $_hostGroupId, $_activity, -1, $html->getUserId());
 
 $hostGroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups(null, -1, -1, $html->getUserId());
 $cveNames = $pakiti->getManager("CvesManager")->getCvesNames(true);
@@ -252,10 +252,10 @@ $activity = array("Last 24 hours" => "24h", "Last 2 days" => "2d", "Last week" =
                 </td>
                 <td><?php echo $host->getArch()->getName(); ?></td>
                 <td>
-                    <a href="packages.php?hostId=<?php echo $host->getId(); ?>"><?php echo $report->getNumOfInstalledPkgs(); ?></a>
+                    <a href="host_packages.php?hostId=<?php echo $host->getId(); ?>"><?php echo $report->getNumOfInstalledPkgs(); ?></a>
                 </td>
                 <td>
-                    <a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a>
+                    <a href="host_cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a>
                 </td>
                 <td>
                     <?php if ($_listTaggedCves) { ?>
@@ -263,11 +263,11 @@ $activity = array("Last 24 hours" => "24h", "Last 2 days" => "2d", "Last week" =
                             <a href="cve.php?cveName=<?php echo $cveName; ?>" class="text-danger"><?php echo $cveName; ?></a><br>
                         <?php } ?>
                     <?php } else { ?>
-                        <a href="cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
+                        <a href="host_cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"<?php if ($host->getNumOfCvesWithTag() > 0) echo ' class="text-danger"'; ?>><?php echo $host->getNumOfCvesWithTag(); ?></a>
                     <?php } ?>
                 </td>
                 <td>
-                    <a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>
+                    <a href="host_reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a>
                 </td>
                 <td>
                     <span<?php if (strtotime("now") - strtotime($report->getReceivedOn()) > (2 * (60 * 60 * 24))) echo ' class="text-warning"'; ?>><?php echo $report->getReceivedOn(); ?></span>

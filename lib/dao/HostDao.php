@@ -123,7 +123,7 @@ class HostDao
         return $this->getById($hostId);
     }
   
-    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $userId = -1, $directlyAssignedToUser = false)
+    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         $select = "distinct Host.id";
         $from = "Host";
@@ -208,6 +208,11 @@ class HostDao
             $where[] = "HostHostGroup.hostGroupId = '".$this->db->escape($hostGroupId)."'";
         }
 
+        if ($pkgId != -1) {
+            $join[] = "inner join InstalledPkg on Host.id = InstalledPkg.hostId";
+            $where[] = "InstalledPkg.pkgId = '" . $this->db->escape($pkgId) . "'";
+        }
+
         if ($activeIn != null) {
             if (!$tmpJoinReport) {
                 $join[] = "left join Report on Host.lastReportId = Report.id";
@@ -269,18 +274,6 @@ class HostDao
 
         $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
 
-        return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
-    public function getIdsByHostGroupId($hostGroupId)
-    {
-        $select = "Host.id";
-        $from = "Host";
-        $join = "inner join HostHostGroup on Host.id = HostHostGroup.hostId";
-        $where = "HostHostGroup.hostGroupId = '" . $this->db->escape($hostGroupId) . "'";
-        $order = "Host.hostname";
-
-        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 

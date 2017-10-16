@@ -108,8 +108,8 @@ $hostgroups = $html->getPakiti()->getManager("HostGroupsManager")->getHostGroups
     </thead>
     <tbody>
         <?php foreach ($hostgroups as $hostgroup) { ?>
-            <?php $hostsCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostgroup->getId(), null, $html->getUserId()); ?>
-            <?php $taggedHostsCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, true, $hostgroup->getId(), null, $html->getUserId()); ?>
+            <?php $hostsCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, null, $hostgroup->getId(), null, -1, $html->getUserId()); ?>
+            <?php $taggedHostsCount = $html->getPakiti()->getManager("HostsManager")->getHostsCount(null, null, true, $hostgroup->getId(), null, -1, $html->getUserId()); ?>
             <tr>
                 <td><?php echo $hostgroup->getName(); ?></td>
                 <td><a href="hosts.php?hostGroupId=<?php echo $hostgroup->getId(); ?>"><?php echo $hostsCount; ?></a></td>
