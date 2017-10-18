@@ -1,4 +1,4 @@
-## Installation manual for Debian based Linux
+## Server installation for Debian-based Linux
 
 #### Install apache2, mysql, php5, curl and subversion
     apt-get update
