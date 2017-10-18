@@ -15,7 +15,7 @@
 #### Copy file Config.php to /etc/pakiti
 ###### you can change default username and password for pakiti3 database user in Config.php
     mkdir -p /etc/pakiti
-    cp /var/www/pakiti3/etc/Config_template.php /etc/pakiti/Config.php
+    cp /var/www/pakiti3/install/Config_template.php /etc/pakiti/Config.php
 
 #### Run php initDB.php for initalize database and create user which is defined in Config.php
 ###### use root password (option -h for help)
