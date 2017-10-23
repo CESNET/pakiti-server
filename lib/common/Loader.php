@@ -92,8 +92,8 @@ function __autoload($className)
 try {
     $pakiti = new Pakiti();
     $pakiti->init();
-  
-    $pakiti->checkDBVersion();
+
+    $pakiti->checkVersion();
 } catch (Exception $e) {
     syslog(LOG_ERR, $e->getMessage());
     exit;

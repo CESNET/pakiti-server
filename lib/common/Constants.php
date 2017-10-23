@@ -36,6 +36,8 @@
 final class Constants
 {
     public static $PAKITI_VERSION = "3.0.0";
+    public static $DB_VERSION = "20171019";
+    public static $CONFIG_VERSION = "20171019";
 
     public static $PAKITI_CONFIG_FILE = "/etc/pakiti/Config.php";
     public static $PAKITI_CONFIG_ENV = "PAKITI_CONFIG_FILE";
