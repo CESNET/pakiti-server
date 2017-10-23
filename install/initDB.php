@@ -194,15 +194,15 @@ if (!mysqli_select_db($newLink, Config::$DB_NAME)) {
 }
 print "OK\n";
 
-print "Storing Pakiti version '" . Constants::$PAKITI_VERSION. "' into the database ... ";
-if (!mysqli_query($newLink, "insert into PakitiAttributes (attrName, attrValue) values ('".AttributeNames::$PAKITI_VERSION."','".Constants::$PAKITI_VERSION."')")) {
+print "Storing Pakiti DB version '" . Constants::$DB_VERSION. "' into the database ... ";
+if (!mysqli_query($newLink, "insert into PakitiAttributes (attrName, attrValue) values ('".AttributeNames::$DB_VERSION."','".Constants::$DB_VERSION."'), ('".AttributeNames::$TIMESTAMP."','". date('Y-m-d H:i:s') ."')")) {
     print "ERROR: Cannot store the Pakiti version into the PakitiAttributes table: " .  mysqli_error($newLink) . "\n";
     exit(1);
 }
 print "OK\n";
 
 print "Testing connection to the newly created database '" . Config::$DB_NAME . "' ... ";
-if (!mysqli_query($newLink, "select attrValue from PakitiAttributes where attrName='".AttributeNames::$PAKITI_VERSION."'")) {
+if (!mysqli_query($newLink, "select attrValue from PakitiAttributes where attrName='".AttributeNames::$DB_VERSION."'")) {
     print "ERROR: Cannot get the Pakiti version from the PakitiAttributes table: " .  mysqli_error($newLink) . "\n";
     exit(1);
 }

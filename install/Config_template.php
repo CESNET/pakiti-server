@@ -35,6 +35,8 @@
  */
 final class Config
 {
+    # CONFIG_VERSION
+    public static $CONFIG_VERSION = "20171019";
 
     # Name of this Pakiti instance
     public static $PAKITI_NAME = "";

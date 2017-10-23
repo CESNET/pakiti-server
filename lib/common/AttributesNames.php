@@ -34,5 +34,6 @@
  */
 final class AttributeNames
 {
-    public static $PAKITI_VERSION = "pakitiVersion";
+    public static $TIMESTAMP = "timestamp";
+    public static $DB_VERSION = "dbVersion";
 }
