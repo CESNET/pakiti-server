@@ -124,13 +124,7 @@ class HostDao
         return $this->db->queryObject($sql, "Host");
     }
 
-    public function getByHostname($hostname)
-    {
-        $hostId = $this->db->queryToSingleValue("select id from Host where hostname='$hostname'");
-        return $this->getById($hostId);
-    }
-  
-    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
+    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         $select = "distinct Host.id";
         $from = "Host";
@@ -220,12 +214,12 @@ class HostDao
             $where[] = "InstalledPkg.pkgId = '" . $this->db->escape($pkgId) . "'";
         }
 
-        if ($activeIn != null) {
+        if ($activity != null) {
             if (!$tmpJoinReport) {
                 $join[] = "left join Report on Host.lastReportId = Report.id";
                 $tmpJoinReport = true;
             }
-            if (preg_match('/^(\+|-|)(\d+)(.|)$/', trim($activeIn), $matches) === 1) {
+            if (preg_match('/^(\+|-|)(\d+)(.|)$/', trim($activity), $matches) === 1) {
                 switch ($matches[1]) {
                     case "-":
                         $operator = "<";
@@ -281,14 +275,6 @@ class HostDao
 
         $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
 
-        return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
-    public function getInactiveIdsLongerThan($days)
-    {
-        $sql = "select Host.id from Host
-            left join Report on Host.lastReportId = Report.id
-            where Report.receivedOn < date_sub(now(), interval ".$this->db->escape($days)." day)";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 

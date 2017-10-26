@@ -34,13 +34,13 @@ $shortopts = "c:h";
 
 $longopts = array(
     "id:",
-    "inactiveDays:",
+    "activity:",
     "help",
 );
 
 function usage()
 {
-    die("Usage: hosts [-h|--help] (-c delete (--id=<id> | --inactiveDays=<inactiveDays>) | list)\n");
+    die("Usage: hosts [-h|--help] (-c delete (--id=<id> | --activity=<activity>) | list)\n");
 }
 
 $opt = getopt($shortopts, $longopts);
@@ -59,9 +59,9 @@ switch ($opt["c"]) {
             } else {
                 die("host wasn't deleted\n");
             }
-        } elseif (isset($opt["inactiveDays"])) {
+        } elseif (isset($opt["activity"])) {
             $manager = $pakiti->getManager("HostsManager");
-            $hosts = $manager->getInactiveHostsLongerThan($opt["inactiveDays"]);
+            $hosts = $manager->getHosts(null, -1, -1, null, null, null, -1, $opt["activity"]);
 
             $number = 0;
             foreach ($hosts as $host) {
@@ -74,14 +74,15 @@ switch ($opt["c"]) {
             }
             die($number." hosts was deleted\n");
         } else {
-            die("required option id or inactiveDays is missing\n");
+            die("required option id or activity is missing\n");
         }
         break;
 
     # list hosts
     case "list":
         $hosts = $pakiti->getManager("HostsManager")->getHosts();
-        print "id\thostname\tos\tkernel\tarchitecture\t#CVEs\t#taggedCVEs\n";
+        print "\nid\thostname\tos\tkernel\tarch\t#CVEs\t#taggedCVEs\n";
+        print "----------------------------------------------------------------------\n";
         foreach ($hosts as $host) {
             print
                 $host->getId()."\t".

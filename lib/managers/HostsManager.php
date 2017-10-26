@@ -59,7 +59,7 @@ class HostsManager extends DefaultManager
     }
 
     /**
-     * Try to find host using hostname, ip, reporterHostname and reporterIp
+     * Get host ID by hostname, ip, reporterHostname and reporterIp
      */
     public function getHostId($hostname, $ip, $reporterHostname, $reporterIp)
     {
@@ -68,7 +68,7 @@ class HostsManager extends DefaultManager
     }
 
     /**
-     * Get the host by its ID
+     * Get host by ID
      */
     public function getHostById($id, $userId = -1)
     {
@@ -78,22 +78,13 @@ class HostsManager extends DefaultManager
     }
 
     /**
-     * Get the host by its hostname
-     */
-    public function getHostByHostname($hostname)
-    {
-        Utils::log(LOG_DEBUG, "Getting the host by its hostname [hostname=$hostname]", __FILE__, __LINE__);
-        return $this->getPakiti()->getDao("Host")->getByHostname($hostname);
-    }
-
-    /**
      * Get hosts
      */
-    public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
+    public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         Utils::log(LOG_DEBUG, "Getting hosts", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("Host");
-        $hostsIds = $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $pkgId, $userId, $directlyAssignedToUser);
+        $hostsIds = $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId, $directlyAssignedToUser);
 
         $hosts = array();
         foreach ($hostsIds as $hostId) {
@@ -105,22 +96,25 @@ class HostsManager extends DefaultManager
     /**
      * Get hosts IDs
      */
-    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
+    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         Utils::log(LOG_DEBUG, "Getting hosts IDs", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("Host");
-        return $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activeIn, $pkgId, $userId, $directlyAssignedToUser);
+        return $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId, $directlyAssignedToUser);
     }
 
     /**
      * Get hosts count
      */
-    public function getHostsCount($search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1)
+    public function getHostsCount($search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1)
     {
         Utils::log(LOG_DEBUG, "Getting hosts count", __FILE__, __LINE__);
-        return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $cveName, $tag, $hostGroupId, $activeIn, $pkgId, $userId));
+        return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId));
     }
 
+    /**
+     * Delete host by ID
+     */
     public function deleteHost($id)
     {
         Utils::log(LOG_DEBUG, "Delete host[$id]", __FILE__, __LINE__);
@@ -128,19 +122,9 @@ class HostsManager extends DefaultManager
         return $dao->delete($id);
     }
 
-    public function getInactiveHostsLongerThan($days)
-    {
-        Utils::log(LOG_DEBUG, "Getting hosts inactive longer than $days days", __FILE__, __LINE__);
-        $dao = $this->getPakiti()->getDao("Host");
-        $ids = $dao->getInactiveIdsLongerThan($days);
-
-        $hosts = array();
-        foreach ($ids as $id) {
-            array_push($hosts, $this->getPakiti()->getDao("Host")->getById($id));
-        }
-        return $hosts;
-    }
-
+    /**
+     * Recalculate CVEs count for host by ID
+     */
     public function recalculateCvesCountForHost($hostId)
     {
         Utils::log(LOG_DEBUG, "Recalculating numOfCves for Host[".$hostId."]", __FILE__, __LINE__);
@@ -158,6 +142,9 @@ class HostsManager extends DefaultManager
         $dao->update($host);
     }
 
+    /**
+     * Recalculate CVEs count for each host
+     */
     public function recalculateCvesCountForEachHost()
     {
         Utils::log(LOG_DEBUG, "Recalculating numOfCves for each host", __FILE__, __LINE__);
@@ -167,26 +154,5 @@ class HostsManager extends DefaultManager
         foreach ($ids as $id) {
             $this->recalculateCvesCountForHost($id);
         }
-    }
-
-    /**
-     * Get arch
-     */
-    public function getArch($name)
-    {
-        Utils::log(LOG_DEBUG, "Getting arch by Name", __FILE__, __LINE__);
-        return $this->getPakiti()->getDao("Arch")->getByName($name);
-    }
-
-    /**
-     * Create arch
-     */
-    public function createArch($name)
-    {
-        Utils::log(LOG_DEBUG, "Creating arch $name", __FILE__, __LINE__);
-        $arch = new Arch();
-        $arch->setName($name);
-        $this->getPakiti()->getDao("Arch")->create($arch);
-        return $arch;
     }
 }

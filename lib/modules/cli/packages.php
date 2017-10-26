@@ -30,33 +30,47 @@
 
 require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-$shortopts = "h:";
+$shortopts = "c:h";
 
 $longopts = array(
-    "hostname:"
+    "hostId:",
+    "search:",
+    "help",
 );
 
 function usage()
 {
-    die("Usage: listHostPackages [-h|--hostname] hostname\n");
+    die("Usage: packages [-h|--help] (-c list (--hostId=<hostId>) (--search=<search>))\n");
 }
 
 $opt = getopt($shortopts, $longopts);
 
-if ($opt === false) {
+if (isset($opt["h"]) || isset($opt["help"]) || !isset($opt["c"])) {
     usage();
 }
 
-$hostname = !empty($opt["h"]) ? $opt["h"] : (!empty($opt["hostname"]) ? $opt["hostname"] : usage());
+switch ($opt["c"]) {
 
-$host = $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
+    # list packages
+    case "list":
+        $hostId = isset($opt["hostId"]) ? $opt["hostId"] : -1;
+        $search = isset($opt["search"]) ? $opt["search"] : null;
+        $pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $hostId, $search);
 
-$pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
+        print "\nname\tversion\trelease\tarch\tpkgType\n";
+        print "----------------------------------------------------------------------\n";
+        foreach ($pkgs as $pkg) {
+            print
+                $pkg->getName() ."\t" .
+                $pkg->getVersion() ."\t" .
+                $pkg->getRelease() ."\t" .
+                $pkg->getArchName() ."\t" .
+                $pkg->getPkgTypeName() ."\t" .
+                "\n";
+        }
+        break;
 
-print "name\tversion\trelease\tarch\tpkgType\n";
-print "-------------------------------------------------------------------\n";
-foreach ($pkgs as $pkg) {
-    if ($pkg != null) {
-        print "{$pkg->getName()}\t{$pkg->getVersion()}\t{$pkg->getRelease()}\t{$pkg->getArchName()}\t{$pkg->getPkgTypeName()}\n";
-    }
+    default:
+        die("option -c has unknown value\n");
+        break;
 }
