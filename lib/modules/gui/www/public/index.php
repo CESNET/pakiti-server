@@ -63,8 +63,7 @@ $html = new HtmlModule($pakiti);
                 Pakiti has a web based GUI which provides a list of the registered systems. This helps the system admins keep multiple machines up-to-date and prevent unpatched machines to be kept silently on the network.
             </p>
             <p class="text-right">
-                <a class="btn btn-primary btn-lg" href="https://github.com/CESNET/pakiti3" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> Github</a>
-                <a class="btn btn-primary btn-lg" href="https://github.com/CESNET/pakiti3/releases" role="button"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a>
+                <a class="btn btn-primary btn-lg" href="<?php echo Constants::$PAKITI_GITHUB; ?>" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> GitHub</a>
             </p>
             <br>
             <h2>Supported OSes</h2>
@@ -148,8 +147,8 @@ $html = new HtmlModule($pakiti);
                 </a>
             </div>
         </div>
-        <div class="text-center"><?php if(isset(Config::$GUI_FOOTER)) echo Config::$GUI_FOOTER; ?></div>
-        <div class="text-center">Copyright &copy; 2017, CESNET, <a href="https://github.com/CESNET/pakiti3" target="_blank">GitHub</a></div>
+        <div class="text-center"><?php echo Config::$GUI_FOOTER; ?></div>
+        <div class="text-center">Copyright &copy; 2017, CESNET, <a href="<?php echo Constants::$PAKITI_GITHUB; ?>" target="_blank">GitHub</a></div>
     </div>
 </body>
 
