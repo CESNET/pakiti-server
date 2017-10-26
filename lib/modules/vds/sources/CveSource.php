@@ -126,21 +126,13 @@ class CveSource extends Source implements ISource
                     $cveDef->setRefUrl($def['ref_url']);
                     $cveDef->setVdsSubSourceDefId($def['subSourceDefId']);
 
-                    $cveDefId = $this->_pakiti->getDao("CveDef")->getCveDefId($cveDef);
-
-                    if ($cveDefId == null) {
-                        # CVEs
-                        $cves = array();
+                    if ($this->_pakiti->getManager('CveDefsManager')->storeCveDef($cveDef)) {
                         foreach ($def['cves'] as $cveName) {
                             $cve = new Cve();
                             $cve->setName($cveName);
-                            array_push($cves, $cve);
+                            $this->_pakiti->getManager('CvesManager')->storeCve($cve);
+                            $this->_pakiti->getManager('CveDefsManager')->assignCveToCveDef($cve->getId(), $cveDef->getId());
                         }
-                        $cveDef->setCves($cves);
-
-                        $this->_pakiti->getManager('CveDefsManager')->createCveDef($cveDef);
-                    } else {
-                        $cveDef->setId($cveDefId);
                     }
 
                     # if osGroup not set, than it is unfixed in DSA

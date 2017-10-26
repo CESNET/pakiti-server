@@ -158,9 +158,11 @@ class PkgDao
     /**
      * Delete the pkg from the DB
      */
-    public function delete(Pkg &$pkg)
+    public function delete($id)
     {
-        $this->db->query("delete from Pkg where id=" . $this->db->escape($pkg->getId()));
+        $sql = "delete from Pkg
+            where id='" . $this->db->escape($id) . "'";
+        $this->db->query($sql);
     }
 
     public function assignPkgToHost($pkgId, $hostId)
@@ -177,6 +179,27 @@ class PkgDao
             pkgId='" . $this->db->escape($pkgId) . "' and
             hostId='" . $this->db->escape($hostId) . "'";
         $this->db->query($sql);
+    }
+
+    public function getByCveNameAndOsGroupId($cveName, $osGroupId)
+    {
+        $sql = "select Pkg.id from PkgCveDef
+            inner join CveCveDef on PkgCveDef.cveDefId = CveCveDef.cveDefId
+            inner join Cve on CveCveDef.cveId = Cve.id
+            inner join Pkg on Pkg.id = PkgCveDef.pkgId
+            left join CveException on (Cve.name = CveException.cveName and PkgCveDef.osGroupId = CveException.osGroupId)
+            where Cve.name='" . $this->db->escape($cveName) . "'
+            and PkgCveDef.osGroupId='" . $this->db->escape($osGroupId) . "'
+            and CveException.id IS NULL";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function getUnusedIds()
+    {
+        $sql = "select Pkg.id from Pkg
+            left join InstalledPkg on Pkg.id = InstalledPkg.pkgId
+            where InstalledPkg.hostId IS NULL";
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
 
     /**
@@ -198,12 +221,6 @@ class PkgDao
             where $where", "Pkg");
     }
 
-    public function getPkgsTypesNames()
-    {
-        $sql = "select distinct(type) from Pkg";
-        return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
     public function getVulnerableIdsForHost($hostId, $tag)
     {
         $select = "distinct(Pkg.id)";
@@ -215,7 +232,10 @@ class PkgDao
 
         # cveDefs
         $join[] = "inner join PkgCveDef on Pkg.id = PkgCveDef.pkgId";
-        $join[] = "inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+        $join[] = "inner join CveCveDef on PkgCveDef.cveDefId = CveCveDef.cveDefId";
+
+        # cves
+        $join[] = "inner join Cve on CveCveDef.cveId = Cve.id";
 
         # os
         $join[] = "inner join OsOsGroup on PkgCveDef.osGroupId = OsOsGroup.osGroupId";

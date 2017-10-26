@@ -29,24 +29,12 @@
 
 /**
  * @author Michal Prochazka
+ * @author Jakub Mlcak
  */
 class Cve
 {
     private $_id;
     private $_name;
-    private $_cveDefId = -1;
-    private $_tag = array();
-    private $_cveExceptions = array();
-
-    public function getCveExceptions()
-    {
-        return $this->_cveExceptions;
-    }
-
-    public function setCveExceptions($cveExceptions)
-    {
-        $this->_cveExceptions = $cveExceptions;
-    }
 
     public function getId()
     {
@@ -66,25 +54,5 @@ class Cve
     public function setName($name)
     {
         $this->_name = $name;
-    }
-
-    public function getCveDefId()
-    {
-        return $this->_cveDefId;
-    }
-
-    public function setCveDefId($cveDefId)
-    {
-        $this->_cveDefId = $cveDefId;
-    }
-
-    public function getTag()
-    {
-        return $this->_tag;
-    }
-
-    public function setTag($tag)
-    {
-        $this->_tag = $tag;
     }
 }

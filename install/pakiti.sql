@@ -188,9 +188,15 @@ create table `CveDef` (
 create table `Cve` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
-	`cveDefId` integer(10) not null,
 	primary key (`id`),
-	unique key `unique` (`name`, `cveDefId`),
+	unique key (`name`)
+)ENGINE=INNODB;
+
+create table `CveCveDef` (
+	`cveId` integer(10) not null,
+	`cveDefId` integer(10) not null,
+	primary key (`cveId`, `cveDefId`),
+	foreign key (`cveId`) references Cve(`id`) on delete cascade,
 	foreign key (`cveDefId`) references CveDef(`id`) on delete cascade
 )ENGINE=INNODB;
 

@@ -184,7 +184,8 @@ class HostDao
             $join[] = "inner join InstalledPkg on InstalledPkg.hostId = Host.id";
             $join[] = "inner join PkgCveDef on PkgCveDef.pkgId = InstalledPkg.pkgId";
             $join[] = "inner join OsOsGroup on (PkgCveDef.osGroupId = OsOsGroup.osGroupId and OsOsGroup.osId = Host.osId)";
-            $join[] = "inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+            $join[] = "inner join CveCveDef on PkgCveDef.cveDefId = CveCveDef.cveDefId";
+            $join[] = "inner join Cve on CveCveDef.cveId = Cve.id";
             $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
             $where[] = "CveException.id IS NULL";
         }

@@ -1,3 +1,31 @@
+## 20171025 -> 20171026
+```sql
+rename table `Cve` to `CveCveDef`;
+
+create table `Cve` (`id` integer(10) not null auto_increment, `name` varchar(63) not null, primary key (`id`), unique key (`name`))ENGINE=INNODB;
+insert ignore into `Cve` (`name`) select distinct(`name`) from `CveCveDef`;
+
+alter table `CveCveDef` add column `cveId` integer(10) not null;
+update `CveCveDef` inner join `Cve` on `Cve`.`name` = `CveCveDef`.`name` set `cveId` = `Cve`.`id`;
+alter table `CveCveDef` add foreign key (`cveId`) references Cve(`id`) on delete cascade;
+
+/* manually check constraint on `cveName` column and drop it */
+show create table `CveTag`;
+alter table `CveTag` drop foreign key `<your_constraint_name>`;
+show create table `CveException`;
+alter table `CveException` drop foreign key `<your_constraint_name>`;
+
+alter table `CveTag` add foreign key (`cveName`) references Cve(`name`) on delete cascade;
+alter table `CveException` add foreign key (`cveName`) references Cve(`name`) on delete cascade;
+
+alter table `CveCveDef` drop key `unique`;
+alter table `CveCveDef` drop column `name`;
+alter table `CveCveDef` drop column `id`;
+alter table `CveCveDef` add primary key (`cveId`, `cveDefId`);
+
+update `PakitiAttributes` set `attrValue` = "20171026" where `attrName` = "dbVersion" and `attrValue` = "20171025";
+```
+
 ## 20171019 -> 20171025
 ```sql
 alter table `Host` drop column `ownRepositoriesDef`;

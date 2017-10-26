@@ -206,7 +206,7 @@ $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsBy
                         </div>
                         <label>Packages</label>
                         <?php foreach ($osGroups as $osGroup) { ?>
-                            <?php $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroup($selectedCveName, $osGroup); ?>
+                            <?php $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroupId($selectedCveName, $osGroup->getId()); ?>
                             <?php foreach ($pkgs as $pkg) { ?>
                                 <div class="checkbox">
                                     <label>
