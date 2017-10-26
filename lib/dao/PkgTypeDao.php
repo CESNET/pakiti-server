@@ -1,4 +1,3 @@
-#!/usr/bin/php
 <?php
 # Copyright (c) 2017, CESNET. All rights reserved.
 #
@@ -28,35 +27,46 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
-
-$shortopts = "h:";
-
-$longopts = array(
-    "hostname:"
-);
-
-function usage()
+/**
+ * @author Jakub Mlcak
+ */
+class PkgTypeDao
 {
-    die("Usage: listHostPackages [-h|--hostname] hostname\n");
-}
+    private $db;
 
-$opt = getopt($shortopts, $longopts);
+    public function __construct(DbManager &$dbManager)
+    {
+        $this->db = $dbManager;
+    }
 
-if ($opt === false) {
-    usage();
-}
+    public function create(PkgType &$pkgType)
+    {
+        $sql = "insert into PkgType set
+            name='" . $this->db->escape($pkgType->getName()) . "'";
+        $this->db->query($sql);
 
-$hostname = !empty($opt["h"]) ? $opt["h"] : (!empty($opt["hostname"]) ? $opt["hostname"] : usage());
+        # Set the newly assigned id
+        $pkgType->setId($this->db->getLastInsertedId());
+    }
 
-$host = $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
+    public function getById($id)
+    {
+        $sql = "select id as _id, name as _name from PkgType
+            where id='" . $this->db->escape($id) . "'";
+        return $this->db->queryObject($sql, "PkgType");
+    }
 
-$pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
+    public function getIdByName($name)
+    {
+        $sql = "select id from PkgType
+            where name='" . $this->db->escape($name) . "'";
+        $id = $this->db->queryToSingleValue($sql);
+        return ($id == null) ? -1 : $id;
+    }
 
-print "name\tversion\trelease\tarch\tpkgType\n";
-print "-------------------------------------------------------------------\n";
-foreach ($pkgs as $pkg) {
-    if ($pkg != null) {
-        print "{$pkg->getName()}\t{$pkg->getVersion()}\t{$pkg->getRelease()}\t{$pkg->getArchName()}\t{$pkg->getPkgTypeName()}\n";
+    public function getIds()
+    {
+        $sql = "select id from PkgType";
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
 }

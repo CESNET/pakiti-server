@@ -47,7 +47,7 @@ class PkgsManager extends DefaultManager
 
         $new = false;
         $dao = $this->getPakiti()->getDao("Pkg");
-        $pkg->setId($dao->getPkgIdByNameVersionReleaseArchType($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArch(), $pkg->getType()));
+        $pkg->setId($dao->getIdByNameVersionReleaseArchIdTypeId($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArchId(), $pkg->getPkgTypeId()));
         if ($pkg->getId() == -1) {
             # Pkg is missing, so store it
             $dao->create($pkg);
@@ -99,10 +99,18 @@ class PkgsManager extends DefaultManager
             throw new Exception("Cve name is not valid");
         }
 
-        $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch, Pkg.type as _type from PkgCveDef
+        $sql = "select Pkg.id from PkgCveDef
             join Cve on PkgCveDef.cveDefId = Cve.cveDefId join Pkg on Pkg.id=PkgCveDef.pkgId where Cve.name='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'
             and osGroupId={$osGroup->getId()} and (Pkg.id not in (select pkgId from CveException where osGroupId={$osGroup->getId()} and cveName=Cve.name))";
-        return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
+
+        $dao = $this->getPakiti()->getDao("Pkg");
+        $pkgsIds = $this->getPakiti()->getManager("DbManager")->queryToSingleValueMultiRow($sql);
+
+        $pkgs = array();
+        foreach ($pkgsIds as $id) {
+            array_push($pkgs, $dao->getById($id));
+        }
+        return $pkgs;
     }
 
     /**
@@ -111,17 +119,21 @@ class PkgsManager extends DefaultManager
     public function getUnusedPkgs()
     {
         Utils::log(LOG_DEBUG, "Getting unused packages from DB", __FILE__, __LINE__);
-        $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch, Pkg.type as _type from Pkg where Pkg.id not in (select pkgId from InstalledPkg)";
-        return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
+        $sql = "select Pkg.id from Pkg where Pkg.id not in (select pkgId from InstalledPkg)";
+
+        $dao = $this->getPakiti()->getDao("Pkg");
+        $pkgsIds = $this->getPakiti()->getManager("DbManager")->queryToSingleValueMultiRow($sql);
+
+        $pkgs = array();
+        foreach ($pkgsIds as $id) {
+            array_push($pkgs, $dao->getById($id));
+        }
+        return $pkgs;
     }
 
-    public function getPkgId($name, $version, $release, $arch, $type)
+    public function getPkgId($name, $version, $release, $archId, $typeId)
     {
-        if ((!isset($name)) || !isset($version) || !isset($release) || !isset($arch)) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Some of the parameters is not set");
-        }
-        return $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArchType($name, $version, $release, $arch, $type);
+        return $this->getPakiti()->getDao("Pkg")->getIdByNameVersionReleaseArchIdTypeId($name, $version, $release, $archId, $typeId);
     }
 
     public function getPkgById($pkgId)

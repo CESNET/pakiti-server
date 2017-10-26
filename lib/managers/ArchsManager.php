@@ -56,11 +56,19 @@ class ArchsManager extends DefaultManager
     }
 
     /**
-     * Get all archs names
-     * @return archs names array
+     * Get arch ID by name
      */
-    public function getArchsNames()
+    public function getArchIdByName($name)
     {
-        return $this->getPakiti()->getDao("Arch")->getArchsNames();
+        Utils::log(LOG_DEBUG, "Getting arch ID by name[$name]", __FILE__, __LINE__);
+        return $this->getPakiti()->getDao("Arch")->getIdByName($name);
+    }
+
+    /**
+     * Get all archs IDs
+     */
+    public function getArchsIds()
+    {
+        return $this->getPakiti()->getDao("Arch")->getIds();
     }
 }

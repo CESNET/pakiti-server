@@ -58,7 +58,7 @@ class HostDao
             numOfCves=".$this->db->escape($host->getNumOfCves()).",
             numOfCvesWithTag=".$this->db->escape($host->getNumOfCvesWithTag()).",
             lastReportId=".($host->getLastReportId() == -1 ? "NULL" : $this->db->escape($host->getLastReportId())).",
-            type='".$this->db->escape($host->getType())."'");
+            pkgTypeId='".$this->db->escape($host->getPkgTypeId())."'");
 
         # Set the newly assigned id
         $host->setId($this->db->getLastInsertedId());
@@ -92,7 +92,7 @@ class HostDao
             Host.reporterIp as _reporterIp,
             Host.reporterHostname as _reporterHostname,
             Host.kernel as _kernel,
-            Host.type as _type,
+            Host.pkgTypeId as _pkgTypeId,
             Host.osId as _osId,
             Host.archId as _archId,
             Host.domainId as _domainId,
@@ -101,7 +101,8 @@ class HostDao
             Host.lastReportId as _lastReportId,
             Arch.name as _archName,
             Os.name as _osName,
-            Domain.name as _domainName";
+            Domain.name as _domainName,
+            PkgType.name as _pkgTypeName";
         $from = "Host";
         $join = null;
         $where[] = "Host.id = $id";
@@ -116,6 +117,7 @@ class HostDao
         $join[] = "inner join Arch on Host.archId = Arch.id";
         $join[] = "inner join Os on Host.osId = Os.id";
         $join[] = "inner join Domain on Host.domainId = Domain.id";
+        $join[] = "inner join PkgType on Host.pkgTypeId = PkgType.id";
 
         $sql = Utils::sqlSelectStatement($select, $from, $join, $where);
 
@@ -332,8 +334,8 @@ class HostDao
         if ($host->getNumOfCvesWithTag() != $dbHost->getNumOfCvesWithTag()) {
             $entries['numOfCvesWithTag'] = $this->db->escape($host->getNumOfCvesWithTag());
         }
-        if ($host->getType() != $dbHost->getType()) {
-            $entries['type'] = "'".$this->db->escape($host->getType())."'";
+        if ($host->getPkgTypeId() != $dbHost->getPkgTypeId()) {
+            $entries['pkgTypeId'] = "'".$this->db->escape($host->getPkgTypeId())."'";
         }
 
         if (sizeof($entries) > 0) {

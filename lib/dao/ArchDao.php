@@ -75,17 +75,15 @@ class ArchDao
      */
     public function getIdByName($name)
     {
-        $id = $this->db->queryToSingleValue("select id from Arch
-            where name='".$this->db->escape($name)."'");
-        if ($id == null) {
-            return -1;
-        }
-        return $id;
+        $sql = "select id from Arch
+            where name='" . $this->db->escape($name) . "'";
+        $id = $this->db->queryToSingleValue($sql);
+        return ($id == null) ? -1 : $id;
     }
 
-    public function getArchsNames()
+    public function getIds()
     {
-        $sql = "select name from Arch";
+        $sql = "select id from Arch";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 

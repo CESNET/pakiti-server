@@ -43,7 +43,7 @@ if ($type == "") {
     $type = "csv";
 }
 
-$vulnerabilities = & $pakiti->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveName($cveName, $os->getId());
+$vulnerabilities = & $pakiti->getManager("VulnerabilitiesManager")->getVulnerabilities($cveName, $os->getId());
 switch ($type) {
     case "csv":
         header("Content-Type: text/plain");

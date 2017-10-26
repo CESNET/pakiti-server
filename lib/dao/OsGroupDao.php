@@ -50,14 +50,6 @@ class OsGroupDao
         $osGroup->setId($this->db->getLastInsertedId());
     }
 
-    public function update(OsGroup &$osGroup)
-    {
-        $sql = "update OsGroup set
-            name='" . $this->db->escape($osGroup->getName()) . "''
-            where id='" . $this->db->escape($osGroup->getId()) . "'";
-        $this->db->query($sql);
-    }
-
     public function getById($id)
     {
         $sql = "select id as _id, name as _name from OsGroup

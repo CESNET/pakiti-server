@@ -95,7 +95,7 @@ $pkgs = $pakiti->getManager("PkgsManager")->getPkgs($html->getSortBy(), $html->g
             <tr>
                 <td><?php echo $pkg->getName(); ?></td>
                 <td><?php echo $pkg->getVersionRelease(); ?></td>
-                <td><?php echo $pkg->getArch(); ?></td>
+                <td><?php echo $pkg->getArchName(); ?></td>
                 <td>
                     <?php foreach ($hosts as $host) { ?>
                         <a href="host.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getHostname(); ?></a>

@@ -52,10 +52,9 @@ class OsGroupsManager extends DefaultManager
             # OsGroup is missing, so store it
             $dao->create($osGroup);
             $new = true;
-        } else {
-            $dao->update($osGroup);
+            # new osGroup, so recalculate Oses
+            $this->recalculateOses($osGroup);
         }
-        $this->recalculateOses($osGroup);
         return $new;
     }
 

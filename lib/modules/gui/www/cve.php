@@ -40,7 +40,7 @@ $html->checkPermission("cve");
 $html->setTitle("CVE");
 
 $cveName = Utils::getHttpGetVar("cveName", null);
-$vulnerabilities = $html->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerabilitiesByCveName($cveName);
+$vulnerabilities = $html->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerabilities($cveName);
 $exceptionsCount = $html->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsCountByCveName($cveName);
 
 // HTML
@@ -72,12 +72,11 @@ $exceptionsCount = $html->getPakiti()->getManager("CveExceptionsManager")->getCv
     </thead>
     <tbody>
         <?php foreach ($vulnerabilities as $vulnerability) { ?>
-            <?php $vulnerabilityOsGroup = $html->getPakiti()->getManager("OsGroupsManager")->getOsGroupById($vulnerability->getOsGroupId()); ?>
             <tr>
                 <td><?php echo $vulnerability->getName(); ?></td>
                 <td><?php echo $vulnerability->getOperator() . " " .$vulnerability->getVersion() . "-" . $vulnerability->getRelease(); ?></td>
-                <td><?php echo $vulnerability->getArch(); ?></td>
-                <td><?php echo $vulnerabilityOsGroup->getName(); ?></td>
+                <td><?php echo $vulnerability->getArchName(); ?></td>
+                <td><?php echo $vulnerability->getOsGroupName(); ?></td>
             </tr>
         <?php } ?>
     </tbody>

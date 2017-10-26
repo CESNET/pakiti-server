@@ -90,7 +90,7 @@ $pkgs = $pakiti->getManager("PkgsManager")->getVulnerablePkgsForHost($host->getI
             <tr>
                 <td><?php echo $pkg->getName(); ?></td>
                 <td><?php echo $pkg->getVersionRelease(); ?></td>
-                <td><?php echo $pkg->getArch(); ?></td>
+                <td><?php echo $pkg->getArchName(); ?></td>
                 <td>
                     <?php foreach ($cvesNames as $cveName) { ?>
                         <?php $tags = $pakiti->getManager("CveTagsManager")->getCveTagsByCveName($cveName); ?>

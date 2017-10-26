@@ -153,26 +153,19 @@ class CveSource extends Source implements ISource
 
                                 # OVAL from RH and DSA doesn't contain arch, so use all
                                 $archName = 'all';
-                                $arch = $this->_pakiti->getManager("HostsManager")->getArch($archName);
 
-                                if ($arch == null) {
-                                    # Arch is not defined in the DB, so created it  e);
-                                    $arch = $this->_pakiti->getManager('HostsManager')->createArch($archName);
-                                }
+                                $arch = new Arch();
+                                $arch->setName($archName);
+                                $this->_pakiti->getManager("ArchsManager")->storeArch($arch);
+
+                                $osGroup = new OsGroup();
+                                $osGroup->setName($osGroupName);
+                                $this->_pakiti->getManager('OsGroupsManager')->storeOsGroup($osGroup);
 
                                 $vuln->setName($defPkg['name']);
                                 $vuln->setRelease($defPkg['release']);
                                 $vuln->setVersion($defPkg['version']);
-                                $vuln->setArch($arch->getName());
-
-                                # Get osGroup Id
-                                $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByName($osGroupName);
-                                if ($osGroup == null) {
-                                    $osGroup = new OsGroup();
-                                    $osGroup->setName($osGroupName);
-                                    # osGroup is not defined in the DB, so created it
-                                    $this->_pakiti->getManager('OsGroupsManager')->storeOsGroup($osGroup);
-                                }
+                                $vuln->setArchId($arch->getId());
                                 $vuln->setOsGroupId($osGroup->getId());
                                 $vuln->setOperator($defPkg['operator']);
 

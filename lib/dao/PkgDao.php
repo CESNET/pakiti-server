@@ -29,6 +29,7 @@
 
 /**
  * @author Michal Prochazka
+ * @author Jakub Mlcak
  */
 class PkgDao
 {
@@ -47,8 +48,8 @@ class PkgDao
         $this->db->query("insert into Pkg set
             name='" . $this->db->escape($pkg->getName()) . "',
             version='" . $this->db->escape($pkg->getVersion()) . "',
-            arch='" . $this->db->escape($pkg->getArch()) . "',
-            type='" . $this->db->escape($pkg->getType()) . "',
+            archId='" . $this->db->escape($pkg->getArchId()) . "',
+            pkgTypeId='" . $this->db->escape($pkg->getPkgTypeId()) . "',
             `release`='" . $this->db->escape($pkg->getRelease()) . "'");
 
         # Set the newly assigned id
@@ -73,10 +74,12 @@ class PkgDao
                 $order[] = "Pkg.release";
                 break;
             case "arch":
-                $order[] = "Pkg.arch";
+                $join[] = "inner join Arch on Pkg.archId = Arch.id";
+                $order[] = "Arch.name";
                 break;
             case "type":
-                $order[] = "Pkg.type";
+                $join[] = "inner join PkgType on Pkg.pkgTypeId = PkgType.id";
+                $order[] = "PkgType.name";
                 break;
             default:
                 break;
@@ -122,14 +125,14 @@ class PkgDao
         return $this->getBy($name, "name");
     }
 
-    public function getPkgIdByNameVersionReleaseArchType($pkgName, $pkgVersion, $pkgRelease, $pkgArch, $pkgType)
+    public function getIdByNameVersionReleaseArchIdTypeId($name, $version, $release, $archId, $pkgTypeId)
     {
         $sql = "select id from Pkg
-            where binary name='" . $this->db->escape($pkgName) . "'
-            and version='" . $this->db->escape($pkgVersion) . "'
-            and arch='" . $this->db->escape($pkgArch) . "'
-            and type='" . $this->db->escape($pkgType) . "'
-            and `release`='" . $this->db->escape($pkgRelease) . "'";
+            where binary name='" . $this->db->escape($name) . "'
+            and version='" . $this->db->escape($version) . "'
+            and `release`='" . $this->db->escape($release) . "'
+            and archId='" . $this->db->escape($archId) . "'
+            and pkgTypeId='" . $this->db->escape($pkgTypeId) . "'";
         $id = $this->db->queryToSingleValue($sql);
 
         if ($id == null) {
@@ -146,9 +149,9 @@ class PkgDao
         $this->db->query("update Pkg set
             name='" . $this->db->escape($pkg->getName()) . "',
             version='" . $this->db->escape($pkg->getVersion()) . "',
-            arch='" . $this->db->escape($pkg->getArch()) . "',
-            type='" . $this->db->escape($pkg->getType()) . "',
-            `release`='" . $this->db->escape($pkg->getRelease()) . "'
+            `release`='" . $this->db->escape($pkg->getRelease()) . "',
+            archId='" . $this->db->escape($pkg->getArchId()) . "',
+            pkgTypeId='" . $this->db->escape($pkg->getPkgTypeId()) . "'
             where id=" . $this->db->escape($pkg->getId()));
     }
 
@@ -183,13 +186,15 @@ class PkgDao
     {
         $where = "";
         if ($type == "id") {
-            $where = "id=" . $this->db->escape($value);
+            $where = "Pkg.id=" . $this->db->escape($value);
         } elseif ($type == "name") {
-            $where = "binary name='" . $this->db->escape($value) . "'";
+            $where = "binary Pkg.name='" . $this->db->escape($value) . "'";
         } else {
             throw new Exception("Undefined type of the getBy");
         }
-        return $this->db->queryObject("select id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release from Pkg
+        return $this->db->queryObject("select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.archId as _archId, Pkg.pkgTypeId as _pkgTypeId, Pkg.`release` as _release, PkgType.name as _pkgTypeName, Arch.name as _archName from Pkg
+            inner join PkgType on Pkg.pkgTypeId = PkgType.id
+            inner join Arch on Pkg.archId = Arch.id
             where $where", "Pkg");
     }
 

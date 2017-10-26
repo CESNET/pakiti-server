@@ -1,4 +1,3 @@
-#!/usr/bin/php
 <?php
 # Copyright (c) 2017, CESNET. All rights reserved.
 #
@@ -28,35 +27,48 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
-
-$shortopts = "h:";
-
-$longopts = array(
-    "hostname:"
-);
-
-function usage()
+/**
+ * @author Jakub Mlcak
+ */
+class PkgTypesManager extends DefaultManager
 {
-    die("Usage: listHostPackages [-h|--hostname] hostname\n");
-}
+    /**
+     * Create if not exist, else set id
+     * @return false if already exist
+     */
+    public function storePkgType(PkgType &$pkgType)
+    {
+        Utils::log(LOG_DEBUG, "Storing the pkgType", __FILE__, __LINE__);
+        if ($pkgType == null) {
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+            throw new Exception("PkgType object is not valid");
+        }
 
-$opt = getopt($shortopts, $longopts);
+        $new = false;
+        $dao = $this->getPakiti()->getDao("PkgType");
+        $pkgType->setId($dao->getIdByName($pkgType->getName()));
+        if ($pkgType->getId() == -1) {
+            # PkgType is missing, so store it
+            $dao->create($pkgType);
+            $new = true;
+        }
+        return $new;
+    }
 
-if ($opt === false) {
-    usage();
-}
+    /**
+     * Get pkgType ID by name
+     */
+    public function getPkgTypeIdByName($name)
+    {
+        Utils::log(LOG_DEBUG, "Getting pkgType ID by name[$name]", __FILE__, __LINE__);
+        return $this->getPakiti()->getDao("PkgType")->getIdByName($name);
+    }
 
-$hostname = !empty($opt["h"]) ? $opt["h"] : (!empty($opt["hostname"]) ? $opt["hostname"] : usage());
-
-$host = $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
-
-$pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
-
-print "name\tversion\trelease\tarch\tpkgType\n";
-print "-------------------------------------------------------------------\n";
-foreach ($pkgs as $pkg) {
-    if ($pkg != null) {
-        print "{$pkg->getName()}\t{$pkg->getVersion()}\t{$pkg->getRelease()}\t{$pkg->getArchName()}\t{$pkg->getPkgTypeName()}\n";
+    /**
+     * Get all pkgTypes IDs
+     */
+    public function getPkgTypesIds()
+    {
+        return $this->getPakiti()->getDao("PkgType")->getIds();
     }
 }
