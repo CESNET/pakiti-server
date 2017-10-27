@@ -107,7 +107,7 @@ $pkgs = $pakiti->getManager("PkgsManager")->getPkgs($html->getSortBy(), $html->g
             <tr>
                 <td><?php echo $pkg->getName(); ?></td>
                 <td><?php echo $pkg->getVersionRelease(); ?></td>
-                <td><?php echo $pkg->getArch(); ?></td>
+                <td><?php echo $pkg->getArchName(); ?></td>
             </tr>
         <?php } ?>
     </tbody>

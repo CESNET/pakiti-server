@@ -64,29 +64,29 @@ if ($url == null) {
 
         # If pkg->type is missing, iterate over all types
         if (!isset($cveExceptionNode->pkg->type)) {
-            $types = $pakiti->getManager("PkgsManager")->getPkgsTypesNames();
+            $typesIds = $pakiti->getManager("PkgTypesManager")->getPkgTypesIds();
         } else {
-            $types = [$cveExceptionNode->pkg->type];
+            $typesIds = [$pakiti->getManager("PkgTypesManager")->getPkgTypeIdByName($cveExceptionNode->pkg->type->__toString())];
         }
 
         # If pkg->arch is missing, iterate over all archs
         if (!isset($cveExceptionNode->pkg->arch)) {
-            $archs = $pakiti->getManager("ArchsManager")->getArchsNames();
+            $archsIds = $pakiti->getManager("ArchsManager")->getArchsIds();
         } else {
-            $archs = [$cveExceptionNode->pkg->arch];
+            $archsIds = [$pakiti->getManager("ArchsManager")->getArchIdByName($cveExceptionNode->pkg->arch->__toString())];
         }
 
         # If osGroup->name is missing, iterate over all osGroups
         if (!isset($cveExceptionNode->osGroup->name)) {
             $osGroupIds = $pakiti->getManager("OsGroupsManager")->getOsGroupsIds();
         } else {
-            $osGroupIds = [$pakiti->getManager("OsGroupsManager")->getOsGroupIdByName($cveExceptionNode->osGroup->name)];
+            $osGroupIds = [$pakiti->getManager("OsGroupsManager")->getOsGroupIdByName($cveExceptionNode->osGroup->name->__toString())];
         }
 
         $cvesExceptionsIds = array();
-        foreach ($types as $type) {
-            foreach ($archs as $arch) {
-                $pkgId = $pakiti->getManager("PkgsManager")->getPkgId($cveExceptionNode->pkg->name, $cveExceptionNode->pkg->version, $cveExceptionNode->pkg->release, $arch, $type);
+        foreach ($typesIds as $typeId) {
+            foreach ($archsIds as $archId) {
+                $pkgId = $pakiti->getManager("PkgsManager")->getPkgId($cveExceptionNode->pkg->name, $cveExceptionNode->pkg->version, $cveExceptionNode->pkg->release, $archId, $typeId);
                 if ($pkgId != -1) {
                     foreach ($osGroupIds as $osGroupId) {
                         if ($pakiti->getManager("CveExceptionsManager")->isExceptionCandidate($cveExceptionNode->cveName, $pkgId, $osGroupId)) {

@@ -50,8 +50,8 @@ foreach ($cveExceptions as $cveException) {
     $pkgNode->addChild("name", $pkg->getName());
     $pkgNode->addChild("version", $pkg->getVersion());
     $pkgNode->addChild("release", $pkg->getRelease());
-    $pkgNode->addChild("arch", $pkg->getArch());
-    $pkgNode->addChild("type", $pkg->getType());
+    $pkgNode->addChild("arch", $pkg->getArchName());
+    $pkgNode->addChild("type", $pkg->getPkgTypeName());
     $osGroup = $osGroupsManager->getOsGroupById($cveException->getOsGroupId());
     $osGroupNode = $cveExceptionNode->addChild("osGroup");
     $osGroupNode->addChild("name", $osGroup->getName());

@@ -33,14 +33,14 @@ require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 $shortopts = "c:h";
 
 $longopts = array(
-    "id:",
-    "activity:",
+    "hostId:",
+    "search:",
     "help",
 );
 
 function usage()
 {
-    die("Usage: hosts [-h|--help] (-c delete (--id=<id> | --activity=<activity>) | list)\n");
+    die("Usage: packages [-h|--help] (-c list (--hostId=<hostId>) (--search=<search>))\n");
 }
 
 $opt = getopt($shortopts, $longopts);
@@ -51,47 +51,22 @@ if (isset($opt["h"]) || isset($opt["help"]) || !isset($opt["c"])) {
 
 switch ($opt["c"]) {
 
-    # delete hosts
-    case "delete":
-        if (isset($opt["id"])) {
-            if ($pakiti->getManager("HostsManager")->deleteHost($opt["id"])) {
-                die("host was deleted\n");
-            } else {
-                die("host wasn't deleted\n");
-            }
-        } elseif (isset($opt["activity"])) {
-            $manager = $pakiti->getManager("HostsManager");
-            $hosts = $manager->getHosts(null, -1, -1, null, null, null, -1, $opt["activity"]);
-
-            $number = 0;
-            foreach ($hosts as $host) {
-                if ($manager->deleteHost($host->getId())) {
-                    $number++;
-                    print "host [".$host->getId()." - ".$host->getHostname()."] was deleted\n";
-                } else {
-                    print "host [".$host->getId()." - ".$host->getHostname()."] wasn't deleted\n";
-                }
-            }
-            die($number." hosts was deleted\n");
-        } else {
-            die("required option id or activity is missing\n");
-        }
-        break;
-
-    # list hosts
+    # list packages
     case "list":
-        $hosts = $pakiti->getManager("HostsManager")->getHosts();
-        print "\nid\thostname\tos\tkernel\tarch\t#CVEs\t#taggedCVEs\n";
+        $hostId = isset($opt["hostId"]) ? $opt["hostId"] : -1;
+        $search = isset($opt["search"]) ? $opt["search"] : null;
+        $pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $hostId, $search);
+
+        print "\nname\tversion\trelease\tarch\tpkgType\n";
         print "----------------------------------------------------------------------\n";
-        foreach ($hosts as $host) {
+        foreach ($pkgs as $pkg) {
             print
-                $host->getId()."\t".
-                $host->getHostname()."\t".
-                $host->getOsName()."\t".
-                $host->getKernel()."\t".
-                $host->getArchName()."\t".
-                $host->getNumOfCves()."\t".
-                $host->getNumOfCvesWithTag()."\n";
+                $pkg->getName() ."\t" .
+                $pkg->getVersion() ."\t" .
+                $pkg->getRelease() ."\t" .
+                $pkg->getArchName() ."\t" .
+                $pkg->getPkgTypeName() ."\t" .
+                "\n";
         }
         break;
 

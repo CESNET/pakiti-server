@@ -33,6 +33,29 @@
 class CvesManager extends DefaultManager
 {
     /**
+     * Create if not exist, else set id
+     * @return false if already exist
+     */
+    public function storeCve(Cve &$cve)
+    {
+        Utils::log(LOG_DEBUG, "Storing the Cve", __FILE__, __LINE__);
+        if ($cve == null) {
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+            throw new Exception("Cve object is not valid");
+        }
+
+        $new = false;
+        $dao = $this->getPakiti()->getDao("Cve");
+        $cve->setId($dao->getIdByName($cve->getName()));
+        if ($cve->getId() == -1) {
+            # Cve is missing, so store it
+            $dao->create($cve);
+            $new = true;
+        }
+        return $new;
+    }
+
+    /**
      * Getting CVEs names for package and OS
      * @param $pkgId
      * @param $osId

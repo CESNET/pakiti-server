@@ -29,6 +29,7 @@
 
 /**
  * @author Vadym Yanovskyy
+ * @author Jakub Mlcak
  */
 class CveDao
 {
@@ -39,24 +40,29 @@ class CveDao
         $this->db = $dbManager;
     }
 
-    /**
-     * Stores the Cve in the DB
-     */
     public function create(Cve &$cve)
     {
-        $this->db->query("insert into Cve set
-            name='" . $this->db->escape($cve->getName()) . "',
-            cveDefId='" . $this->db->escape($cve->getCveDefId()) . "'");
+        $sql = "insert into Cve set
+            name='" . $this->db->escape($cve->getName()) . "'";
+        $this->db->query($sql);
 
         # Set the newly assigned id
         $cve->setId($this->db->getLastInsertedId());
     }
 
-    public function getCve($name, $cveDefId)
+    public function getById($id)
     {
-        return $this->db->queryObject("select id as _id, name as _name, cveDefId as _cveDefId from Cve
-            where name='" . $this->db->escape($name) . "'
-            and cveDefId ='" . $this->db->escape($cveDefId) . "'", "Cve");
+        $sql = "select id as _id, name as _name from Cve
+            where id='" . $this->db->escape($id) . "'";
+        return $this->db->queryObject($sql, "Cve");
+    }
+
+    public function getIdByName($name)
+    {
+        $sql = "select id from Cve
+            where name='" . $this->db->escape($name) . "'";
+        $id = $this->db->queryToSingleValue($sql);
+        return ($id == null) ? -1 : $id;
     }
 
     public function getNamesForPkgAndOs($pkgId, $osId, $tag = null)
@@ -65,8 +71,11 @@ class CveDao
         $from = "Cve";
         $order = "Cve.name DESC";
 
+        # cveDef
+        $join[] = "inner join CveCveDef on Cve.id = CveCveDef.cveId";
+
         # pkg
-        $join[] = "inner join PkgCveDef on (Cve.cveDefId = PkgCveDef.cveDefId and PkgCveDef.pkgId = '" . $this->db->escape($pkgId) . "')";
+        $join[] = "inner join PkgCveDef on (CveCveDef.cveDefId = PkgCveDef.cveDefId and PkgCveDef.pkgId = '" . $this->db->escape($pkgId) . "')";
 
         # os
         $join[] = "inner join OsOsGroup on (PkgCveDef.osGroupId = OsOsGroup.osGroupId and OsOsGroup.osId = '" . $this->db->escape($osId) . "')";
@@ -97,8 +106,11 @@ class CveDao
         $from = "Cve";
         $order = "Cve.name DESC";
 
+        # cveDef
+        $join[] = "inner join CveCveDef on Cve.id = CveCveDef.cveId";
+
         # pkgs
-        $join[] = "inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId";
+        $join[] = "inner join PkgCveDef on CveCveDef.cveDefId = PkgCveDef.cveDefId";
         $join[] = "inner join InstalledPkg on (PkgCveDef.pkgId = InstalledPkg.pkgId and InstalledPkg.hostId = '" . $this->db->escape($hostId) . "')";
 
         # os
@@ -133,9 +145,12 @@ class CveDao
         $where = null;
         $order = "Cve.name DESC";
 
+        # cveDef
+        $join[] = "inner join CveCveDef on Cve.id = CveCveDef.cveId";
+
         if ($used !== null) {
             if ($used === true) {
-                $join[] = "inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId";
+                $join[] = "inner join PkgCveDef on CveCveDef.cveDefId = PkgCveDef.cveDefId";
             }
         }
 

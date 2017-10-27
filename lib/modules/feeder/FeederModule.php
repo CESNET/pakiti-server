@@ -162,7 +162,7 @@ class FeederModule extends DefaultModule
                 foreach ($cveTags as $cveTag) {
                     $result .= $pkg->getName() . "\t" .
                         $pkg->getVersionRelease() . "\t" .
-                        $pkg->getArch() . "\t" .
+                        $pkg->getArchName() . "\t" .
                         $cveName . "\t" .
                         $cveTag->getTagName() . "\n";
                 }
@@ -439,12 +439,11 @@ class FeederModule extends DefaultModule
     {
         Utils::log(LOG_DEBUG, "Preparing the report", __FILE__, __LINE__);
 
-        # Set host variables Kernel, Type, Os, Arch
+        # Set host variables Kernel
         $this->_host->setKernel($this->_report_kernel);
-        $this->_host->setType($this->_report_type);
 
         # Parse the packages list
-        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_host->getType(), $this->_host->getKernel(), $this->_protocolVersion);
+        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_report_type, $this->_report_kernel, $this->_protocolVersion);
 
         # Set the initial information about the report (using _pkgs)
         $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
@@ -468,6 +467,12 @@ class FeederModule extends DefaultModule
         $arch->setName($this->_report_arch);
         $this->getPakiti()->getManager("ArchsManager")->storeArch($arch);
         $this->_host->setArchId($arch->getId());
+
+        # Store pkgType
+        $pkgType = new PkgType();
+        $pkgType->setName($this->_report_type);
+        $this->getPakiti()->getManager("PkgTypesManager")->storePkgType($pkgType);
+        $this->_host->setPkgTypeId($pkgType->getId());
 
         # Store domain
         $domain = new Domain();
@@ -613,7 +618,10 @@ class FeederModule extends DefaultModule
     {
         Utils::log(LOG_DEBUG, "Storing the packages", __FILE__, __LINE__);
 
+        $archsManager = $this->getPakiti()->getManager("ArchsManager");
+        $pkgTypesManager = $this->getPakiti()->getManager("PkgTypesManager");
         $pkgsManager = $this->getPakiti()->getManager("PkgsManager");
+
         if ($this->_host->getId() != -1) {
             $installedPkgs = $pkgsManager->getPkgs(null, -1, -1, $this->_host->getId());
         }
@@ -623,8 +631,6 @@ class FeederModule extends DefaultModule
             $installedPkgsArray[$installedPkg->getName()][] = $installedPkg;
         }
 
-        $archsManager = $this->getPakiti()->getManager("ArchsManager");
-        $archsNames = $archsManager->getArchsNames();
         $newPkgs = array();
         foreach ($this->_pkgs as &$pkg) {
             # Check if pkg is already in installed pkgs
@@ -632,8 +638,8 @@ class FeederModule extends DefaultModule
                 foreach ($installedPkgsArray[$pkg->getName()] as $key => $installedPkg) {
                     if ($pkg->getRelease() == $installedPkg->getRelease()
                         && $pkg->getVersion() == $installedPkg->getVersion()
-                        && $pkg->getArch() == $installedPkg->getArch()
-                        && $pkg->getType() == $installedPkg->getType()) {
+                        && $pkg->getArchName() == $installedPkg->getArchName()
+                        && $pkg->getPkgTypeName() == $installedPkg->getPkgTypeName()) {
                         $pkg->setId($installedPkg->getId());
                         break;
                     }
@@ -641,12 +647,17 @@ class FeederModule extends DefaultModule
             }
             # If pkg isn't in installed pkgs yet
             if ($pkg->getId() == -1) {
-                if (!in_array($pkg->getArch(), $archsNames)) {
-                    $arch = new Arch();
-                    $arch->setName($pkg->getArch());
-                    $archsManager->storeArch($arch);
-                    array_push($archsNames, $arch->getName());
-                }
+
+                $arch = new Arch();
+                $arch->setName($pkg->getArchName());
+                $archsManager->storeArch($arch);
+                $pkg->setArchId($arch->getId());
+
+                $pkgType = new PkgType();
+                $pkgType->setName($pkg->getPkgTypeName());
+                $pkgTypesManager->storePkgType($pkgType);
+                $pkg->setPkgTypeId($pkgType->getId());
+
                 if ($pkgsManager->storePkg($pkg)) {
                     array_push($newPkgs, $pkg);
                 }
@@ -758,10 +769,10 @@ class FeederModule extends DefaultModule
 
             $pkg = new Pkg();
             $pkg->setName($pkgName);
-            $pkg->setArch($pkgArch);
+            $pkg->setArchName($pkgArch);
             $pkg->setRelease($pkgRelease);
             $pkg->setVersion($pkgVersion);
-            $pkg->setType($type);
+            $pkg->setPkgTypeName($type);
             $parsedPkgs[] = $pkg;
 
             $tok = strtok("\n");

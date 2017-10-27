@@ -30,8 +30,8 @@
 
 require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-$pkgsToDelete = $pakiti->getManager("PkgsManager")->getUnusedPkgs();
-foreach ($pkgsToDelete as $pkgToDelete) {
-    $pakiti->getManager("PkgsManager")->deletePkg($pkgToDelete);
+$pkgsIds = $pakiti->getManager("PkgsManager")->getUnusedPkgsIds();
+foreach ($pkgsIds as $pkgsId) {
+    $pakiti->getManager("PkgsManager")->deletePkg($pkgId);
 }
-print "Number of deleted packages: " . count($pkgsToDelete) . "\n";
+print "Number of deleted packages: " . count($pkgsIds) . "\n";

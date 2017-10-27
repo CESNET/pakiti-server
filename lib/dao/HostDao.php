@@ -58,7 +58,7 @@ class HostDao
             numOfCves=".$this->db->escape($host->getNumOfCves()).",
             numOfCvesWithTag=".$this->db->escape($host->getNumOfCvesWithTag()).",
             lastReportId=".($host->getLastReportId() == -1 ? "NULL" : $this->db->escape($host->getLastReportId())).",
-            type='".$this->db->escape($host->getType())."'");
+            pkgTypeId='".$this->db->escape($host->getPkgTypeId())."'");
 
         # Set the newly assigned id
         $host->setId($this->db->getLastInsertedId());
@@ -92,7 +92,7 @@ class HostDao
             Host.reporterIp as _reporterIp,
             Host.reporterHostname as _reporterHostname,
             Host.kernel as _kernel,
-            Host.type as _type,
+            Host.pkgTypeId as _pkgTypeId,
             Host.osId as _osId,
             Host.archId as _archId,
             Host.domainId as _domainId,
@@ -101,7 +101,8 @@ class HostDao
             Host.lastReportId as _lastReportId,
             Arch.name as _archName,
             Os.name as _osName,
-            Domain.name as _domainName";
+            Domain.name as _domainName,
+            PkgType.name as _pkgTypeName";
         $from = "Host";
         $join = null;
         $where[] = "Host.id = $id";
@@ -116,19 +117,14 @@ class HostDao
         $join[] = "inner join Arch on Host.archId = Arch.id";
         $join[] = "inner join Os on Host.osId = Os.id";
         $join[] = "inner join Domain on Host.domainId = Domain.id";
+        $join[] = "inner join PkgType on Host.pkgTypeId = PkgType.id";
 
         $sql = Utils::sqlSelectStatement($select, $from, $join, $where);
 
         return $this->db->queryObject($sql, "Host");
     }
 
-    public function getByHostname($hostname)
-    {
-        $hostId = $this->db->queryToSingleValue("select id from Host where hostname='$hostname'");
-        return $this->getById($hostId);
-    }
-  
-    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activeIn = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
+    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         $select = "distinct Host.id";
         $from = "Host";
@@ -188,7 +184,8 @@ class HostDao
             $join[] = "inner join InstalledPkg on InstalledPkg.hostId = Host.id";
             $join[] = "inner join PkgCveDef on PkgCveDef.pkgId = InstalledPkg.pkgId";
             $join[] = "inner join OsOsGroup on (PkgCveDef.osGroupId = OsOsGroup.osGroupId and OsOsGroup.osId = Host.osId)";
-            $join[] = "inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+            $join[] = "inner join CveCveDef on PkgCveDef.cveDefId = CveCveDef.cveDefId";
+            $join[] = "inner join Cve on CveCveDef.cveId = Cve.id";
             $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
             $where[] = "CveException.id IS NULL";
         }
@@ -218,12 +215,12 @@ class HostDao
             $where[] = "InstalledPkg.pkgId = '" . $this->db->escape($pkgId) . "'";
         }
 
-        if ($activeIn != null) {
+        if ($activity != null) {
             if (!$tmpJoinReport) {
                 $join[] = "left join Report on Host.lastReportId = Report.id";
                 $tmpJoinReport = true;
             }
-            if (preg_match('/^(\+|-|)(\d+)(.|)$/', trim($activeIn), $matches) === 1) {
+            if (preg_match('/^(\+|-|)(\d+)(.|)$/', trim($activity), $matches) === 1) {
                 switch ($matches[1]) {
                     case "-":
                         $operator = "<";
@@ -282,14 +279,6 @@ class HostDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    public function getInactiveIdsLongerThan($days)
-    {
-        $sql = "select Host.id from Host
-            left join Report on Host.lastReportId = Report.id
-            where Report.receivedOn < date_sub(now(), interval ".$this->db->escape($days)." day)";
-        return $this->db->queryToSingleValueMultiRow($sql);
-    }
-
     public function update(Host &$host)
     {
         if ($host == null || $host->getId() == -1) {
@@ -332,8 +321,8 @@ class HostDao
         if ($host->getNumOfCvesWithTag() != $dbHost->getNumOfCvesWithTag()) {
             $entries['numOfCvesWithTag'] = $this->db->escape($host->getNumOfCvesWithTag());
         }
-        if ($host->getType() != $dbHost->getType()) {
-            $entries['type'] = "'".$this->db->escape($host->getType())."'";
+        if ($host->getPkgTypeId() != $dbHost->getPkgTypeId()) {
+            $entries['pkgTypeId'] = "'".$this->db->escape($host->getPkgTypeId())."'";
         }
 
         if (sizeof($entries) > 0) {

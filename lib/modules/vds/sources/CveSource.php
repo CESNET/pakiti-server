@@ -126,21 +126,13 @@ class CveSource extends Source implements ISource
                     $cveDef->setRefUrl($def['ref_url']);
                     $cveDef->setVdsSubSourceDefId($def['subSourceDefId']);
 
-                    $cveDefId = $this->_pakiti->getDao("CveDef")->getCveDefId($cveDef);
-
-                    if ($cveDefId == null) {
-                        # CVEs
-                        $cves = array();
+                    if ($this->_pakiti->getManager('CveDefsManager')->storeCveDef($cveDef)) {
                         foreach ($def['cves'] as $cveName) {
                             $cve = new Cve();
                             $cve->setName($cveName);
-                            array_push($cves, $cve);
+                            $this->_pakiti->getManager('CvesManager')->storeCve($cve);
+                            $this->_pakiti->getManager('CveDefsManager')->assignCveToCveDef($cve->getId(), $cveDef->getId());
                         }
-                        $cveDef->setCves($cves);
-
-                        $this->_pakiti->getManager('CveDefsManager')->createCveDef($cveDef);
-                    } else {
-                        $cveDef->setId($cveDefId);
                     }
 
                     # if osGroup not set, than it is unfixed in DSA
@@ -153,26 +145,19 @@ class CveSource extends Source implements ISource
 
                                 # OVAL from RH and DSA doesn't contain arch, so use all
                                 $archName = 'all';
-                                $arch = $this->_pakiti->getManager("HostsManager")->getArch($archName);
 
-                                if ($arch == null) {
-                                    # Arch is not defined in the DB, so created it  e);
-                                    $arch = $this->_pakiti->getManager('HostsManager')->createArch($archName);
-                                }
+                                $arch = new Arch();
+                                $arch->setName($archName);
+                                $this->_pakiti->getManager("ArchsManager")->storeArch($arch);
+
+                                $osGroup = new OsGroup();
+                                $osGroup->setName($osGroupName);
+                                $this->_pakiti->getManager('OsGroupsManager')->storeOsGroup($osGroup);
 
                                 $vuln->setName($defPkg['name']);
                                 $vuln->setRelease($defPkg['release']);
                                 $vuln->setVersion($defPkg['version']);
-                                $vuln->setArch($arch->getName());
-
-                                # Get osGroup Id
-                                $osGroup = $this->_pakiti->getManager("OsGroupsManager")->getOsGroupByName($osGroupName);
-                                if ($osGroup == null) {
-                                    $osGroup = new OsGroup();
-                                    $osGroup->setName($osGroupName);
-                                    # osGroup is not defined in the DB, so created it
-                                    $this->_pakiti->getManager('OsGroupsManager')->storeOsGroup($osGroup);
-                                }
+                                $vuln->setArchId($arch->getId());
                                 $vuln->setOsGroupId($osGroup->getId());
                                 $vuln->setOperator($defPkg['operator']);
 

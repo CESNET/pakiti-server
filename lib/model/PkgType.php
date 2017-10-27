@@ -1,4 +1,3 @@
-#!/usr/bin/php
 <?php
 # Copyright (c) 2017, CESNET. All rights reserved.
 #
@@ -28,35 +27,31 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
-
-$shortopts = "h:";
-
-$longopts = array(
-    "hostname:"
-);
-
-function usage()
+/**
+ * @author Jakub Mlcak
+ */
+class PkgType
 {
-    die("Usage: listHostPackages [-h|--hostname] hostname\n");
-}
+    private $_id = -1;
+    private $_name;
 
-$opt = getopt($shortopts, $longopts);
+    public function getId()
+    {
+        return $this->_id;
+    }
 
-if ($opt === false) {
-    usage();
-}
+    public function setId($val)
+    {
+        $this->_id = $val;
+    }
 
-$hostname = !empty($opt["h"]) ? $opt["h"] : (!empty($opt["hostname"]) ? $opt["hostname"] : usage());
+    public function getName()
+    {
+        return $this->_name;
+    }
 
-$host = $pakiti->getManager("HostsManager")->getHostByHostname($hostname);
-
-$pkgs = $pakiti->getManager("PkgsManager")->getPkgs(null, -1, -1, $host->getId());
-
-print "name\tversion\trelease\tarch\n";
-print "-------------------------------------------------------------------\n";
-foreach ($pkgs as $pkg) {
-    if ($pkg != null) {
-        print "{$pkg->getName()}\t{$pkg->getVersion()}\t{$pkg->getRelease()}\t{$pkg->getArch()}\n";
+    public function setName($val)
+    {
+        $this->_name = $val;
     }
 }

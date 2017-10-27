@@ -63,6 +63,13 @@ create table `Domain` (
 	unique key (`name`)
 )ENGINE=INNODB;
 
+create table `PkgType` (
+	`id` integer(10) not null auto_increment,
+	`name` varchar(10) not null,
+	primary key (`id`),
+	unique key (`name`)
+)ENGINE=INNODB;
+
 create table `HostGroup` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
@@ -80,20 +87,20 @@ create table `Host` (
 	`reporterHostname` varchar(63) not null,
 	`reporterIp` varchar(40) not null,
 	`kernel` varchar(32) not null,
-	`type` varchar(10) not null,
-	`ownRepositoriesDef` integer(1) default 0,
 	`osId` integer(10) not null,
 	`archId` integer(10) not null,
 	`domainId` integer(10) not null,
+	`pkgTypeId` integer(10) not null,
 	`numOfCves` int(10) not null,
 	`numOfCvesWithTag` int(10) not null,
 	`lastReportId` integer(10),
 	`lastReportHeaderHash` char(32),
 	`lastReportPkgsHash` char(32),
 	primary key (`id`),
-	foreign key (`osId`) references Os(`id`)  on delete cascade,
-	foreign key (`archId`) references Arch(`id`)  on delete cascade,
+	foreign key (`osId`) references Os(`id`) on delete cascade,
+	foreign key (`archId`) references Arch(`id`) on delete cascade,
 	foreign key (`domainId`) references Domain(`id`) on delete cascade,
+	foreign key (`pkgTypeId`) references PkgType(`id`) on delete cascade,
 	foreign key (`lastReportId`) references Report(`id`),
 	unique key `unique` (`hostname`, `ip`, `reporterHostname`, `reporterIp`)
 )ENGINE=INNODB;
@@ -119,11 +126,12 @@ create table `Pkg` (
 	`name` varchar(254) not null,
 	`version` varchar(63) not null,
 	`release` varchar(63) not null,
-	`arch` varchar(10) not null,
-	`type` varchar(10) not null,
+	`archId` integer(10) not null,
+	`pkgTypeId` integer(10) not null,
 	primary key (`id`),
-	foreign key (`arch`) references Arch(`name`) on delete cascade,
-	unique key `unique` (`name`, `version`, `release`, `arch`)
+	foreign key (`archId`) references Arch(`id`) on delete cascade,
+	foreign key (`pkgTypeId`) references PkgType(`id`) on delete cascade,
+	unique key `unique` (`name`, `version`, `release`, `archId`, `pkgTypeId`)
 )ENGINE=INNODB;
 
 create table `InstalledPkg` (
@@ -180,9 +188,15 @@ create table `CveDef` (
 create table `Cve` (
 	`id` integer(10) not null auto_increment,
 	`name` varchar(63) not null,
-	`cveDefId` integer(10) not null,
 	primary key (`id`),
-	unique key `unique` (`name`, `cveDefId`),
+	unique key (`name`)
+)ENGINE=INNODB;
+
+create table `CveCveDef` (
+	`cveId` integer(10) not null,
+	`cveDefId` integer(10) not null,
+	primary key (`cveId`, `cveDefId`),
+	foreign key (`cveId`) references Cve(`id`) on delete cascade,
 	foreign key (`cveDefId`) references CveDef(`id`) on delete cascade
 )ENGINE=INNODB;
 
@@ -230,22 +244,22 @@ create table `Vulnerability` (
 	`name` varchar(254) not null,
 	`version` varchar(63) not null,
 	`release` varchar(63) not null,
-	`arch` varchar(10) not null,
+	`archId` integer(10) not null,
 	`osGroupId` integer(10) not null,
 	`operator` char(2) not null,
 	`cveDefId` integer(10) not null,
 	primary key (`id`),
-	unique key `unique` (`name`, `version`, `release`, `arch`, `osGroupId`, `operator`, `cveDefId`),
-	foreign key (`arch`) references Arch(`name`) on delete cascade,
+	unique key `unique` (`name`, `version`, `release`, `archId`, `osGroupId`, `operator`, `cveDefId`),
+	foreign key (`archId`) references Arch(`id`) on delete cascade,
 	foreign key (`cveDefId`) references CveDef(`id`) on delete cascade,
 	foreign key (`osGroupId`) references OsGroup(`id`) on delete cascade
 )ENGINE=INNODB;
 
 create table `User` (
 	`id` integer(10) not null auto_increment, 
-	`uid` VARCHAR(255) not null,
-	`name` VARCHAR(255) not null,
-	`email` VARCHAR(255) not null,
+	`uid` varchar(255) not null,
+	`name` varchar(255) not null,
+	`email` varchar(255) not null,
 	`admin` integer(1) not null,
 	`timestamp` timestamp default CURRENT_TIMESTAMP,
 	primary key (`id`),

@@ -39,7 +39,7 @@ class Host
     private $_reporterHostname;
     private $_reporterIp;
     private $_kernel;
-    private $_type;
+    private $_pkgTypeId = -1;
     private $_osId = -1;
     private $_archId = -1;
     private $_domainId = -1;
@@ -51,6 +51,7 @@ class Host
     private $_osName;
     private $_archName;
     private $_domainName;
+    private $_pkgTypeName;
 
 
     public function getId()
@@ -113,14 +114,14 @@ class Host
         $this->_kernel = $val;
     }
 
-    public function getType()
+    public function getPkgTypeId()
     {
-        return $this->_type;
+        return $this->_pkgTypeId;
     }
 
-    public function setType($val)
+    public function setPkgTypeId($val)
     {
-        return $this->_type = $val;
+        return $this->_pkgTypeId = $val;
     }
 
     public function getOsId()
@@ -198,5 +199,10 @@ class Host
     public function getDomainName()
     {
         return $this->_domainName;
+    }
+
+    public function getPkgTypeName()
+    {
+        return $this->_pkgTypeName;
     }
 }

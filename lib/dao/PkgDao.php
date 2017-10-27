@@ -29,6 +29,7 @@
 
 /**
  * @author Michal Prochazka
+ * @author Jakub Mlcak
  */
 class PkgDao
 {
@@ -47,8 +48,8 @@ class PkgDao
         $this->db->query("insert into Pkg set
             name='" . $this->db->escape($pkg->getName()) . "',
             version='" . $this->db->escape($pkg->getVersion()) . "',
-            arch='" . $this->db->escape($pkg->getArch()) . "',
-            type='" . $this->db->escape($pkg->getType()) . "',
+            archId='" . $this->db->escape($pkg->getArchId()) . "',
+            pkgTypeId='" . $this->db->escape($pkg->getPkgTypeId()) . "',
             `release`='" . $this->db->escape($pkg->getRelease()) . "'");
 
         # Set the newly assigned id
@@ -73,10 +74,12 @@ class PkgDao
                 $order[] = "Pkg.release";
                 break;
             case "arch":
-                $order[] = "Pkg.arch";
+                $join[] = "inner join Arch on Pkg.archId = Arch.id";
+                $order[] = "Arch.name";
                 break;
             case "type":
-                $order[] = "Pkg.type";
+                $join[] = "inner join PkgType on Pkg.pkgTypeId = PkgType.id";
+                $order[] = "PkgType.name";
                 break;
             default:
                 break;
@@ -122,14 +125,14 @@ class PkgDao
         return $this->getBy($name, "name");
     }
 
-    public function getPkgIdByNameVersionReleaseArchType($pkgName, $pkgVersion, $pkgRelease, $pkgArch, $pkgType)
+    public function getIdByNameVersionReleaseArchIdTypeId($name, $version, $release, $archId, $pkgTypeId)
     {
         $sql = "select id from Pkg
-            where binary name='" . $this->db->escape($pkgName) . "'
-            and version='" . $this->db->escape($pkgVersion) . "'
-            and arch='" . $this->db->escape($pkgArch) . "'
-            and type='" . $this->db->escape($pkgType) . "'
-            and `release`='" . $this->db->escape($pkgRelease) . "'";
+            where binary name='" . $this->db->escape($name) . "'
+            and version='" . $this->db->escape($version) . "'
+            and `release`='" . $this->db->escape($release) . "'
+            and archId='" . $this->db->escape($archId) . "'
+            and pkgTypeId='" . $this->db->escape($pkgTypeId) . "'";
         $id = $this->db->queryToSingleValue($sql);
 
         if ($id == null) {
@@ -146,18 +149,20 @@ class PkgDao
         $this->db->query("update Pkg set
             name='" . $this->db->escape($pkg->getName()) . "',
             version='" . $this->db->escape($pkg->getVersion()) . "',
-            arch='" . $this->db->escape($pkg->getArch()) . "',
-            type='" . $this->db->escape($pkg->getType()) . "',
-            `release`='" . $this->db->escape($pkg->getRelease()) . "'
+            `release`='" . $this->db->escape($pkg->getRelease()) . "',
+            archId='" . $this->db->escape($pkg->getArchId()) . "',
+            pkgTypeId='" . $this->db->escape($pkg->getPkgTypeId()) . "'
             where id=" . $this->db->escape($pkg->getId()));
     }
 
     /**
      * Delete the pkg from the DB
      */
-    public function delete(Pkg &$pkg)
+    public function delete($id)
     {
-        $this->db->query("delete from Pkg where id=" . $this->db->escape($pkg->getId()));
+        $sql = "delete from Pkg
+            where id='" . $this->db->escape($id) . "'";
+        $this->db->query($sql);
     }
 
     public function assignPkgToHost($pkgId, $hostId)
@@ -176,6 +181,27 @@ class PkgDao
         $this->db->query($sql);
     }
 
+    public function getByCveNameAndOsGroupId($cveName, $osGroupId)
+    {
+        $sql = "select Pkg.id from PkgCveDef
+            inner join CveCveDef on PkgCveDef.cveDefId = CveCveDef.cveDefId
+            inner join Cve on CveCveDef.cveId = Cve.id
+            inner join Pkg on Pkg.id = PkgCveDef.pkgId
+            left join CveException on (Cve.name = CveException.cveName and PkgCveDef.osGroupId = CveException.osGroupId)
+            where Cve.name='" . $this->db->escape($cveName) . "'
+            and PkgCveDef.osGroupId='" . $this->db->escape($osGroupId) . "'
+            and CveException.id IS NULL";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function getUnusedIds()
+    {
+        $sql = "select Pkg.id from Pkg
+            left join InstalledPkg on Pkg.id = InstalledPkg.pkgId
+            where InstalledPkg.hostId IS NULL";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
     /**
      * We can get the data by ID or name
      */
@@ -183,20 +209,16 @@ class PkgDao
     {
         $where = "";
         if ($type == "id") {
-            $where = "id=" . $this->db->escape($value);
+            $where = "Pkg.id=" . $this->db->escape($value);
         } elseif ($type == "name") {
-            $where = "binary name='" . $this->db->escape($value) . "'";
+            $where = "binary Pkg.name='" . $this->db->escape($value) . "'";
         } else {
             throw new Exception("Undefined type of the getBy");
         }
-        return $this->db->queryObject("select id as _id, name as _name, version as _version, arch as _arch, type as _type, `release` as _release from Pkg
+        return $this->db->queryObject("select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.archId as _archId, Pkg.pkgTypeId as _pkgTypeId, Pkg.`release` as _release, PkgType.name as _pkgTypeName, Arch.name as _archName from Pkg
+            inner join PkgType on Pkg.pkgTypeId = PkgType.id
+            inner join Arch on Pkg.archId = Arch.id
             where $where", "Pkg");
-    }
-
-    public function getPkgsTypesNames()
-    {
-        $sql = "select distinct(type) from Pkg";
-        return $this->db->queryToSingleValueMultiRow($sql);
     }
 
     public function getVulnerableIdsForHost($hostId, $tag)
@@ -210,7 +232,10 @@ class PkgDao
 
         # cveDefs
         $join[] = "inner join PkgCveDef on Pkg.id = PkgCveDef.pkgId";
-        $join[] = "inner join Cve on PkgCveDef.cveDefId = Cve.cveDefId";
+        $join[] = "inner join CveCveDef on PkgCveDef.cveDefId = CveCveDef.cveDefId";
+
+        # cves
+        $join[] = "inner join Cve on CveCveDef.cveId = Cve.id";
 
         # os
         $join[] = "inner join OsOsGroup on PkgCveDef.osGroupId = OsOsGroup.osGroupId";

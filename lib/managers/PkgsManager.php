@@ -47,7 +47,7 @@ class PkgsManager extends DefaultManager
 
         $new = false;
         $dao = $this->getPakiti()->getDao("Pkg");
-        $pkg->setId($dao->getPkgIdByNameVersionReleaseArchType($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArch(), $pkg->getType()));
+        $pkg->setId($dao->getIdByNameVersionReleaseArchIdTypeId($pkg->getName(), $pkg->getVersion(), $pkg->getRelease(), $pkg->getArchId(), $pkg->getPkgTypeId()));
         if ($pkg->getId() == -1) {
             # Pkg is missing, so store it
             $dao->create($pkg);
@@ -81,64 +81,48 @@ class PkgsManager extends DefaultManager
         return sizeof($this->getPakiti()->getDao("Pkg")->getPkgsIds(null, -1, -1, $hostId, $search));
     }
 
-    /** Return Packages by CveName and Os Group
-     * @param $cveName
-     * @param OsGroup $osGroup
-     * @return mixed
-     * @throws Exception
+    /**
+     * Getting pkgs by Cve name and osGroup ID
      */
-    public function getPkgsByCveNameAndOsGroup($cveName, OsGroup $osGroup)
+    public function getPkgsByCveNameAndOsGroupId($cveName, $osGroupId)
     {
-        if (($osGroup == null) || ($osGroup->getId() == -1)) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("OsGroup object is not valid or OsGroup.id is not set");
-        }
+        Utils::log(LOG_DEBUG, "Getting pkgs by Cve name[".$cveName."] and osGroup ID[".$osGroupId."]", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Pkg");
+        $ids = $dao->getByCveNameAndOsGroupId($cveName, $osGroupId);
 
-        if ($cveName == "" || $cveName == null) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Cve name is not valid");
+        $pkgs = array();
+        foreach ($ids as $id) {
+            array_push($pkgs, $dao->getById($id));
         }
-
-        $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch, Pkg.type as _type from PkgCveDef
-            join Cve on PkgCveDef.cveDefId = Cve.cveDefId join Pkg on Pkg.id=PkgCveDef.pkgId where Cve.name='" . $this->getPakiti()->getManager("DbManager")->escape($cveName) . "'
-            and osGroupId={$osGroup->getId()} and (Pkg.id not in (select pkgId from CveException where osGroupId={$osGroup->getId()} and cveName=Cve.name))";
-        return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
+        return $pkgs;
     }
 
     /**
      * Find packages which are not connected with any host
      */
-    public function getUnusedPkgs()
+    public function getUnusedPkgsIds()
     {
-        Utils::log(LOG_DEBUG, "Getting unused packages from DB", __FILE__, __LINE__);
-        $sql = "select Pkg.id as _id, Pkg.name as _name, Pkg.version as _version, Pkg.release as _release, Pkg.arch as _arch, Pkg.type as _type from Pkg where Pkg.id not in (select pkgId from InstalledPkg)";
-        return $this->getPakiti()->getManager("DbManager")->queryObjects($sql, "Pkg");
+        Utils::log(LOG_DEBUG, "Getting unused pkgs IDs", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("Pkg");
+        return $dao->getUnusedIds();
     }
 
-    public function getPkgId($name, $version, $release, $arch, $type)
+    public function getPkgId($name, $version, $release, $archId, $typeId)
     {
-        if ((!isset($name)) || !isset($version) || !isset($release) || !isset($arch)) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Some of the parameters is not set");
-        }
-        return $this->getPakiti()->getDao("Pkg")->getPkgIdByNameVersionReleaseArchType($name, $version, $release, $arch, $type);
+        return $this->getPakiti()->getDao("Pkg")->getIdByNameVersionReleaseArchIdTypeId($name, $version, $release, $archId, $typeId);
     }
 
-    public function getPkgById($pkgId)
+    public function getPkgById($id)
     {
-        return $this->getPakiti()->getDao("Pkg")->getById($pkgId);
+        return $this->getPakiti()->getDao("Pkg")->getById($id);
     }
 
     /**
      * Delete the pkg from the DB
      */
-    public function deletePkg(&$pkg)
+    public function deletePkg($id)
     {
-        if (($pkg == null) || ($pkg->getId() == -1)) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Pkg object is not valid or Pkg.id is not set");
-        }
-        $this->getPakiti()->getDao("Pkg")->delete($pkg);
+        $this->getPakiti()->getDao("Pkg")->delete($id);
     }
 
     /**
@@ -157,11 +141,6 @@ class PkgsManager extends DefaultManager
         foreach ($pkgsIdsToRemove as $pkgId) {
             $dao->unassignPkgToHost($pkgId, $hostId);
         }
-    }
-
-    public function getPkgsTypesNames()
-    {
-        return $this->getPakiti()->getDao("Pkg")->getPkgsTypesNames();
     }
 
     /**

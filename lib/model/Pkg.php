@@ -29,6 +29,7 @@
 
 /**
  * @author Michal Prochazka
+ * @author Jakub Mlcak
  */
 class Pkg
 {
@@ -36,8 +37,12 @@ class Pkg
     private $_name;
     private $_version;
     private $_release;
-    private $_arch;
-    private $_type;
+    private $_archId;
+    private $_pkgTypeId;
+
+    # Only getters - loaded from db [1:1] with 1 column
+    private $_archName;
+    private $_pkgTypeName;
 
     public function getVersionRelease()
     {
@@ -53,9 +58,9 @@ class Pkg
         return $this->_id;
     }
 
-    public function setId($id)
+    public function setId($val)
     {
-        $this->_id = $id;
+        $this->_id = $val;
     }
 
     public function getName()
@@ -63,9 +68,9 @@ class Pkg
         return $this->_name;
     }
 
-    public function setName($name)
+    public function setName($val)
     {
-        $this->_name = $name;
+        $this->_name = $val;
     }
 
     public function getVersion()
@@ -73,9 +78,9 @@ class Pkg
         return $this->_version;
     }
 
-    public function setVersion($version)
+    public function setVersion($val)
     {
-        $this->_version = $version;
+        $this->_version = $val;
     }
 
     public function getRelease()
@@ -83,28 +88,51 @@ class Pkg
         return $this->_release;
     }
 
-    public function setRelease($release)
+    public function setRelease($val)
     {
-        $this->_release = $release;
+        $this->_release = $val;
     }
 
-    public function getArch()
+    public function getArchId()
     {
-        return $this->_arch;
+        return $this->_archId;
     }
 
-    public function setArch($arch)
+    public function setArchId($val)
     {
-        $this->_arch = $arch;
+        $this->_archId = $val;
     }
 
-    public function getType()
+    public function getPkgTypeId()
     {
-        return $this->_type;
+        return $this->_pkgTypeId;
     }
 
-    public function setType($type)
+    public function setPkgTypeId($val)
     {
-        $this->_type = $type;
+        $this->_pkgTypeId = $val;
+    }
+
+    # Extra
+
+    public function getArchName()
+    {
+        return $this->_archName;
+    }
+
+    public function getPkgTypeName()
+    {
+        return $this->_pkgTypeName;
+    }
+
+    # Used only in FeederModule parsePkgs
+    public function setArchName($val)
+    {
+        $this->_archName = $val;
+    }
+
+    public function setPkgTypeName($val)
+    {
+        $this->_pkgTypeName = $val;
     }
 }

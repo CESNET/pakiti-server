@@ -145,7 +145,8 @@ class CveExceptionDao
     public function isExceptionCandidate($cveName, $pkgId, $osGroupId)
     {
         $sql = "select 1 from Cve
-            inner join PkgCveDef on Cve.cveDefId = PkgCveDef.cveDefId
+            inner join CveCveDef on Cve.id = CveCveDef.cveId
+            inner join PkgCveDef on CveCveDef.cveDefId = PkgCveDef.cveDefId
             where Cve.name = '".$this->db->escape($cveName)."'
             and PkgCveDef.pkgId = '".$this->db->escape($pkgId)."'
             and PkgCveDef.osGroupId = '".$this->db->escape($osGroupId)."'";

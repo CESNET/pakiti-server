@@ -47,13 +47,13 @@ class VulnerabilitiesManager extends DefaultManager
         $vulnerabilityDao = $this->getPakiti()->getDao("Vulnerability");
         $cveDefsManager = $this->getPakiti()->getManager("CveDefsManager");
         foreach ($pkgs as $pkg) {
-            $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByPkgNameArch($pkg->getName(), $pkg->getArch());
+            $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByNameArchId($pkg->getName(), $pkg->getArchId());
             foreach ($potentialVulnerabilities as $vulnerability) {
                 $confirmed = false;
                 switch ($vulnerability->getOperator()) {
                     //TODO: Add more operator cases
                     case "<":
-                        $value = $this->vercmp($pkg->getType(), $pkg->getVersion(), $pkg->getRelease(), $vulnerability->getVersion(), $vulnerability->getRelease());
+                        $value = $this->vercmp($pkg->getPkgTypeName(), $pkg->getVersion(), $pkg->getRelease(), $vulnerability->getVersion(), $vulnerability->getRelease());
                         if ($value < 0) {
                             $confirmed = true;
                         }
@@ -78,11 +78,11 @@ class VulnerabilitiesManager extends DefaultManager
         $this->calculateVulnerabilitiesForPkgs($pkgs);
     }
 
-    public function getVulnerabilitiesByCveName($cveName, $osId = -1)
+    public function getVulnerabilities($cveName, $osId = -1)
     {
         Utils::log(LOG_DEBUG, "Getting Vulnerabilities by CVE name[".$cveName."], OS[$osId]", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("Vulnerability");
-        $ids = $dao->getIdsByCveNameAndOs($cveName, $osId);
+        $ids = $dao->getIdsByCveNameAndOsId($cveName, $osId);
 
         $vulnerabilities = array();
         foreach ($ids as $id) {

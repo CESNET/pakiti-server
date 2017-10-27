@@ -28,31 +28,45 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * @author Michal Prochazka
  * @author Jakub Mlcak
  */
-class Cve
+class PkgTypeDao
 {
-    private $_id;
-    private $_name;
+    private $db;
 
-    public function getId()
+    public function __construct(DbManager &$dbManager)
     {
-        return $this->_id;
+        $this->db = $dbManager;
     }
 
-    public function setId($id)
+    public function create(PkgType &$pkgType)
     {
-        $this->_id = $id;
+        $sql = "insert into PkgType set
+            name='" . $this->db->escape($pkgType->getName()) . "'";
+        $this->db->query($sql);
+
+        # Set the newly assigned id
+        $pkgType->setId($this->db->getLastInsertedId());
     }
 
-    public function getName()
+    public function getById($id)
     {
-        return $this->_name;
+        $sql = "select id as _id, name as _name from PkgType
+            where id='" . $this->db->escape($id) . "'";
+        return $this->db->queryObject($sql, "PkgType");
     }
 
-    public function setName($name)
+    public function getIdByName($name)
     {
-        $this->_name = $name;
+        $sql = "select id from PkgType
+            where name='" . $this->db->escape($name) . "'";
+        $id = $this->db->queryToSingleValue($sql);
+        return ($id == null) ? -1 : $id;
+    }
+
+    public function getIds()
+    {
+        $sql = "select id from PkgType";
+        return $this->db->queryToSingleValueMultiRow($sql);
     }
 }

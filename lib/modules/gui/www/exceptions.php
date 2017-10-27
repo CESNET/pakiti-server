@@ -150,7 +150,7 @@ $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsBy
                 <td>
                     <a href="cve.php?cveName=<?php echo $cveException->getCveName(); ?>"><?php echo $cveException->getCveName(); ?></a>
                 </td>
-                <td><?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName(); ?></td>
+                <td><?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArchName() . ") [" . $pkg->getPkgTypeName() . "] " . "</i> " . $osGroup->getName(); ?></td>
                 <td><?php echo $cveException->getReason(); ?></td>
                 <td><?php echo $cveException->getModifier(); ?></td>
                 <td><?php echo $cveException->getTimestamp(); ?></td>
@@ -206,12 +206,12 @@ $cveExceptions = $pakiti->getManager("CveExceptionsManager")->getCveExceptionsBy
                         </div>
                         <label>Packages</label>
                         <?php foreach ($osGroups as $osGroup) { ?>
-                            <?php $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroup($selectedCveName, $osGroup); ?>
+                            <?php $pkgs = $pakiti->getManager("PkgsManager")->getPkgsByCveNameAndOsGroupId($selectedCveName, $osGroup->getId()); ?>
                             <?php foreach ($pkgs as $pkg) { ?>
                                 <div class="checkbox">
                                     <label>
                                         <input type="checkbox" name="pkgs[]" value="<?php echo $pkg->getId() . ' ' . $osGroup->getId(); ?>">
-                                        <?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArch() . ") [" . $pkg->getType() . "] " . "</i> " . $osGroup->getName(); ?>
+                                        <?php echo $pkg->getName() . " " . $pkg->getVersionRelease() . "/ " . "<i>" . "(" . $pkg->getArchName() . ") [" . $pkg->getPkgTypeName() . "] " . "</i> " . $osGroup->getName(); ?>
                                     </label>
                                 </div>
                             <?php } ?>

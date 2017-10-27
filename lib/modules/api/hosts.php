@@ -44,9 +44,9 @@ if ($_tag == null) {
     $_tag = true;
 }
 $_hostGroupId = $pakiti->getmanager("HostGroupsManager")->getHostGroupIdByName($hostGroupName);
-$_activeIn = Utils::getHttpGetVar("activeIn");
+$_activity = Utils::getHttpGetVar("activity");
 
-$hosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, $_cveName, $_tag, $_hostGroupId, $_activeIn);
+$hosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, $_cveName, $_tag, $_hostGroupId, $_activity);
 
 $out = fopen('php://output', 'w');
 
