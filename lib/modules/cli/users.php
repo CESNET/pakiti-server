@@ -141,11 +141,11 @@ switch ($opt["c"]) {
             if (array_key_exists(Config::$USERS_ADMIN, $obj)) {
                 $admin = $obj[Config::$USERS_ADMIN];
             }
-            $hostsIds = array();
+            $hostsIds = null;
             if (array_key_exists(Config::$USERS_HOSTS_IDS, $obj)) {
                 $hostsIds = $obj[Config::$USERS_HOSTS_IDS];
             }
-            $hostGroupsIds = array();
+            $hostGroupsIds = null;
             if (array_key_exists(Config::$USERS_HOSTGROUPS_IDS, $obj)) {
                 $hostGroupsIds = $obj[Config::$USERS_HOSTGROUPS_IDS];
             }
@@ -153,7 +153,7 @@ switch ($opt["c"]) {
                 foreach ($obj[Config::$USERS_HOSTGROUPS_NAMES] as $hostGroupName) {
                     $hostGroupId = $pakiti->getManager("HostGroupsManager")->getHostGroupIdByName($hostGroupName);
                     if ($hostGroupId != -1 && !in_array($hostGroupId, $hostGroupIds)) {
-                        array_push($hostGroupIds, $hostGroupId);
+                        $hostGroupIds[] = $hostGroupId;
                     }
                 }
             }
@@ -170,39 +170,43 @@ switch ($opt["c"]) {
                     print "user ".$user->getUid()." was updated\n";
                 }
 
-                $assignedHostsIds = $pakiti->getManager("HostsManager")->getHostsIds(null, -1, -1, null, null, null, -1, null, -1, $user->getId(), true);
-                $hostsIdsToAdd = array_diff($hostsIds, $assignedHostsIds);
-                $hostsIdsToRemove = array_diff($assignedHostsIds, $hostsIds);
-                foreach ($hostsIdsToAdd as $hostId) {
-                    if ($manager->assignHostToUser($user->getId(), $hostId)) {
-                        print "user ".$user->getUid()." was assigned to host ".$hostId."\n";
-                    } else {
-                        print "user ".$user->getUid()." wasn't assigned to host ".$hostId."\n";
+                if ($hostsIds != null) {
+                    $assignedHostsIds = $pakiti->getManager("HostsManager")->getHostsIds(null, -1, -1, null, null, null, -1, null, -1, $user->getId(), true);
+                    $hostsIdsToAdd = array_diff($hostsIds, $assignedHostsIds);
+                    $hostsIdsToRemove = array_diff($assignedHostsIds, $hostsIds);
+                    foreach ($hostsIdsToAdd as $hostId) {
+                        if ($manager->assignHostToUser($user->getId(), $hostId)) {
+                            print "user ".$user->getUid()." was assigned to host ".$hostId."\n";
+                        } else {
+                            print "user ".$user->getUid()." wasn't assigned to host ".$hostId."\n";
+                        }
                     }
-                }
-                foreach ($hostsIdsToRemove as $hostId) {
-                    if ($manager->unassignHostToUser($user->getId(), $hostId)) {
-                        print "user ".$user->getUid()." was unassigned to host ".$hostId."\n";
-                    } else {
-                        print "user ".$user->getUid()." wasn't unassigned to host ".$hostId."\n";
+                    foreach ($hostsIdsToRemove as $hostId) {
+                        if ($manager->unassignHostToUser($user->getId(), $hostId)) {
+                            print "user ".$user->getUid()." was unassigned to host ".$hostId."\n";
+                        } else {
+                            print "user ".$user->getUid()." wasn't unassigned to host ".$hostId."\n";
+                        }
                     }
                 }
 
-                $assignedHostGroupsIds = $pakiti->getManager("HostGroupsManager")->getHostGroupsIds(null, -1, -1, $user->getId());
-                $hostGroupsIdsToAdd = array_diff($hostGroupsIds, $assignedHostGroupsIds);
-                $hostGroupsIdsToRemove = array_diff($assignedHostGroupsIds, $hostGroupsIds);
-                foreach ($hostGroupsIdsToAdd as $hostGroupId) {
-                    if ($manager->assignHostGroupToUser($user->getId(), $hostGroupId)) {
-                        print "user ".$user->getUid()." was assigned to hostGroup ".$hostGroupId."\n";
-                    } else {
-                        print "user ".$user->getUid()." wasn't assigned to hostGroup ".$hostGroupId."\n";
+                if ($hostGroupsIds != null) {
+                    $assignedHostGroupsIds = $pakiti->getManager("HostGroupsManager")->getHostGroupsIds(null, -1, -1, $user->getId());
+                    $hostGroupsIdsToAdd = array_diff($hostGroupsIds, $assignedHostGroupsIds);
+                    $hostGroupsIdsToRemove = array_diff($assignedHostGroupsIds, $hostGroupsIds);
+                    foreach ($hostGroupsIdsToAdd as $hostGroupId) {
+                        if ($manager->assignHostGroupToUser($user->getId(), $hostGroupId)) {
+                            print "user ".$user->getUid()." was assigned to hostGroup ".$hostGroupId."\n";
+                        } else {
+                            print "user ".$user->getUid()." wasn't assigned to hostGroup ".$hostGroupId."\n";
+                        }
                     }
-                }
-                foreach ($hostGroupsIdsToRemove as $hostGroupId) {
-                    if ($manager->unassignHostGroupToUser($user->getId(), $hostGroupId)) {
-                        print "user ".$user->getUid()." was unassigned to hostGroup ".$hostGroupId."\n";
-                    } else {
-                        print "user ".$user->getUid()." wasn't unassigned to hostGroup ".$hostGroupId."\n";
+                    foreach ($hostGroupsIdsToRemove as $hostGroupId) {
+                        if ($manager->unassignHostGroupToUser($user->getId(), $hostGroupId)) {
+                            print "user ".$user->getUid()." was unassigned to hostGroup ".$hostGroupId."\n";
+                        } else {
+                            print "user ".$user->getUid()." wasn't unassigned to hostGroup ".$hostGroupId."\n";
+                        }
                     }
                 }
 
