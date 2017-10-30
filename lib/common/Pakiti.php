@@ -50,7 +50,7 @@ final class Pakiti
         # Check if the Pakiti Config.php is in correct version
         $configVersion = isset(Config::$CONFIG_VERSION) ? Config::$CONFIG_VERSION : null;
         if ($configVersion != Constants::$CONFIG_VERSION) {
-            $msg = "Pakiti version doesn't correspond with the Pakiti Config.php version, check changelog in https://github.com/CESNET/pakiti3 and update Config.php!";
+            $msg = "Pakiti version doesn't correspond with the Pakiti Config.php version!";
             print $msg;
             throw new Exception($msq);
         }
@@ -58,7 +58,7 @@ final class Pakiti
         # Check if the Pakiti DB is in correct version
         $dbVersion = $this->getManager("DbManager")->queryToSingleValue("select attrValue from PakitiAttributes where attrName='".AttributeNames::$DB_VERSION."'");
         if ($dbVersion != Constants::$DB_VERSION) {
-            $msg = "Pakiti version doesn't correspond with the Pakiti DB version, check changelog in https://github.com/CESNET/pakiti3 and update DB!";
+            $msg = "Pakiti version doesn't correspond with the Pakiti DB version!";
             print $msg;
             throw new Exception($msg);
         }
