@@ -5,21 +5,79 @@
 ## Vulnerability definition system
 Add vds definition is necessary in order to calculating vulnerable pkgs. VDS can be added in VDS page via gui.
 
-For example:
-* Debian: svn://anonscm.debian.org/svn/secure-testing/data/DSA/
-* RedHat OVAL: https://www.redhat.com/security/data/oval/com.redhat.rhsa-2016.xml, https://www.redhat.com/security/data/oval/com.redhat.rhsa-2017.xml, ...
+* Debian DSA:
+    * svn://anonscm.debian.org/svn/secure-testing/data/DSA/
+* RedHat OVAL:
+    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2017.xml
+    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2016.xml
+    * ...
+    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2004.xml
+    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2003.xml
+* SUSE OVAL:
+    * http://ftp.suse.com/pub/projects/security/oval/suse.linux.enterprise.server.12-patch.xml
+    * http://ftp.suse.com/pub/projects/security/oval/suse.linux.enterprise.desktop.12-patch.xml
+    * http://ftp.suse.com/pub/projects/security/oval/suse.linux.enterprise.12-patch.xml
+    * http://ftp.suse.com/pub/projects/security/oval/suse.linux.enterprise.server.11-patch.xml
+    * http://ftp.suse.com/pub/projects/security/oval/suse.linux.enterprise.desktop.11-patch.xml
+    * http://ftp.suse.com/pub/projects/security/oval/suse.openstack.cloud.6-patch.xml
+    * http://ftp.suse.com/pub/projects/security/oval/suse.openstack.cloud.7-patch.xml
+* openSUSE OVAL:
+    * http://ftp.suse.com/pub/projects/security/oval/opensuse.leap.42.3-patch.xml
+    * http://ftp.suse.com/pub/projects/security/oval/opensuse.leap.42.2-patch.xml
+* Ubuntu OVAL:
+    * https://people.canonical.com/~ubuntu-security/oval/com.ubuntu.precise.cve.oval.xml
+    * https://people.canonical.com/~ubuntu-security/oval/com.ubuntu.trusty.cve.oval.xml
+    * https://people.canonical.com/~ubuntu-security/oval/com.ubuntu.xenial.cve.oval.xml
 
-After adding VDS definition you have to use cli for synchronize and recalculate vulnerabilities.
+After adding VDS definition you have to use cli for synchronize and calculate vulnerabilities.
 
     php /var/www/pakiti3/lib/modules/cli/vds.php -c synchronize
     php /var/www/pakiti3/lib/modules/cli/calculateVulnerabilities.php
 
-It's recommended to synchronize new vulnerabilities every day by cron.
+It's recommended to synchronize and calculate new vulnerabilities every day by cron.
 
     30 4 * * * root php /var/www/pakiti3/lib/modules/cli/vds.php -c synchronize && php /var/www/pakiti3/lib/modules/cli/calculateVulnerabilities.php
 
+##### Local OVAL format
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<oval_definitions
+    xmlns="http://oval.mitre.org/XMLSchema/oval-definitions-5"
+    xmlns:oval="http://oval.mitre.org/XMLSchema/oval-common-5"
+    xmlns:red-def="http://oval.mitre.org/XMLSchema/oval-definitions-5#linux"
+    xmlns:unix-def="http://oval.mitre.org/XMLSchema/oval-definitions-5#unix"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://oval.mitre.org/XMLSchema/oval-common-5 oval-common-schema.xsd http://oval.mitre.org/XMLSchema/oval-definitions-5 oval-definitions-schema.xsd http://oval.mitre.org/XMLSchema/oval-definitions-5#unix unix-definitions-schema.xsd http://oval.mitre.org/XMLSchema/oval-definitions-5#linux linux-definitions-schema.xsd">
+ <definitions>
+  <definition id="myDefinitionId">
+   <metadata>
+    <title>myDefinitionTitle</title>
+    <reference ref_url="myRefUrl"/>
+    <advisory>
+     <severity>Severity</severity>
+     <cve>myCVE</cve>
+     <cve>myCVE2</cve>
+    </advisory>
+   </metadata>
+   <criteria operator="AND">
+    <criteria operator="OR">
+     <criterion comment="myOS is installed"/>
+     <criterion comment="myOS2 is installed"/>
+    </criteria>
+    <criteria operator="OR">
+     <criterion comment="myPackageName is earlier than version-release"/>
+     <criterion comment="myPackageName2 is earlier than version2-release2"/>
+    </criteria>
+   </criteria>
+  </definition>
+ </definitions>
+</oval_definitions>
+```
+
 ## Oses
-Os is assigned to OS Group by regex which is set in Config.php. After changing regex you have to run recalculateOsGroupsMapping.php cli tool. Correct assign OS to OS Group is necessary for getting vulnerable packages.
+Os is assigned to OS Group by regex which is set in Config.php. Correct assign OS to OS Group is necessary for getting vulnerable packages. After changing regex you have to recalculate OSgroup mapping.
+
+    php /var/www/pakiti3/lib/modules/cli/recalculateOsGroupsMapping.php
 
 ## Users
 In Config.php have to be set one of these modes user management
@@ -33,7 +91,7 @@ In Config.php have to be set one of these modes user management
 
 User is recognized by environment variable which name is defined in Config.php.
 
-    public static $AUTHZ_UID = "epuid";
+    public static $AUTHZ_UID = "REMOTE_USER";
 
 Settings user permissions for listing Hosts and HostGroups are in Users page in gui.
 
@@ -97,4 +155,4 @@ If you need more pakiti servers on one machine, you can just set environment var
 
     SetEnv PAKITI_CONFIG_FILE /etc/pakiti/Config2.php
 
-When using cli module, you must set the --config option to the correct Config.php otherwise the default Config.php will be used. Use the --config as the first option.
+When using cli module, you must set the --config option to the correct Config.php otherwise the default Config.php will be used. Use the --config option always as the first option.
