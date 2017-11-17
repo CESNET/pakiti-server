@@ -40,7 +40,7 @@ final class Constants
     public static $CONFIG_VERSION = "20171019";
 
     # GitHub
-    public static $PAKITI_GITHUB = "https://github.com/CESNET/pakiti3";
+    public static $PAKITI_GITHUB = "https://github.com/CESNET/pakiti-server";
 
     public static $PAKITI_CONFIG_FILE = "/etc/pakiti/Config.php";
     public static $PAKITI_CONFIG_ENV = "PAKITI_CONFIG_FILE";

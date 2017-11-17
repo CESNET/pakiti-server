@@ -10,10 +10,10 @@
 
 #### Download repository from github and place it to /var/www
     cd /var/www
-    git clone https://github.com/CESNET/pakiti3
+    git clone https://github.com/CESNET/pakiti-server
 
 #### Copy file Config.php to /etc/pakiti
-###### you can change default username and password for pakiti3 database user in Config.php
+###### you can change the default username and password for the Pakiti database user in Config.php
     mkdir -p /etc/pakiti
     cp /var/www/pakiti3/install/Config_template.php /etc/pakiti/Config.php
 
