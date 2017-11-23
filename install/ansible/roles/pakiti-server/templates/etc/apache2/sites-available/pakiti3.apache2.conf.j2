@@ -1,0 +1,74 @@
+<VirtualHost *:80>
+    ServerAdmin {{ pakiti_admin_mail }}
+    ServerName {{ pakiti_domain_name }}
+
+    DocumentRoot /var/www/pakiti3/lib/modules/feeder/www
+
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteCond  %{REQUEST_URI}  ^/?$
+    RewriteRule ^/? https://%{SERVER_NAME}/ [R,L]
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+    LogLevel warn
+
+    Alias /feed /var/www/pakiti3/lib/modules/feeder/www/
+    <Location /feed>
+        DirectoryIndex index.php
+        Require all granted
+    </Location>
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerAdmin {{ pakiti_admin_mail }}
+    ServerName {{ pakiti_domain_name }}
+
+    DocumentRoot /var/www/pakiti3/lib/modules/gui/www/public/
+
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
+    SSlCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+
+    SSLVerifyDepth 10
+    SSLCACertificatePath /etc/ssl/certs/
+
+    SSLProtocol All -SSLv2 -SSLv3
+    SSLCipherSuite ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:!aNULL:!MD5:!DSS
+    SSLHonorCipherOrder On
+
+    SSLOptions +LegacyDNStringFormat
+
+    RewriteCond  %{REQUEST_URI}  !^$
+    RewriteCond  %{REQUEST_URI}  !^/
+    RewriteRule  .*              -    [R=400,L]
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+    LogLevel warn
+
+    <Location />
+        DirectoryIndex index.php
+        Require all granted
+    </Location>
+
+    Alias /protected /var/www/pakiti3/lib/modules/gui/www/
+    <Location /protected>
+        # add authentication
+        DirectoryIndex hosts.php
+        Require all granted
+    </Location>
+
+    Alias /feed /var/www/pakiti3/lib/modules/feeder/www
+    <Location /feed>
+        DirectoryIndex index.php
+        Require all granted
+    </Location>
+
+    Alias /api /var/www/pakiti3/lib/modules/api/
+    <Location /api>
+        Require ip 127.0.0.1
+    </Location>
+
+</VirtualHost>

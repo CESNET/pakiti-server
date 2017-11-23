@@ -1,0 +1,8 @@
+# For meaning of these variables please see README.md
+pakiti_mysql_user: mysql_pakiti_user
+pakiti_mysql_pass: mysql_pakiti_pass
+pakiti_mysql_db: pakiti_db_name
+mysql_root_name: root
+mysql_root_password: root_mysql_passwd
+pakiti_domain_name: pakiti.com
+pakiti_admin_mail: admin@pakiti.com

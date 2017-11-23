@@ -1,0 +1,5 @@
+- hosts: localhost
+  vars_files:
+    - ansible-conf.yml
+  roles:
+    - pakiti-server
