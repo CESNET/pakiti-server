@@ -32,15 +32,17 @@ require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
 $shortopts = "c:h";
 
+# N.B. we don't handle the config parameter here but in an included file
 $longopts = array(
     "id:",
     "activity:",
     "help",
+    "config:",
 );
 
 function usage()
 {
-    die("Usage: hosts [-h|--help] (-c delete (--id=<id> | --activity=<activity>) | list)\n");
+    die("Usage: hosts [-h|--help] [--config <pakiti config>] [--activity=<activity>] [--id=<id>] -c (delete | list)\n");
 }
 
 $opt = getopt($shortopts, $longopts);
@@ -80,10 +82,13 @@ switch ($opt["c"]) {
 
     # list hosts
     case "list":
-        $hosts = $pakiti->getManager("HostsManager")->getHosts();
-        print "\nid\thostname\tos\tkernel\tarch\t#CVEs\t#taggedCVEs\n";
-        print "----------------------------------------------------------------------\n";
+        $hosts = $pakiti->getManager("HostsManager")->getHosts(
+            null, -1, -1, null, null, null, -1,
+            (isset($opt["activity"]) ? $opt["activity"] : null));
+        print "id\thostname\tos\tkernel\tarch\t#CVEs\t#taggedCVEs\tlast report\n";
+        print "-----------------------------------------------------------------------------------\n";
         foreach ($hosts as $host) {
+            $report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
             print
                 $host->getId()."\t".
                 $host->getHostname()."\t".
@@ -91,7 +96,8 @@ switch ($opt["c"]) {
                 $host->getKernel()."\t".
                 $host->getArchName()."\t".
                 $host->getNumOfCves()."\t".
-                $host->getNumOfCvesWithTag()."\n";
+                $host->getNumOfCvesWithTag()."\t".
+                $report->getReceivedOn()."\n";
         }
         break;
 
