@@ -56,16 +56,28 @@ class OsesManager extends DefaultManager
         return $new;
     }
 
-    private function recalculateOsGroups(Os $os)
+    public function recalculateOsGroups(Os $os)
     {
         Utils::log(LOG_DEBUG, "Recalculating os osGroups", __FILE__, __LINE__);
+
+        if (empty($os->getName()))
+            return;
+
         $dao = $this->getPakiti()->getDao("Os");
         $osGroupsManager = $this->getPakiti()->getManager("OsGroupsManager");
 
         $dao->unassignOsGroupsFromOs($os->getId());
-        foreach ($osGroupsManager->getOsGroups() as $osGroup) {
-            if (array_key_exists($osGroup->getName(), Config::$OS_GROUPS_MAPPING) && !empty(Config::$OS_GROUPS_MAPPING[$osGroup->getName()]) && !empty($os->getName()) && preg_match("/" . htmlspecialchars_decode(Config::$OS_GROUPS_MAPPING[$osGroup->getName()]) . "/", $os->getName()) == 1) {
-                $dao->assignOsToOsGroup($os->getId(), $osGroup->getId());
+        foreach (array_keys(Config::$OS_GROUPS_MAPPING) as $osGroupName) {
+            if (!empty(Config::$OS_GROUPS_MAPPING[$osGroupName]) && preg_match("/" . htmlspecialchars_decode(Config::$OS_GROUPS_MAPPING[$osGroupName]). "/", $os->getName()) == 1) {
+                $og = $osGroupsManager->getOsGroupByName($osGroupName);
+                if ($og == null) {
+                    /* group assignment is re-calculted on its adding */
+                    $new = new OsGroup();
+                    $new->setName($osGroupName);
+                    $osGroupsManager->storeOsGroup($new);
+                } else {
+                    $dao->assignOsToOsGroup($os->getId(), $og->getId());
+                }
             }
         }
     }
