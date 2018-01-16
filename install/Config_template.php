@@ -155,6 +155,7 @@ final class Config
     public static $USERS_ADMIN_DEFAULT_VALUE = true;
 
     # Mapping OS groups to OSes by regular expression
+    # You might want to call the recalculateOsGroupsMapping.php tool to adapt the DB on changes
     public static $OS_GROUPS_MAPPING = array(
         # Debian
         "stretch" => "Debian.* 9.*",
@@ -187,5 +188,9 @@ final class Config
         "Ubuntu 12.04 LTS" => "Ubuntu.* 12\.04.*",
         "Ubuntu 14.04 LTS" => "Ubuntu.* 14\.04.*",
         "Ubuntu 16.04 LTS" => "Ubuntu.* 16\.04.*",
+        # CentOS
+        "CentOS 5" => "CentOS.* 5.*",
+        "CentOS 6" => "CentOS.* 6.*",
+        "CentOS 7" => "CentOS.* 7.*",
     );
 }

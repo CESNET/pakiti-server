@@ -103,7 +103,7 @@ class SubSource
      */
     protected function computeHash($string)
     {
-        return md5($string);
+        return md5($this->getName() . $string);
     }
 
     public function removeSubSourceDef(ISubSourceDef &$subSourceDef)
