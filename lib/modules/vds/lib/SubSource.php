@@ -56,6 +56,23 @@ class SubSource
         $this->_id = $val;
     }
 
+	public function getName()
+	{
+		/* $NAME must be defined in any child class */
+		return static::$NAME;
+	}
+
+	public function getType()
+	{
+		/* $TYPE must be defined in any child class */
+		return static::$TYPE;
+	}
+
+	public function getClassName()
+	{
+		return get_called_class();
+	}
+
     public function getSubSourceDefs()
     {
         $sql = "select id as _id, name as _name, uri as _uri, enabled as _enabled, lastChecked as _lastChecked, vdsSubSourceId as _subSourceId from VdsSubSourceDef
