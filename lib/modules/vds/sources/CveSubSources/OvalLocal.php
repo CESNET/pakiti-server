@@ -35,8 +35,8 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
  */
 class OvalLocal extends SubSource implements ISubSource
 {
-    private static $NAME = "Local OVAL";
-    private static $TYPE = "Local";
+    protected static $NAME = "Local OVAL";
+    protected static $TYPE = "Local";
 
     public function retrieveDefinitions()
     {
@@ -111,21 +111,6 @@ class OvalLocal extends SubSource implements ISubSource
             $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
         }
         return $defs;
-    }
-
-    public function getClassName()
-    {
-        return get_class();
-    }
-   
-    public function getName()
-    {
-        return OvalLocal::$NAME;
-    }
-  
-    public function getType()
-    {
-        return OvalLocal::$TYPE;
     }
 
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference

@@ -35,8 +35,8 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
  */
 class Debian extends SubSource implements ISubSource
 {
-    private static $NAME = "Debian";
-    private static $TYPE = "DSA";
+    protected static $NAME = "Debian";
+    protected static $TYPE = "DSA";
     private $_dsaPath = "/tmp/pakiti-debian/DSA/list";
 
     public function loadDSA()
@@ -189,15 +189,5 @@ class Debian extends SubSource implements ISubSource
             $defs = $this->processDSA();
         }
         return $defs;
-    }
-
-    public function getName()
-    {
-        return Debian::$NAME;
-    }
-
-    public function getType()
-    {
-        return Debian::$TYPE;
     }
 }

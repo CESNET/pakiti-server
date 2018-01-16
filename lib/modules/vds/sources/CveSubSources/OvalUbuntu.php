@@ -35,8 +35,8 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
  */
 class OvalUbuntu extends SubSource implements ISubSource
 {
-    private static $NAME = "Ubuntu OVAL";
-    private static $TYPE = "Ubuntu";
+    protected static $NAME = "Ubuntu OVAL";
+    protected static $TYPE = "Ubuntu";
 
     public function retrieveDefinitions()
     {
@@ -111,21 +111,6 @@ class OvalUbuntu extends SubSource implements ISubSource
             $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
         }
         return $defs;
-    }
-
-    public function getClassName()
-    {
-        return get_class();
-    }
-   
-    public function getName()
-    {
-        return OvalUbuntu::$NAME;
-    }
-  
-    public function getType()
-    {
-        return OvalUbuntu::$TYPE;
     }
 
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference

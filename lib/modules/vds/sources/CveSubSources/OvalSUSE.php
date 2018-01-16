@@ -36,8 +36,8 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
  */
 class OvalSUSE extends SubSource implements ISubSource
 {
-    private static $NAME = "SUSE OVAL";
-    private static $TYPE = "SUSE";
+    protected static $NAME = "SUSE OVAL";
+    protected static $TYPE = "SUSE";
 
     public function retrieveDefinitions()
     {
@@ -113,22 +113,7 @@ class OvalSUSE extends SubSource implements ISubSource
         }
         return $defs;
     }
-
-    public function getClassName()
-    {
-        return get_class();
-    }
    
-    public function getName()
-    {
-        return OvalSUSE::$NAME;
-    }
-  
-    public function getType()
-    {
-        return OvalSUSE::$TYPE;
-    }
-
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference
     protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$os, &$packages)
     {

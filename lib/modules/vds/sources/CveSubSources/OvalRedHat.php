@@ -35,8 +35,8 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
  */
 class OvalRedHat extends SubSource implements ISubSource
 {
-    private static $NAME = "RedHat OVAL";
-    private static $TYPE = "RedHat";
+    protected static $NAME = "RedHat OVAL";
+    protected static $TYPE = "RedHat";
     private $_xpath;
 
     public function retrieveDefinitions()
@@ -131,16 +131,6 @@ class OvalRedHat extends SubSource implements ISubSource
             $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
         }
         return $defs;
-    }
-
-    public function getName()
-    {
-        return OvalRedhat::$NAME;
-    }
-
-    public function getType()
-    {
-        return OvalRedhat::$TYPE;
     }
 
     /**
