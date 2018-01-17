@@ -36,9 +36,9 @@ $config_file = Constants::$PAKITI_CONFIG_FILE;
 # If cli is used
 if (php_sapi_name() == "cli") {
     # try to get config file path from option --config
-    $opt = getopt("", ["config:"]);
-    if (isset($opt["config"])) {
-        $config_file = $opt["config"];
+    $key = array_search('--config', $argv);
+    if ($key !== False && array_key_exists($key+1, $argv)) {
+        $config_file = $argv[$key+1];
     }
 # else if apache env variable exists
 } elseif (array_key_exists(Constants::$PAKITI_CONFIG_ENV, $_SERVER)) {
