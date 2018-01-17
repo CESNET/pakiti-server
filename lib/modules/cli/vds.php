@@ -36,6 +36,7 @@ $vds = new VdsModule($pakiti);
 $shortopts = "c:h"; # Command
 
 $longopts = array(
+    "config:",          # Config file - N.B. we don't handle the config parameter here but in an included file
     "sourceId:",        # VDS source ID
     "subSourceId:",     # VDS subsource ID
     "subSourceDefId:",  # VDS subsource Def ID
