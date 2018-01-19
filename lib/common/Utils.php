@@ -55,13 +55,20 @@ final class Utils
      */
     public static function log($priority, $msg, $file = "", $line = "")
     {
+        $msg_key = "";
+        /* this only works in the web-server mode! */
+        if (isset($_SERVER["REMOTE_ADDR"]))
+            $msg_key = $_SERVER["REMOTE_ADDR"];
+        if (isset($_SERVER["REMOTE_PORT"]))
+            $msg_key = $msg_key . ":" . $_SERVER["REMOTE_PORT"];
+
         if (Config::$DEBUG) {
             $date = date(DATE_RFC822);
-            syslog($priority, "$date [$file:$line]: $msg");
+            syslog($priority, "($msg_key) $date [$file:$line]: $msg");
         } else {
             if ($priority != LOG_DEBUG) {
                 $date = date(DATE_RFC822);
-                syslog($priority, "$date: $msg");
+                syslog($priority, "($msg_key) $date: $msg");
             }
         }
     }
