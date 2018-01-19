@@ -85,13 +85,20 @@ switch ($opt["c"]) {
         $hosts = $pakiti->getManager("HostsManager")->getHosts(
             null, -1, -1, null, null, null, -1,
             (isset($opt["activity"]) ? $opt["activity"] : null));
-        print "id\thostname\tos\tkernel\tarch\t#CVEs\t#taggedCVEs\tlast report\n";
+        print "id\thostname\thostGroups\tos\tkernel\tarch\t#CVEs\t#taggedCVEs\tlast report\n";
         print "-----------------------------------------------------------------------------------\n";
         foreach ($hosts as $host) {
+            $hostGroups = $pakiti->getManager("HostGroupsManager")->getHostGroupsByHost($host);
+            $groupNames = array();
+            foreach ($hostGroups as $hostGroup) {
+                array_push($groupNames, $hostGroup->getName());
+            }
+
             $report = $pakiti->getManager("ReportsManager")->getReportById($host->getLastReportId());
             print
                 $host->getId()."\t".
                 $host->getHostname()."\t".
+                implode(",", $groupNames )."\t".
                 $host->getOsName()."\t".
                 $host->getKernel()."\t".
                 $host->getArchName()."\t".
