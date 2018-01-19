@@ -689,6 +689,8 @@ class FeederModule extends DefaultModule
         # Remove escape characters
         $pkgs = str_replace("\\", "", $pkgs);
 
+        $debian_kernel_found = False;
+
         # Go throught the string, each entry is separated by the new line
         $tok = strtok($pkgs, "\n");
         while ($tok !== false) {
@@ -755,6 +757,12 @@ class FeederModule extends DefaultModule
             }
             # This is a hack to rename debian running kernel to "linux" in order to match vulnerabilities, client sends kernel version which is part of package name
             if (strpos($pkgName, "linux-image-".$kernel) !== false) {
+                if ($debian_kernel_found) {
+                    /* there might be several packages for the kernel (-dbg, etc.) let's use only the first one */
+                    $tok = strtok("\n");
+                    continue;
+                }
+				$debian_kernel_found = True;
                 $pkgName = "linux";
             }
             # Finally iterate through all regexp which defines packages to ignore
