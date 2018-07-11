@@ -31,12 +31,12 @@ Add vds definition is necessary in order to calculating vulnerable pkgs. VDS can
 
 After adding VDS definition you have to use cli for synchronize and calculate vulnerabilities.
 
-    php /var/www/pakiti3/lib/modules/cli/vds.php -c synchronize
-    php /var/www/pakiti3/lib/modules/cli/calculateVulnerabilities.php
+    php /var/www/pakiti3/src/modules/cli/vds.php -c synchronize
+    php /var/www/pakiti3/src/modules/cli/calculateVulnerabilities.php
 
 It's recommended to synchronize and calculate new vulnerabilities every day by cron.
 
-    30 4 * * * root php /var/www/pakiti3/lib/modules/cli/vds.php -c synchronize && php /var/www/pakiti3/lib/modules/cli/calculateVulnerabilities.php
+    30 4 * * * root php /var/www/pakiti3/src/modules/cli/vds.php -c synchronize && php /var/www/pakiti3/src/modules/cli/calculateVulnerabilities.php
 
 ##### Local OVAL format
 ```xml
@@ -77,7 +77,7 @@ It's recommended to synchronize and calculate new vulnerabilities every day by c
 ## Oses
 Os is assigned to OS Group by regex which is set in Config.php. Correct assign OS to OS Group is necessary for getting vulnerable packages. After changing regex you have to recalculate OSgroup mapping.
 
-    php /var/www/pakiti3/lib/modules/cli/recalculateOsGroupsMapping.php
+    php /var/www/pakiti3/src/modules/cli/recalculateOsGroupsMapping.php
 
 ## Users
 In Config.php have to be set one of these modes user management
@@ -100,7 +100,7 @@ CVEs can be marked by tag. These CVEs are listed in the report back to the clien
 ##### Export
     /api/cvesTags_export.php
 ##### Import via cli
-    php /var/www/pakiti3/lib/modules/cli/ImportCvesTags.php
+    php /var/www/pakiti3/src/modules/cli/ImportCvesTags.php
         Usage: importCvesTags (-u <url> | --url=<url>) [-r | --remove]
             -u, --url=name  url address which contains xml file with cvesTags
             -r, --remove    remove param use if you want delete all cvesTags which isn't in this import
@@ -123,7 +123,7 @@ If some local administrator compile its own package and leave the version of the
 ##### Export
     /api/cvesExceptions_export.php
 ##### Import via cli
-    php /var/www/pakiti3/lib/modules/cli/importCvesExceptions.php
+    php /var/www/pakiti3/src/modules/cli/importCvesExceptions.php
         Usage: importCvesExceptions (-u <url> | --url=<url>) [-r | --remove]
             -u, --url=name  url address which contains xml file with cvesExceptions
             -r, --remove    remove param use if you want delete all cvesExceptions which isn't in this import

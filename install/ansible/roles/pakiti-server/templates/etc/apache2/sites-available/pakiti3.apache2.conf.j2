@@ -2,7 +2,7 @@
     ServerAdmin {{ pakiti_admin_mail }}
     ServerName {{ pakiti_domain_name }}
 
-    DocumentRoot /var/www/pakiti3/lib/modules/feeder/www
+    DocumentRoot /var/www/pakiti3/src/modules/feeder/www
 
     RewriteEngine On
     RewriteCond %{HTTPS} !=on
@@ -13,7 +13,7 @@
     CustomLog ${APACHE_LOG_DIR}/access.log combined
     LogLevel warn
 
-    Alias /feed /var/www/pakiti3/lib/modules/feeder/www/
+    Alias /feed /var/www/pakiti3/src/modules/feeder/www/
     <Location /feed>
         DirectoryIndex index.php
         Require all granted
@@ -25,7 +25,7 @@
     ServerAdmin {{ pakiti_admin_mail }}
     ServerName {{ pakiti_domain_name }}
 
-    DocumentRoot /var/www/pakiti3/lib/modules/gui/www/public/
+    DocumentRoot /var/www/pakiti3/src/modules/gui/www/public/
 
     SSLEngine on
     SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
@@ -53,20 +53,20 @@
         Require all granted
     </Location>
 
-    Alias /protected /var/www/pakiti3/lib/modules/gui/www/
+    Alias /protected /var/www/pakiti3/src/modules/gui/www/
     <Location /protected>
         # add authentication
         DirectoryIndex hosts.php
         Require all granted
     </Location>
 
-    Alias /feed /var/www/pakiti3/lib/modules/feeder/www
+    Alias /feed /var/www/pakiti3/src/modules/feeder/www
     <Location /feed>
         DirectoryIndex index.php
         Require all granted
     </Location>
 
-    Alias /api /var/www/pakiti3/lib/modules/api/
+    Alias /api /var/www/pakiti3/src/modules/api/
     <Location /api>
         Require ip 127.0.0.1
     </Location>

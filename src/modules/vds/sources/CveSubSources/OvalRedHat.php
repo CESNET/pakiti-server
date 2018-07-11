@@ -28,7 +28,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 require_once(realpath(dirname(__FILE__)) . '/../../include/ISubSource.php');
-require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
+require_once(realpath(dirname(__FILE__)) . '/../../src/SubSource.php');
 
 /**
  * @author Michal Prochazka

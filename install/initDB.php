@@ -29,9 +29,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # Load the constants
-require_once(realpath(dirname(__FILE__)) . '/../lib/common/Constants.php');
+require_once(realpath(dirname(__FILE__)) . '/../src/common/Constants.php');
 
-require_once(realpath(dirname(__FILE__)) . '/../lib/common/AttributesNames.php');
+require_once(realpath(dirname(__FILE__)) . '/../src/common/AttributesNames.php');
 
 $shortopts = "hu:p::c:r";
 $longopts = array(

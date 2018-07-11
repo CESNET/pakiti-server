@@ -43,7 +43,7 @@ final class Utils
     }
 
     /**
-     * Return current Pakiti version (it is stored in the lib/classess/Constants.php
+     * Return current Pakiti version (it is stored in the src/classess/Constants.php
      */
     public static function pakitiVersion()
     {
