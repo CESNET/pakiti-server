@@ -27,7 +27,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-require_once(realpath(dirname(__FILE__)) . '/../src/Source.php');
+require_once(realpath(dirname(__FILE__)) . '/../lib/Source.php');
 
 /**
  * @author Michal Prochazka
