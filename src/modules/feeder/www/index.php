@@ -44,7 +44,8 @@ try {
         } else {
             # Pakiti-server in asynchronous mode can't send result back
             print Constants::$RETURN_ERROR;
-            exit;
+            http_response_code(500);
+            return(0);
         }
     }
     # Synchronous mode - process data immediatelly
@@ -57,24 +58,27 @@ try {
         # Process incomming data
         $feeder->processReport();
 
-        # Send result back
-        print $feeder->getResult();
+        $result = $feeder->getResult();
     }
 
     # Something is wrong here
     #------------------------
     else {
-        Utils::log(LOG_ERR, "Undefined feeder mode");
+        /* modes are checked in the Pakiti constructor, we should never get here */
+        Utils::log(LOG_ERR, "Something knows more modes than I do, shuting down");
         print Constants::$RETURN_ERROR;
-        return 0;
+        http_response_code(500);
+        return(0);
     }
 
     # End
     Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost()."] in ".Utils::getTimer($time)."s\n");
-    print Constants::$RETURN_OK;
-    exit;
+    print Constants::$RETURN_OK . "\n";
+    print $result;
+    return(0);
 } catch (Exception $e) {
     Utils::log(LOG_ERR, $e->getMessage());
     print Constants::$RETURN_ERROR;
-    return 0;
-}
+    http_response_code(500);
+    return(0);
+ }
