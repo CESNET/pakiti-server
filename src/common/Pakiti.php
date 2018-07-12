@@ -39,8 +39,10 @@ final class Pakiti
 
     public function init()
     {
-        # Setup logging facility
-        openlog((Config::$PAKITI_NAME) ? Config::$PAKITI_NAME : "Pakiti", LOG_PERROR | LOG_ODELAY, LOG_LOCAL0);
+		$log_options = LOG_ODELAY;
+		if (php_sapi_name() == "cli")
+			$log_options = $log_options | LOG_PERROR;
+        openlog((Config::$PAKITI_NAME) ? Config::$PAKITI_NAME : "Pakiti", $log_options, LOG_LOCAL0);
 
         Utils::log(LOG_DEBUG, "Pakiti initialized", __FILE__, __LINE__);
     }
