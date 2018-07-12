@@ -66,7 +66,7 @@ try {
     else {
         Utils::log(LOG_ERR, "Undefined feeder mode");
         print Constants::$RETURN_ERROR;
-        exit;
+        return 0;
     }
 
     # End
@@ -76,5 +76,5 @@ try {
 } catch (Exception $e) {
     Utils::log(LOG_ERR, $e->getMessage());
     print Constants::$RETURN_ERROR;
-    exit;
+    return 0;
 }
