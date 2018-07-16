@@ -1,12 +1,10 @@
-## Server installation for Debian-based Linux
+## Server installation for Debian-based Linux (tested on Debian 9)
 
-#### Install apache2, mysql, php5, curl and subversion
+#### Install dependencies
     apt-get update
-    apt-get install apache2
+    apt-get install apache2 php apt-get php-mysql php-curl
     apt-get install mysql-server
-    apt-get install curl
-    apt-get install php5 libapache2-mod-php5 php5-mysql php5-curl
-    apt-get install subversion
+    apt-get install curl subversion
 
 #### Download repository from github and place it to /var/www
     cd /var/www
