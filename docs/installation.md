@@ -15,21 +15,21 @@
 #### Copy file Config.php to /etc/pakiti
 ###### you can change the default username and password for the Pakiti database user in Config.php
     mkdir -p /etc/pakiti
-    cp /var/www/pakiti3/install/Config_template.php /etc/pakiti/Config.php
+    cp /var/www/pakiti-server/install/Config_template.php /etc/pakiti/Config.php
 
 #### Run php initDB.php for initalize database and create user which is defined in Config.php
 ###### use root password (option -h for help)
-    php /var/www/pakiti3/install/initDB.php -p
+    php /var/www/pakiti-server/install/initDB.php -p
 
 #### Copy file pakiti3.apache2.conf to apache2/sites-available
-    cp /var/www/pakiti3/install/pakiti3.apache2_template.conf /etc/apache2/sites-available/pakiti3.apache2.conf
+    cp /var/www/pakiti-server/install/pakiti3.apache2_template.conf /etc/apache2/sites-available/pakiti.conf
 
 #### Enable sites in pakiti3.apache2.conf
-    a2ensite pakiti3.apache2.conf
+    a2ensite pakiti.conf
 
 #### Enable apache2 modules
     a2enmod ssl
     a2enmod rewrite
 
 #### Reload apache2
-    service apache2 reload
+    service apache2 restart
