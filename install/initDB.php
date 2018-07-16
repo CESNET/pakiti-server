@@ -128,7 +128,7 @@ if ($reInitialize) {
 
 print "Creating the database '".Config::$DB_NAME."' ... ";
 # Create the database
-if (!$link->query("create database if not exists ".Config::$DB_NAME."")) {
+if (!$link->query("create database if not exists ".Config::$DB_NAME." DEFAULT CHARSET=utf8")) {
     print "ERROR: cannot create the database '".Config::$DB_NAME."': " . $link->error . ", you can use --reInitialize which drops existing database\n";
     exit(1);
 }
