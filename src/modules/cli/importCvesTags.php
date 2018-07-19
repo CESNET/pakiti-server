@@ -32,7 +32,9 @@ require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
 $shortopts = "hu:r";
 
+# N.B. we don't handle the config parameter here but in an included file
 $longopts = array(
+    "config:",
     "help",
     "url:",
     "remove"
@@ -40,7 +42,7 @@ $longopts = array(
 
 function usage()
 {
-    die("Usage: importCvesTags (-u <url> | --url=<url>) [-r | --remove]\n");
+    die("Usage: importCvesTags [--config <pakiti config>] (-u <url> | --url=<url>) [-r | --remove]\n");
 }
 
 $opt = getopt($shortopts, $longopts);
