@@ -38,7 +38,7 @@ class CveTagsManager extends DefaultManager
      */
     public function storeCveTag(CveTag &$cveTag)
     {
-        Utils::log(LOG_DEBUG, "Storing the cveTag", __FILE__, __LINE__);
+        Utils::log(LOG_DEBUG, "Storing cveTag " . $cveTag->getCveName(), __FILE__, __LINE__);
         if ($cveTag == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("CveTag object is not valid");
