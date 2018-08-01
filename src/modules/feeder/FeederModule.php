@@ -755,13 +755,18 @@ class FeederModule extends DefaultModule
                     continue;
                 }
 
+                $found = false;
                 foreach (Config::$IGNORE_PACKAGES_PATTERNS as &$pkgNamePattern) {
                     if (preg_match("/$pkgNamePattern/", $pkgName) == 1) {
-                        $tok = strtok("\n");
-                        continue;
+                        $found = true;
+                        break;
                     }
                 }
                 unset($pkgNamePattern);
+                if ($found) {
+                    $tok = strtok("\n");
+                    continue;
+                }
             }
             # This is a hack to rename debian running kernel to "linux" in order to match vulnerabilities, client sends kernel version which is part of package name
             if (strpos($pkgName, "linux-image-".$kernel) !== false) {
