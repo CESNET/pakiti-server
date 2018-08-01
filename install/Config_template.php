@@ -87,23 +87,6 @@ final class Config
     public static $ENABLE_OUTGOING_PROXY = 0;
     public static $OUTGOING_PROXY = "tcp://proxy.example.com:3128";
 
-    # List of packages which will be ignored by Pakiti
-    public static $IGNORE_PACKAGES = array(
-        "kernel-headers",
-        "kernel-debug",
-        "kernel-source",
-        "kernel-firmware",
-        "kernel-debug-devel",
-        "kernel-kdump",
-        # SUSE
-        "kernel-syms",
-        "kernel-macros",
-    );
-    # Also the ignore list, but using REGEXP
-    public static $IGNORE_PACKAGES_PATTERNS = array(
-        ".*-devel$",
-        ".*-doc$",
-    );
 
     # Packages names which represents kernels
     public static $KERNEL_PACKAGES_NAMES = array(
@@ -124,6 +107,25 @@ final class Config
         # SUSE
         "kernel-default",
         "kernel-default-devel",
+    );
+
+    # List of packages which will be ignored by Pakiti
+    public static $IGNORE_PACKAGES = array(
+        "kernel-headers",
+        "kernel-debug",
+        "kernel-source",
+        "kernel-firmware",
+        "kernel-debug-devel",
+        "kernel-kdump",
+        # SUSE
+        "kernel-syms",
+        "kernel-macros",
+    );
+    # Also the ignore list, but using REGEXP, note that kernel-related packages
+    # (recognized by $KERNEL_PACKAGES_NAMES) are never ignored
+    public static $IGNORE_PACKAGES_PATTERNS = array(
+        ".*-devel$",
+        ".*-doc$",
     );
 
     # Tags to mark CVEs

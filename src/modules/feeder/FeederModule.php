@@ -736,13 +736,6 @@ class FeederModule extends DefaultModule
                     break;
             }
 
-            # Remove blacklisted packages
-
-            # Remove packages which fits the patterns provided in the configuration
-            if (in_array($pkgName, Config::$IGNORE_PACKAGES)) {
-                $tok = strtok("\n");
-                continue;
-            }
             # Guess which package represents running kernel
             if (in_array($pkgName, Config::$KERNEL_PACKAGES_NAMES)) {
                 # Remove epoch from the version
@@ -754,6 +747,21 @@ class FeederModule extends DefaultModule
                     $tok = strtok("\n");
                     continue;
                 }
+            } else {
+                # Remove packages which match the patterns provided in the configuration.
+                # Note that kernel-related packages are stored even if they fit the patterns.
+                if (in_array($pkgName, Config::$IGNORE_PACKAGES)) {
+                    $tok = strtok("\n");
+                    continue;
+                }
+
+                foreach (Config::$IGNORE_PACKAGES_PATTERNS as &$pkgNamePattern) {
+                    if (preg_match("/$pkgNamePattern/", $pkgName) == 1) {
+                        $tok = strtok("\n");
+                        continue;
+                    }
+                }
+                unset($pkgNamePattern);
             }
             # This is a hack to rename debian running kernel to "linux" in order to match vulnerabilities, client sends kernel version which is part of package name
             if (strpos($pkgName, "linux-image-".$kernel) !== false) {
@@ -765,16 +773,6 @@ class FeederModule extends DefaultModule
 				$debian_kernel_found = True;
                 $pkgName = "linux";
             }
-            # Finally iterate through all regexp which defines packages to ignore
-            foreach (Config::$IGNORE_PACKAGES_PATTERNS as &$pkgNamePattern) {
-                if (preg_match("/$pkgNamePattern/", $pkgName) == 1) {
-                    # Skip this package, because it is in ignore list
-                    $tok = strtok("\n");
-                    continue;
-                }
-            }
-            unset($pkgNamePattern);
-
             $pkg = new Pkg();
             $pkg->setName($pkgName);
             $pkg->setArchName($pkgArch);
