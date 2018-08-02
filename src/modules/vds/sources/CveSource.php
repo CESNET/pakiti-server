@@ -150,9 +150,17 @@ class CveSource extends Source implements ISource
                                 $arch->setName($archName);
                                 $this->_pakiti->getManager("ArchsManager")->storeArch($arch);
 
+                                $og_mgr = $this->_pakiti->getManager('OsGroupsManager');
+                                $og = $og_mgr->getOsGroupByName($osGroupName);
+                                if ($og == null) {
+                                    $vuln_id = $cveDef->getDefinitionId();
+                                    Utils::log(LOG_ERR, "A vulnerability definition ($vuln_id) retrieved for OS Group that doesn't exist ($osGroupName)");
+                                    throw new Exception("Unknown OS Group ($osGroupName) requested");
+                                }
+
                                 $osGroup = new OsGroup();
                                 $osGroup->setName($osGroupName);
-                                $this->_pakiti->getManager('OsGroupsManager')->storeOsGroup($osGroup);
+                                $og_mgr->storeOsGroup($osGroup);
 
                                 $vuln->setName($defPkg['name']);
                                 $vuln->setRelease($defPkg['release']);
