@@ -824,7 +824,7 @@ class FeederModule extends DefaultModule
             $pkg->setPkgTypeName($type);
             $parsedPkgs[] = $pkg;
 
-            Utils::log(LOG_INFO, "Adding fake kernel $kernel_release-$kernel_version for " . $this->_host->getHostname());
+            Utils::log(LOG_INFO, "Adding fake kernel $kernel_version-$kernel_release for " . $this->_host->getHostname());
         }
 
         return $parsedPkgs;
