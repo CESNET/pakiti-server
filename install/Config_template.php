@@ -101,9 +101,9 @@ final class Config
         "kernel-xen",
         "kernel-PAE",
         "kernel-hugemem",
+        # Debian
+        "linux-image",
         "linux-image-generic",
-        "linux-image-2.4",
-        "linux-image-2.6",
         # SUSE
         "kernel-default",
         "kernel-default-devel",

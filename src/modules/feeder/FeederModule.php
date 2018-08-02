@@ -443,7 +443,8 @@ class FeederModule extends DefaultModule
         $this->_host->setKernel($this->_report_kernel);
 
         # Parse the packages list
-        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_report_type, $this->_report_kernel, $this->_protocolVersion);
+        $this->_pkgs = $this->parsePkgs($this->_report_pkgs, $this->_report_type, $this->_report_kernel,
+                                        $this->_report_arch, $this->_protocolVersion);
 
         # Set the initial information about the report (using _pkgs)
         $this->_report->setNumOfInstalledPkgs(sizeof($this->_pkgs));
@@ -682,7 +683,7 @@ class FeederModule extends DefaultModule
     /**
      * Parse the long string containing list of installed packages.
      */
-    protected function parsePkgs($pkgs, $type, $kernel, $protocol_version)
+    protected function parsePkgs($pkgs, $type, $kernel, $arch, $protocol_version)
     {
         Utils::log(LOG_DEBUG, "Parsing packages", __FILE__, __LINE__);
         $parsedPkgs = array();
@@ -690,6 +691,7 @@ class FeederModule extends DefaultModule
         $pkgs = str_replace("\\", "", $pkgs);
 
         $debian_kernel_found = False;
+        $kernel_sent = false;
 
         # Go throught the string, each entry is separated by the new line
         $tok = strtok($pkgs, "\n");
@@ -747,6 +749,26 @@ class FeederModule extends DefaultModule
                     $tok = strtok("\n");
                     continue;
                 }
+                $kernel_sent = true;
+
+                # This is a hack to add a record for debian running kernel named "linux" in order for it to match vulnerability
+                # definitions. The client sends the kernel version which is part of the package name.
+                if (strpos($pkgName, "linux-image-".$kernel) !== false) {
+                    if ($debian_kernel_found) {
+                        /* there might be several packages for the kernel, let's act only on the first one */
+                        $tok = strtok("\n");
+                        continue;
+                    }
+                    $deb_pkg = new Pkg();
+                    $deb_pkg->setName("linux");
+                    $deb_pkg->setArchName($pkgArch);
+                    $deb_pkg->setRelease($pkgRelease);
+                    $deb_pkg->setVersion($pkgVersion);
+                    $deb_pkg->setPkgTypeName($type);
+                    $parsedPkgs[] = $deb_pkg;
+
+                    $debian_kernel_found = True;
+                }
             } else {
                 # Remove packages which match the patterns provided in the configuration.
                 # Note that kernel-related packages are stored even if they fit the patterns.
@@ -768,16 +790,7 @@ class FeederModule extends DefaultModule
                     continue;
                 }
             }
-            # This is a hack to rename debian running kernel to "linux" in order to match vulnerabilities, client sends kernel version which is part of package name
-            if (strpos($pkgName, "linux-image-".$kernel) !== false) {
-                if ($debian_kernel_found) {
-                    /* there might be several packages for the kernel (-dbg, etc.) let's use only the first one */
-                    $tok = strtok("\n");
-                    continue;
-                }
-				$debian_kernel_found = True;
-                $pkgName = "linux";
-            }
+
             $pkg = new Pkg();
             $pkg->setName($pkgName);
             $pkg->setArchName($pkgArch);
@@ -787,6 +800,31 @@ class FeederModule extends DefaultModule
             $parsedPkgs[] = $pkg;
 
             $tok = strtok("\n");
+        }
+
+        /* Some deployments don't have kernel packages installed, we generate a fake record for them */
+        if (! $kernel_sent) {
+            /* XXX The code is RH-specific, I'm affraid */
+            $pkg = new Pkg();
+            $pkg->setName("kernel");
+
+            $kernel_parts = explode("-", trim($kernel), 2);
+            $kernel_version = "0:" . $kernel_parts[0];
+            $kernel_release = $kernel_parts[1];
+            # If release containst also arch, strip it
+            $arch_to_be_removed = ".$arch";
+            $arch_len = strlen($arch_to_be_removed);
+            if (substr($kernel_release, -$arch_len, $arch_len) == $arch_to_be_removed) {
+                 $kernel_release = substr($kernel_release, 0, strlen($kernel_release-$arch_len));
+            }
+
+            $pkg->setArchName($arch);
+            $pkg->setRelease($kernel_release);
+            $pkg->setVersion($kernel_version);
+            $pkg->setPkgTypeName($type);
+            $parsedPkgs[] = $pkg;
+
+            Utils::log(LOG_INFO, "Adding fake kernel $kernel_release-$kernel_version for " . $this->_host->getHostname());
         }
 
         return $parsedPkgs;
