@@ -815,7 +815,7 @@ class FeederModule extends DefaultModule
             $arch_to_be_removed = ".$arch";
             $arch_len = strlen($arch_to_be_removed);
             if (substr($kernel_release, -$arch_len, $arch_len) == $arch_to_be_removed) {
-                 $kernel_release = substr($kernel_release, 0, strlen($kernel_release-$arch_len));
+                 $kernel_release = substr($kernel_release, 0, strlen($kernel_release)-$arch_len);
             }
 
             $pkg->setArchName($arch);
