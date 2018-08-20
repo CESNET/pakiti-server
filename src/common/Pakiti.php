@@ -42,7 +42,11 @@ final class Pakiti
 		$log_options = LOG_ODELAY;
 		if (php_sapi_name() == "cli")
 			$log_options = $log_options | LOG_PERROR;
-        openlog((Config::$PAKITI_NAME) ? Config::$PAKITI_NAME : "Pakiti", $log_options, LOG_LOCAL0);
+        $ident = "Pakiti";
+        if (Config::$PAKITI_NAME) {
+            $ident = "$ident " . Config::$PAKITI_NAME;
+        }
+        openlog($ident, $log_options, LOG_LOCAL0);
 
         Utils::log(LOG_DEBUG, "Pakiti initialized", __FILE__, __LINE__);
     }
