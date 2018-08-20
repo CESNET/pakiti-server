@@ -156,3 +156,16 @@ If you need more pakiti servers on one machine, you can just set environment var
     SetEnv PAKITI_CONFIG_FILE /etc/pakiti/Config2.php
 
 When using cli module, you must set the --config option to the correct Config.php otherwise the default Config.php will be used. Use the --config option always as the first option.
+
+## Logging
+Pakiti logs under the LOCAL0 facility, which usualy ends up in a single log file. The server produces a large amount of records on data it processes, which may be desirable to log separately. The following snippet can help configure rsyslog to split the logging based on the priorities:
+```
+# everything goes to pakiti.log
+local0.*                        /var/log/pakiti.log
+# WARN's (and higher) will get logged to system logs, too
+if (prifilt("local0.warn")) then {
+    continue
+} else {
+    stop
+}
+```
