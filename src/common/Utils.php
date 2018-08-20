@@ -160,7 +160,7 @@ final class Utils
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $content = curl_exec($ch);
         if ($content === false) {
-            Utils::log(LOG_ERROR, "Curl error: " . curl_error($ch), __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Curl error: " . curl_error($ch), __FILE__, __LINE__);
         }
         curl_close($ch);
         return $content;
