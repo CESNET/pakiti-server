@@ -105,11 +105,11 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td>Cves</td>
-        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a></td>
+        <td><a href="host_cves.php?hostId=<?php echo $host->getId(); ?>"><?php echo $host->getNumOfCves(); ?></a></td>
     </tr>
     <tr>
         <td>Cves with Tag</td>
-        <td><a href="cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"><?php echo $host->getNumOfCvesWithTag(); ?></a></td>
+        <td><a href="host_cves.php?hostId=<?php echo $host->getId(); ?>&tag=true"><?php echo $host->getNumOfCvesWithTag(); ?></a></td>
     </tr>
     <tr>
         <td>Last report received on</td>
@@ -117,7 +117,7 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td>Reports</td>
-        <td><a href="reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a></td>
+        <td><a href="host_reports.php?hostId=<?php echo $host->getId(); ?>"><?php echo $reportsCount; ?></a></td>
     </tr>
 </table>
 
