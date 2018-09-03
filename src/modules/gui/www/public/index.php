@@ -58,15 +58,19 @@ $html = new HtmlModule($pakiti);
             <h1><span style="font-weight: bold; letter-spacing: 1px; color: #000000;"><span style="background-color: #337ab7; color: #ffffff; border-radius: 0.15em;">P</span>akiti &nbsp;</span></h1>
         <div class="jumbotron">
             <p>
-                Pakiti provides a monitoring and notification mechanism to check the patching status of systems.<br><br>
-                Once installed on a client host, Pakiti will send every night the list of installed packages to the relevant Pakiti Server(s). After the client sends the list of installed packages, Pakiti server compares the versions against versions which Pakiti server obtains from OVAL definitions from MITRE. Pakiti supports definitions for RHEL, Debian, SLES, openSUSE and Ubuntu. Optionally client reports back the packages which has marked CVE by tag.<br><br>
-                Pakiti has a web based GUI which provides a list of the registered systems. This helps the system admins keep multiple machines up-to-date and prevent unpatched machines to be kept silently on the network.
+                Pakiti provides a monitoring mechanism to check the patching status of Linux systems.
             </p>
+            <p>
+Pakiti uses the client/server model, with clients running on monitored machines and sending reports to the Pakiti server for evaluation. The report contains a list of packages installed on the client system, which is subject to analysis done by the server. The Pakiti server compares versions against other versions which are obtained from various distribution vendors. Detected vulnerabilities identified using CVE identifiers are reported as the outcome, together with affected packages that need to be updated.
+</p><p>
+
+Pakiti has a web based GUI which provides a list of registered systems. The collected information help system administrators maintain proper patch management and quickly identify machine vulnerable to particular vulnerabilites. The information processed is also available via programmatic interfaces.
+</p>
             <p class="text-right">
                 <a class="btn btn-primary btn-lg" href="<?php echo Constants::$PAKITI_GITHUB; ?>" role="button"><span class="glyphicon glyphicon-book" aria-hidden="true"></span> GitHub</a>
             </p>
             <br>
-            <h2>Supported OSes</h2>
+            <h2>Supported operating systems:</h2>
             <br>
             <div class="row">
                 <div class="col-sm-2">
@@ -107,7 +111,7 @@ $html = new HtmlModule($pakiti);
                 <div class="panel panel-primary">
                     <div class="panel-heading text-center">
                         <h1><?php echo sizeof($html->getPakiti()->getManager("CvesManager")->getCvesNames()); ?></h1>
-                        Observed CVEs
+                        CVEs being monitored
                     </div>
                 </div>
             </div>
