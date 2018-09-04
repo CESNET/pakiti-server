@@ -101,7 +101,7 @@ $reportsCount = $html->getPakiti()->getManager("ReportsManager")->getHostReports
     </tr>
     <tr>
         <td>Installed packages</td>
-        <td><a href="packages.php?hostId=<?php echo $host->getId(); ?>"><?php echo $report->getNumOfInstalledPkgs(); ?></a></td>
+        <td><a href="host_packages.php?hostId=<?php echo $host->getId(); ?>"><?php echo $report->getNumOfInstalledPkgs(); ?></a></td>
     </tr>
     <tr>
         <td>Cves</td>
