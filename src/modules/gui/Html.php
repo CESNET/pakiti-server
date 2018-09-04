@@ -43,6 +43,14 @@ class HTMLModule extends DefaultModule
     private $_title = "Pakiti";
     private $_menuActiveItem = null;
 
+    private $error403 = "
+<html><head><title>403 Forbidden</title></head>
+<body>
+<h1>Forbidden</h1>
+<p>You don't have permission to get the information</p>
+</body></html>
+";
+
     public function __construct(&$pakiti)
     {
         parent::__construct($pakiti);
@@ -127,6 +135,7 @@ class HTMLModule extends DefaultModule
     public function checkPermission($source)
     {
         if (!$this->_acl->permission($source)) {
+            print($error403);
             header('HTTP/1.0 403 Forbidden');
             exit;
         }
