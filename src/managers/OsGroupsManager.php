@@ -45,11 +45,16 @@ class OsGroupsManager extends DefaultManager
             throw new Exception("OsGroup object is not valid");
         }
 
+        $name = $osGroup->getName();
+
         $new = false;
         $dao = $this->getPakiti()->getDao("OsGroup");
-        $osGroup->setId($dao->getIdByName($osGroup->getName()));
+        $osGroup->setId($dao->getIdByName($name));
         if ($osGroup->getId() == -1) {
-            # OsGroup is missing, so store it
+            if (! array_key_exists($name, Config::$OS_GROUPS_MAPPING)) {
+                Utils::log(LOG_ERR, "Refusing to store group '$name' that isn't enabled in the configuration");
+                throw new Exception("Unknown OS Group ($name) requested");
+            }
             $dao->create($osGroup);
             $new = true;
             # new osGroup, so recalculate Oses
