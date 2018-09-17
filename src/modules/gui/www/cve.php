@@ -39,7 +39,7 @@ $html->checkPermission("cve");
 
 $html->setTitle("CVE");
 
-$cveName = Utils::getHttpGetVar("cveName", null);
+$cveName = $html->getHttpGetVar("cveName", null);
 $vulnerabilities = $html->getPakiti()->getManager("VulnerabilitiesManager")->getVulnerabilities($cveName);
 $exceptionsCount = $html->getPakiti()->getManager("CveExceptionsManager")->getCveExceptionsCountByCveName($cveName);
 

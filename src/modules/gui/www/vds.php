@@ -41,11 +41,11 @@ $html->checkPermission("vds");
 $vds = new VdsModule($pakiti);
 
 // Process operations
-switch (Utils::getHttpPostVar("act")) {
+switch ($html->getHttpPostVar("act")) {
     case "create":
-        $defName = Utils::getHttpPostVar("name");
-        $defUri = Utils::getHttpPostVar("uri");
-        @list ($sourceId, $subSourceId) = explode(' ', Utils::getHttpPostVar("ids"));
+        $defName = $html->getHttpPostVar("name");
+        $defUri = $html->getHttpPostVar("uri");
+        @list ($sourceId, $subSourceId) = explode(' ', $html->getHttpPostVar("ids"));
 
         $source = $vds->getSourceById($sourceId);
         $subSource = $source->getSubSourceById($subSourceId);
@@ -57,9 +57,9 @@ switch (Utils::getHttpPostVar("act")) {
         $subSource->addSubSourceDef($subSourceDef);
         break;
     case "delete":
-        $sourceId = Utils::getHttpPostVar("sourceId");
-        $subSourceId = Utils::getHttpPostVar("subSourceId");
-        $subSourceDefId = Utils::getHttpPostVar("subSourceDefId");
+        $sourceId = $html->getHttpPostVar("sourceId");
+        $subSourceId = $html->getHttpPostVar("subSourceId");
+        $subSourceDefId = $html->getHttpPostVar("subSourceDefId");
 
         $source = $vds->getSourceById($sourceId);
         $subSource = $source->getSubSourceById($subSourceId);

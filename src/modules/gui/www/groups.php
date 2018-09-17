@@ -37,14 +37,14 @@ $html = new HtmlModule($pakiti);
 $html->checkPermission("groups");
 
 // Process operations
-switch (Utils::getHttpPostVar("act")) {
+switch ($html->getHttpPostVar("act")) {
   case "edit":
-    $hostGroupId = Utils::getHttpPostVar("id");
+    $hostGroupId = $html->getHttpPostVar("id");
     $hostGroup = $pakiti->getManager("HostGroupsManager")->getHostGroupById($hostGroupId, $html->getUserId());
     if ($hostGroup != null) {
-        $hostGroup->setUrl(Utils::getHttpPostVar("url"));
-        $hostGroup->setContact(Utils::getHttpPostVar("contact"));
-        $hostGroup->setNote(Utils::getHttpPostVar("note"));
+        $hostGroup->setUrl($html->getHttpPostVar("url"));
+        $hostGroup->setContact($html->getHttpPostVar("contact"));
+        $hostGroup->setNote($html->getHttpPostVar("note"));
         $pakiti->getManager("HostGroupsManager")->storeHostGroup($hostGroup);
     } else {
         $html->setError("Cannot update hostGroup, hostGroup with id " . $hostGroupId . " doesn't exist or access denied");

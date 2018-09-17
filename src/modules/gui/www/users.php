@@ -38,16 +38,16 @@ $html->checkPermission("users");
 
 
 // Process operations
-switch (Utils::getHttpPostVar("act")) {
+switch ($html->getHttpPostVar("act")) {
     case "store":
         if (Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_AUTOCREATE || Config::$AUTHZ_MODE == Constants::$AUTHZ_MODE_IMPORT) {
             $html->setError("Cannot create users in " . Config::$AUTHZ_MODE . "mode");
             break;
         }
         $user = new User();
-        $user->setUid(Utils::getHttpPostVar("uid"));
-        $user->setName(Utils::getHttpPostVar("name"));
-        $user->setEmail(Utils::getHttpPostVar("email"));
+        $user->setUid($html->getHttpPostVar("uid"));
+        $user->setName($html->getHttpPostVar("name"));
+        $user->setEmail($html->getHttpPostVar("email"));
         $pakiti->getManager("UsersManager")->storeUser($user);
         break;
     case "update":
@@ -55,8 +55,8 @@ switch (Utils::getHttpPostVar("act")) {
             $html->setError("Cannot edit users in " . Config::$AUTHZ_MODE . "mode");
             break;
         }
-        $id = Utils::getHttpPostVar("id");
-        $admin = Utils::getHttpPostVar("admin");
+        $id = $html->getHttpPostVar("id");
+        $admin = $html->getHttpPostVar("admin");
         $user = $pakiti->getManager("UsersManager")->getUserById($id);
         $user->setAdmin($admin == "true");
         $pakiti->getManager("UsersManager")->storeUser($user);
@@ -66,13 +66,13 @@ switch (Utils::getHttpPostVar("act")) {
             $html->setError("Cannot delete users in " . Config::$AUTHZ_MODE . "mode");
             break;
         }
-        $id = Utils::getHttpPostVar("id");
+        $id = $html->getHttpPostVar("id");
         $pakiti->getManager("UsersManager")->deleteUser($id);
         break;
     case "add":
-        $id = Utils::getHttpPostVar("id");
-        $hostId = Utils::getHttpPostVar("hostId");
-        $hostGroupId = Utils::getHttpPostVar("hostGroupId");
+        $id = $html->getHttpPostVar("id");
+        $hostId = $html->getHttpPostVar("hostId");
+        $hostGroupId = $html->getHttpPostVar("hostGroupId");
         if ($hostId != -1) {
             $pakiti->getManager("UsersManager")->assignHostToUser($id, $hostId);
         }
@@ -81,9 +81,9 @@ switch (Utils::getHttpPostVar("act")) {
         }
         break;
     case "remove":
-        $id = Utils::getHttpPostVar("id");
-        $hostId = Utils::getHttpPostVar("hostId");
-        $hostGroupId = Utils::getHttpPostVar("hostGroupId");
+        $id = $html->getHttpPostVar("id");
+        $hostId = $html->getHttpPostVar("hostId");
+        $hostGroupId = $html->getHttpPostVar("hostGroupId");
         if ($hostId != -1) {
             $pakiti->getManager("UsersManager")->unassignHostToUser($id, $hostId);
         }

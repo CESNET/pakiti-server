@@ -84,12 +84,20 @@ class HTMLModule extends DefaultModule
     public function getHttpGetVar($varName, $defaultValue = null)
     {
         $varValue = Utils::getHttpGetVar($varName);
-        if ($varValue != null) {
-            $this->_httpGetVars[$varName] = $varValue;
-        } else {
-            return $defaultValue;
-        }
-        return $varValue;
+        if ($varValue == null)
+            return($defaultValue);
+
+        $this->_httpGetVars[$varName] = $varValue;
+        return(htmlspecialchars($varValue, ENT_QUOTES, 'UTF-8'));
+    }
+
+    public function getHttpPostVar($varName, $defaultValue = null)
+    {
+         $varValue = Utils::getHttpPostVar($varName);
+         if ($varValue == null)
+             return($defaultValue);
+
+         return(htmlspecialchars($varValue, ENT_QUOTES, 'UTF-8'));
     }
 
     /**

@@ -50,13 +50,13 @@ if ($_listTaggedCves !== false) {
 }
 
 // Process operations
-switch (Utils::getHttpPostVar("act")) {
+switch ($html->getHttpPostVar("act")) {
   case "delete":
-    $host = $pakiti->getManager("HostsManager")->getHostById(Utils::getHttpPostVar("id"), $html->getUserId());
+    $host = $pakiti->getManager("HostsManager")->getHostById($html->getHttpPostVar("id"), $html->getUserId());
     if ($host != null) {
         $pakiti->getManager("HostsManager")->deleteHost($host->getId());
     } else {
-        $html->setError("Cannot delete host, host with id " . Utils::getHttpPostVar("id") . " doesn't exist or access denied");
+        $html->setError("Cannot delete host, host with id " . $html->getHttpPostVar("id") . " doesn't exist or access denied");
     }
     break;
 }

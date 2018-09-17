@@ -38,10 +38,10 @@ $html->checkPermission("tags");
 
 
 // Process operations
-switch (Utils::getHttpPostVar("act")) {
+switch ($html->getHttpPostVar("act")) {
     case "create":
-        $cveName = Utils::getHttpPostVar("cveName");
-        $tagName = Utils::getHttpPostVar("tagName");
+        $cveName = $html->getHttpPostVar("cveName");
+        $tagName = $html->getHttpPostVar("tagName");
         if ($cveName != "N/A" && $tagName != "N/A") {
             // Check if exists
             $id = $pakiti->getManager("CveTagsManager")->getCveTagIdByCveNameTagName($cveName, $tagName);
@@ -49,8 +49,8 @@ switch (Utils::getHttpPostVar("act")) {
                 $cveTag = new CveTag();
                 $cveTag->setCveName($cveName);
                 $cveTag->setTagName($tagName);
-                $cveTag->setReason(Utils::getHttpPostVar("reason"));
-                $cveTag->setInfoUrl(Utils::getHttpPostVar("infoUrl"));
+                $cveTag->setReason($html->getHttpPostVar("reason"));
+                $cveTag->setInfoUrl($html->getHttpPostVar("infoUrl"));
                 $cveTag->setModifier($html->getUsername());
                 $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
             } else {
@@ -59,17 +59,17 @@ switch (Utils::getHttpPostVar("act")) {
         }
         break;
     case "update":
-        $id = Utils::getHttpPostVar("id");
+        $id = $html->getHttpPostVar("id");
         $cveTag = $pakiti->getManager("CveTagsManager")->getCveTagById($id);
         if ($cveTag != null) {
-            $cveTag->setEnabled(Utils::getHttpPostVar("enabled") == "true");
+            $cveTag->setEnabled($html->getHttpPostVar("enabled") == "true");
             $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
         } else {
             $html->setError("CveTag [" . $id . "] doesn't exists");
         }
         break;
     case "delete":
-        $id = Utils::getHttpPostVar("id");
+        $id = $html->getHttpPostVar("id");
         $cveTag = $pakiti->getManager("CveTagsManager")->getCveTagById($id);
         if ($cveTag != null) {
             $pakiti->getManager("CveTagsManager")->deleteCveTagById($id);

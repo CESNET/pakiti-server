@@ -38,11 +38,11 @@ $html->checkPermission("exceptions");
 
 
 // Process operations
-switch (Utils::getHttpPostVar("act")) {
+switch ($html->getHttpPostVar("act")) {
     case "create":
-        $cveName = Utils::getHttpGetVar("cveName");
-        $reason = Utils::getHttpPostVar("reason");
-        $pkgs = Utils::getHttpPostVar("pkgs");
+        $cveName = $html->getHttpGetVar("cveName");
+        $reason = $html->getHttpPostVar("reason");
+        $pkgs = $html->getHttpPostVar("pkgs");
         if (!empty($pkgs)) {
             foreach ($pkgs as $pkg) {
                 @list ($pkgId, $osGroupId) = explode(' ', $pkg);
@@ -59,7 +59,7 @@ switch (Utils::getHttpPostVar("act")) {
         }
         break;
     case "delete":
-        $id = Utils::getHttpPostVar("id");
+        $id = $html->getHttpPostVar("id");
         $cveTag = $pakiti->getManager("CveExceptionsManager")->getCveExceptionById($id);
         if ($cveTag != null) {
             $pakiti->getManager("CveExceptionsManager")->removeCveExceptionById($id);
@@ -76,7 +76,7 @@ $html->setTitle("CVE Exceptions");
 $html->setMenuActiveItem("exceptions.php");
 
 
-$selectedCveName = Utils::getHttpGetVar("cveName", null);
+$selectedCveName = $html->getHttpGetVar("cveName", null);
 
 $cveNames = $pakiti->getManager("CvesManager")->getCvesNames(true);
 $osGroups = $pakiti->getManager("OsGroupsManager")->getOsGroups();
