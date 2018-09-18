@@ -34,12 +34,12 @@ class UserDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(User &$user)
+    public function create(User $user)
     {
         $sql = "insert into User set
             uid='".$this->db->escape($user->getUid())."',
@@ -77,7 +77,7 @@ class UserDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    public function update(User &$user)
+    public function update(User $user)
     {
         $sql = "update User set 
             uid='".$this->db->escape($user->getUid())."',

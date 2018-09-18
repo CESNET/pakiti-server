@@ -35,7 +35,7 @@ class Source extends VdsSource
     private $_pakiti;
     private $_subSources;
 
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
         $this->_pakiti =& $pakiti;
         $this->_subSources = array();
@@ -70,7 +70,7 @@ class Source extends VdsSource
     public function getSubSourceById($id)
     {
         Utils::log(LOG_DEBUG, "Getting subsource by ID [id=$id]", __FILE__, __LINE__);
-        foreach ($this->_subSources as &$subSource) {
+        foreach ($this->_subSources as $subSource) {
             if ($subSource->getId() == $id) {
                 return $subSource;
             }
@@ -97,7 +97,7 @@ class Source extends VdsSource
 
                 # Get the filename and extension, filename represent the class name
                 $className = preg_replace('/.php$/i', '', $file);
-                eval("\$subSource = new $className(\$this->_pakiti);");
+                $subSource = new $className($this->_pakiti);
 
                 # Check if the module is already registered
                 if (($id = $this->_pakiti->getManager("DbManager")->queryToSingleValue("select id from VdsSubSource where type='".$this->_pakiti->getManager("DbManager")->escape($subSource->getType())."' and name='".$this->_pakiti->getManager("DbManager")->escape($subSource->getName())."'")) == null) {

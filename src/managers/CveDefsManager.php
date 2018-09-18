@@ -37,7 +37,7 @@ class CveDefsManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storeCveDef(CveDef &$cveDef)
+    public function storeCveDef(CveDef $cveDef)
     {
         Utils::log(LOG_DEBUG, "Storing the CveDef", __FILE__, __LINE__);
         if ($cveDef == null) {

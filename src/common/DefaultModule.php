@@ -34,7 +34,7 @@ class DefaultModule
 {
     private $_pakiti;
 
-    public function __construct(&$pakiti)
+    public function __construct($pakiti)
     {
         $this->_pakiti =& $pakiti;
     }

@@ -35,12 +35,12 @@ class CveExceptionDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(CveException &$exception)
+    public function create(CveException $exception)
     {
         $this->db->query("insert into `CveException` set
             pkgId='" . $this->db->escape($exception->getPkgId()) . "',
@@ -112,7 +112,7 @@ class CveExceptionDao
         return $id;
     }
 
-    public function delete(CveException &$exception)
+    public function delete(CveException $exception)
     {
         $this->db->query("delete from CveException
             where id=" . $this->db->escape($exception->getId()));

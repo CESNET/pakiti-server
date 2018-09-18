@@ -35,12 +35,12 @@ class OsDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(Os &$os)
+    public function create(Os $os)
     {
         $sql = "insert into Os set
             name='" . $this->db->escape($os->getName()) . "'";

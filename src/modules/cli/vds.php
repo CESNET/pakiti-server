@@ -65,7 +65,7 @@ switch ($cmd) {
     case "listSources":
         print "Registered VDS sources:\n";
         $sources = $vds->getSources();
-        foreach ($sources as &$source) {
+        foreach ($sources as $source) {
             print $source->getId()." ".$source->getName()."\n";
         }
         break;
@@ -81,7 +81,7 @@ switch ($cmd) {
         print "Registered VDS subsources for VDS source {$source->getName()}:\n";
         $subSources = $source->getSubSources();
         
-        foreach ($subSources as &$subSource) {
+        foreach ($subSources as $subSource) {
             print $subSource->getId()." ".$subSource->getName()."\n";
         }
         break;
@@ -95,7 +95,7 @@ switch ($cmd) {
 
         $source =& $vds->getSourceById($sourceId);
         $subSources = $source->getSubSources();
-        foreach ($subSources as &$subSource) {
+        foreach ($subSources as $subSource) {
             $subSourceDefs = $subSource->getSubSourceDefs();
             foreach ($subSourceDefs as $subSourceDef) {
                 print "SubSource: {$subSource->getName()} - Id: {$subSourceDef->getId()}, Name: {$subSourceDef->getName()}, URI: {$subSourceDef->getUri()}\n";

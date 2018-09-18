@@ -299,7 +299,7 @@ class VulnerabilitiesManager extends DefaultManager
         return $ver;
     }
 
-    public function storeVulnerabilities(&$vulnerabilities)
+    public function storeVulnerabilities($vulnerabilities)
     {
         return $this->getPakiti()->getDao("Vulnerability")->createMultiple($vulnerabilities);
     }

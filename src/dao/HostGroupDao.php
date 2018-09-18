@@ -35,12 +35,12 @@ class HostGroupDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(HostGroup &$hostGroup)
+    public function create(HostGroup $hostGroup)
     {
         $sql = "insert into HostGroup set
             name='".$this->db->escape($hostGroup->getName())."',
@@ -53,7 +53,7 @@ class HostGroupDao
         $hostGroup->setId($this->db->getLastInsertedId());
     }
 
-    public function update(HostGroup &$hostGroup)
+    public function update(HostGroup $hostGroup)
     {
         $sql = "update HostGroup set
             name='".$this->db->escape($hostGroup->getName())."',

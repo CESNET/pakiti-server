@@ -36,7 +36,7 @@ class ArchsManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storeArch(Arch &$arch)
+    public function storeArch(Arch $arch)
     {
         Utils::log(LOG_DEBUG, "Storing the arch", __FILE__, __LINE__);
         if ($arch == null) {
