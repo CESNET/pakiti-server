@@ -34,12 +34,12 @@ class DomainDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(Domain &$domain)
+    public function create(Domain $domain)
     {
         $this->db->query("insert into Domain set
             name='".$this->db->escape($domain->getName())."'");
@@ -83,14 +83,14 @@ class DomainDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    public function update(Domain &$domain)
+    public function update(Domain $domain)
     {
         $this->db->query("update Domain set
             name='".$this->db->escape($domain->getName())."
             where id=".$domain->getId());
     }
 
-    public function delete(Domain &$domain)
+    public function delete(Domain $domain)
     {
         $this->db->query("delete from Domain where id=".$domain->getId());
     }

@@ -114,7 +114,7 @@ class OvalLocal extends SubSource implements ISubSource
     }
 
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference
-    protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$oses, &$packages)
+    protected function processCriteriasWithReference($xpath, $criteriaElement, $res, $oses, $packages)
     {
         $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 
@@ -193,7 +193,7 @@ class OvalLocal extends SubSource implements ISubSource
         }
     }
 
-    protected function processCriterias(&$xpath, $criteriaElement, &$res, $oses, $packages)
+    protected function processCriterias($xpath, $criteriaElement, $res, $oses, $packages)
     {
         $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 

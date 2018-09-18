@@ -34,7 +34,7 @@ class StatDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
@@ -42,7 +42,7 @@ class StatDao
     /**
      * Stores the stat in the DB
      */
-    public function create(Stat &$stat)
+    public function create(Stat $stat)
     {
         $this->db->query("insert into Stat set
             name='".$this->db->escape($stat->getName())."',
@@ -69,7 +69,7 @@ class StatDao
     /**
      * Update the stat in the DB
      */
-    public function update(Stat &$stat)
+    public function update(Stat $stat)
     {
         $this->db->query("update Stat set value=".$this->db->escape($stat->getValue())."
             where name='".$this->db->escape($stat->getName())."'");

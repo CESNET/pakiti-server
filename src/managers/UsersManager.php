@@ -36,7 +36,7 @@ class UsersManager extends DefaultManager
      * Create if not exist, else update and set id
      * @return false if already exist
      */
-    public function storeUser(User &$user)
+    public function storeUser(User $user)
     {
         Utils::log(LOG_DEBUG, "Storing user", __FILE__, __LINE__);
         if ($user == null) {

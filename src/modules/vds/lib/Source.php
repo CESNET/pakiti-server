@@ -35,7 +35,7 @@ class Source extends VdsSource
     private $_pakiti;
     private $_subSources;
 
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
         $this->_pakiti =& $pakiti;
         $this->_subSources = array();
@@ -70,7 +70,7 @@ class Source extends VdsSource
     public function getSubSourceById($id)
     {
         Utils::log(LOG_DEBUG, "Getting subsource by ID [id=$id]", __FILE__, __LINE__);
-        foreach ($this->_subSources as &$subSource) {
+        foreach ($this->_subSources as $subSource) {
             if ($subSource->getId() == $id) {
                 return $subSource;
             }

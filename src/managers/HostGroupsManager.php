@@ -37,7 +37,7 @@ class HostGroupsManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storeHostGroup(HostGroup &$hostGroup)
+    public function storeHostGroup(HostGroup $hostGroup)
     {
         Utils::log(LOG_DEBUG, "Storing the hostGroup", __FILE__, __LINE__);
         if ($hostGroup == null) {
@@ -70,7 +70,7 @@ class HostGroupsManager extends DefaultManager
         return $this->getPakiti()->getDao("HostGroup")->getIdByName($name);
     }
 
-    public function getHostGroupsByHost(Host &$host)
+    public function getHostGroupsByHost(Host $host)
     {
         Utils::log(LOG_DEBUG, "Getting host groups by name [host={$host->getHostname()}]", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("HostGroup");

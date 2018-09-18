@@ -37,7 +37,7 @@ class HostsManager extends DefaultManager
      * Create if not exist, else update and set id
      * @return false if already exist
      */
-    public function storeHost(Host &$host)
+    public function storeHost(Host $host)
     {
         Utils::log(LOG_DEBUG, "Storing the host", __FILE__, __LINE__);
         if ($host == null) {

@@ -35,7 +35,7 @@ class PkgDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
@@ -43,7 +43,7 @@ class PkgDao
     /**
      * Stores the pkg in the DB
      */
-    public function create(Pkg &$pkg)
+    public function create(Pkg $pkg)
     {
         $this->db->query("insert into Pkg set
             name='" . $this->db->escape($pkg->getName()) . "',
@@ -144,7 +144,7 @@ class PkgDao
     /**
      * Update the pkg in the DB
      */
-    public function update(Pkg &$pkg)
+    public function update(Pkg $pkg)
     {
         $this->db->query("update Pkg set
             name='" . $this->db->escape($pkg->getName()) . "',

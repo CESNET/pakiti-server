@@ -36,7 +36,7 @@ class CvesManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storeCve(Cve &$cve)
+    public function storeCve(Cve $cve)
     {
         Utils::log(LOG_DEBUG, "Storing the Cve", __FILE__, __LINE__);
         if ($cve == null) {

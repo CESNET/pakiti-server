@@ -40,7 +40,7 @@ class CveSource extends Source implements ISource
     /**
      * Load all types of CVE sources
      */
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
         parent::__construct($pakiti);
 

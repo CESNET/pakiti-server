@@ -36,7 +36,7 @@ class CveTagsManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storeCveTag(CveTag &$cveTag)
+    public function storeCveTag(CveTag $cveTag)
     {
         Utils::log(LOG_DEBUG, "Storing cveTag " . $cveTag->getCveName(), __FILE__, __LINE__);
         if ($cveTag == null) {

@@ -34,7 +34,7 @@ class ArchDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
@@ -42,7 +42,7 @@ class ArchDao
     /**
      * Stores the arch in the DB
      */
-    public function create(Arch &$arch)
+    public function create(Arch $arch)
     {
         $this->db->query("insert into Arch set
             name='".$this->db->escape($arch->getName())."'");
@@ -90,7 +90,7 @@ class ArchDao
     /**
      * Update the arch in the DB
      */
-    public function update(Arch &$arch)
+    public function update(Arch $arch)
     {
         $this->db->query("update Arch set
             name='".$this->db->escape($arch->getName())."
@@ -100,7 +100,7 @@ class ArchDao
     /**
      * Delete the arch from the DB
      */
-    public function delete(Arch &$arch)
+    public function delete(Arch $arch)
     {
         $this->db->query("delete from Arch where id=".$this->db->escape($arch->getId()));
     }

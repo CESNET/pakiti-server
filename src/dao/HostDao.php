@@ -35,12 +35,12 @@ class HostDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(Host &$host)
+    public function create(Host $host)
     {
         if ($host == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
@@ -279,7 +279,7 @@ class HostDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    public function update(Host &$host)
+    public function update(Host $host)
     {
         if ($host == null || $host->getId() == -1) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);

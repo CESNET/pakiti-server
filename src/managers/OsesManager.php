@@ -36,7 +36,7 @@ class OsesManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storeOs(Os &$os)
+    public function storeOs(Os $os)
     {
         Utils::log(LOG_DEBUG, "Storing the os", __FILE__, __LINE__);
         if ($os == null) {
