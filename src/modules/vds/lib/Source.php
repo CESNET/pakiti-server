@@ -97,7 +97,7 @@ class Source extends VdsSource
 
                 # Get the filename and extension, filename represent the class name
                 $className = preg_replace('/.php$/i', '', $file);
-                eval("\$subSource = new $className(\$this->_pakiti);");
+                $subSource = new $className($this->_pakiti);
 
                 # Check if the module is already registered
                 if (($id = $this->_pakiti->getManager("DbManager")->queryToSingleValue("select id from VdsSubSource where type='".$this->_pakiti->getManager("DbManager")->escape($subSource->getType())."' and name='".$this->_pakiti->getManager("DbManager")->escape($subSource->getName())."'")) == null) {
