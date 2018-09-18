@@ -76,9 +76,8 @@ final class Pakiti
     public function getManager($name)
     {
         $propertyName = "_" . lcfirst($name);
-        $manager = $this->$propertyName; 
 
-        if ($manager == null) {
+        if (!isset($this->$propertyName)) {
             $this->$propertyName = new $name($this);
         }
         return $this->$propertyName;
