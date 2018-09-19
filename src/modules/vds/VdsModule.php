@@ -120,7 +120,7 @@ class VdsModule extends DefaultModule
                     # Get the filename and extension, filename represent the class name
                     $classname = preg_replace('/.php$/i', '', $file);
 
-                    eval("\$source = new $classname(\$this->getPakiti());");
+                    $source = new $classname($this->getPakiti());
 
                     # Register source if it was not registered before
                     if (!$this->isSourceRegistered($source)) {
