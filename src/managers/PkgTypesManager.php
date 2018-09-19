@@ -36,7 +36,7 @@ class PkgTypesManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storePkgType(PkgType &$pkgType)
+    public function storePkgType(PkgType $pkgType)
     {
         Utils::log(LOG_DEBUG, "Storing the pkgType", __FILE__, __LINE__);
         if ($pkgType == null) {

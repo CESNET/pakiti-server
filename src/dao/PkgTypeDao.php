@@ -34,12 +34,12 @@ class PkgTypeDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(PkgType &$pkgType)
+    public function create(PkgType $pkgType)
     {
         $sql = "insert into PkgType set
             name='" . $this->db->escape($pkgType->getName()) . "'";

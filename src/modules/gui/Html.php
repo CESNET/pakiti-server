@@ -51,7 +51,7 @@ class HTMLModule extends DefaultModule
 </body></html>
 ";
 
-    public function __construct(&$pakiti)
+    public function __construct($pakiti)
     {
         parent::__construct($pakiti);
 

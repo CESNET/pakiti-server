@@ -39,10 +39,10 @@ class SubSource
     private $_pakiti;
     private $_db;
 
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
-        $this->_pakiti =& $pakiti;
-        $this->_db =& $pakiti->getManager("DbManager");
+        $this->_pakiti = $pakiti;
+        $this->_db = $pakiti->getManager("DbManager");
         $this->_subSourceDefs = array();
     }
 
@@ -80,7 +80,7 @@ class SubSource
         return $this->_db->queryObjects($sql, "SubSourceDef");
     }
 
-    public function addSubSourceDef(ISubSourceDef &$subSourceDef)
+    public function addSubSourceDef(ISubSourceDef $subSourceDef)
     {
         # Check if the subSourceDef already exists
         if (($id = $this->getBy($subSourceDef->getName(), "name") == null)) {
@@ -106,7 +106,7 @@ class SubSource
         return md5($this->getName() . $string);
     }
 
-    public function removeSubSourceDef(ISubSourceDef &$subSourceDef)
+    public function removeSubSourceDef(ISubSourceDef $subSourceDef)
     {
         $this->_db->query("delete from VdsSubSourceDef where id=".$this->_db->escape($subSourceDef->getId()));
     }
@@ -114,7 +114,7 @@ class SubSource
     /**
      * Update the SubSourceDef in the DB
      */
-    public function updateSubSourceDef(ISubSourceDef &$subSourceDef)
+    public function updateSubSourceDef(ISubSourceDef $subSourceDef)
     {
         $this->_db->query("update VdsSubSourceDef set
             name='".$this->_db->escape($subSourceDef->getName()).",
@@ -125,14 +125,14 @@ class SubSource
             where id=".$this->_db->escape($subSourceDef->getId()));
     }
 
-    public function getLastSubSourceDefHash(ISubSourceDef &$subSourceDef)
+    public function getLastSubSourceDefHash(ISubSourceDef $subSourceDef)
     {
         $row = $this->_db->queryToSingleRow("select lastSubSourceDefHash from VdsSubSourceDef
             where id=" . $this->_db->escape($subSourceDef->getId()));
         return $row["lastSubSourceDefHash"];
     }
 
-    protected function isSubSourceDefContainsNewData(ISubSourceDef &$subSourceDef, $currentSubSourceHash)
+    protected function isSubSourceDefContainsNewData(ISubSourceDef $subSourceDef, $currentSubSourceHash)
     {
         $lastSubSourceHash = $this->getLastSubSourceDefHash($subSourceDef);
         if ($lastSubSourceHash != null && $lastSubSourceHash == $currentSubSourceHash) {
@@ -149,7 +149,7 @@ class SubSource
      * @param ISubSourceDef $subSourceDef
      * @param $subSourceDefHash
      */
-    public function updateLastSubSourceDefHash(ISubSourceDef &$subSourceDef, $subSourceDefHash)
+    public function updateLastSubSourceDefHash(ISubSourceDef $subSourceDef, $subSourceDefHash)
     {
         $this->_db->query("update VdsSubSourceDef set
             lastSubSourceDefHash='" . $this->_db->escape($subSourceDefHash) . "'
@@ -159,7 +159,7 @@ class SubSource
     /**
      * Enable the sourceDef
      */
-    public function enableSubSourceDef(ISubSourceDef &$subSourceDef)
+    public function enableSubSourceDef(ISubSourceDef $subSourceDef)
     {
         $this->_db->query("update VdsSubSourceDef set enabled=".Constants::$ENABLED." where id=".$this->_db->escape($subSourceDef->getId()));
     }
@@ -167,12 +167,12 @@ class SubSource
     /**
      * Disable the sourceDef
      */
-    public function disableSubSourceDef(ISubSourceDef &$subSourceDef)
+    public function disableSubSourceDef(ISubSourceDef $subSourceDef)
     {
         $this->_db->query("update VdsSubSourceDef set enabled=".Constants::$DISABLED." where id=".$this->_db->escape($subSourceDef->getId()));
     }
 
-    public function updateSubSourceLastChecked(ISubSourceDef &$subSourceDef)
+    public function updateSubSourceLastChecked(ISubSourceDef $subSourceDef)
     {
         $this->_db->query("update VdsSubSourceDef set lastChecked=now() where id=".$this->_db->escape($subSourceDef->getId()));
     }
@@ -180,7 +180,7 @@ class SubSource
     /**
      * Assign OS for the subSourceDef
      */
-    public function assignOsToSubSourceDef(ISubSourceDef &$subSourceDef, Os $os)
+    public function assignOsToSubSourceDef(ISubSourceDef $subSourceDef, Os $os)
     {
         $this->_db->query("insert into VdsSourceDefOs (vdsSubSourceId, osId) values (" . $this->_db->escape($subSourceDef->getId()) .",". $this->_db->escape($os->getId()) . ")");
     }
@@ -188,7 +188,7 @@ class SubSource
     /**
      * Remove link between OS and subSourceDef
      */
-    public function removeOsFromSubSourceDef(ISubSourceDef &$subSourceDef, Os $os)
+    public function removeOsFromSubSourceDef(ISubSourceDef $subSourceDef, Os $os)
     {
         $this->_db->query("delete from VdsSourceDefOs
             where vdsSubSourceId=" . $this->_db->escape($subSourceDef->getId()) . "

@@ -34,12 +34,12 @@ class ReportDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(Report &$report)
+    public function create(Report $report)
     {
         $this->db->query("insert into Report set
             processedOn='".$this->db->escape(date('Y-m-d H:i:s', $report->getProcessedOn()))."',
@@ -81,7 +81,7 @@ class ReportDao
         return $id;
     }
 
-    public function update(Report &$report)
+    public function update(Report $report)
     {
         $this->db->query("update Report set
             processedOn='".$this->db->escape(date('Y-m-d H:i:s', $report->getProcessedOn()))."',
@@ -98,7 +98,7 @@ class ReportDao
             where id=".$report->getId());
     }
 
-    public function delete(Report &$report)
+    public function delete(Report $report)
     {
         $this->db->query("delete from Report where id=".$report->getId());
     }

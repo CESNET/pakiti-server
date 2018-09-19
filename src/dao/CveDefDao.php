@@ -35,12 +35,12 @@ class CveDefDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(CveDef &$cveDef)
+    public function create(CveDef $cveDef)
     {
         $sql = "insert into CveDef set
             definitionId='".$this->db->escape($cveDef->getDefinitionId())."',

@@ -36,7 +36,7 @@ class RepositoriesSource extends Source implements ISource {
 	private static $NAME = "Repositories"; 
 	private $_pakiti;
   
-  public function __construct(Pakiti &$pakiti) {
+  public function __construct(Pakiti $pakiti) {
     parent::__construct($pakiti);
 
     $this->setName(RepositoriesSource::$NAME);

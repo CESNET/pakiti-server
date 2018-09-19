@@ -65,7 +65,7 @@ switch ($cmd) {
     case "listSources":
         print "Registered VDS sources:\n";
         $sources = $vds->getSources();
-        foreach ($sources as &$source) {
+        foreach ($sources as $source) {
             print $source->getId()." ".$source->getName()."\n";
         }
         break;
@@ -77,11 +77,11 @@ switch ($cmd) {
         }
         $sourceId = $opt["sourceId"];
         
-        $source =& $vds->getSourceById($sourceId);
+        $source = $vds->getSourceById($sourceId);
         print "Registered VDS subsources for VDS source {$source->getName()}:\n";
         $subSources = $source->getSubSources();
         
-        foreach ($subSources as &$subSource) {
+        foreach ($subSources as $subSource) {
             print $subSource->getId()." ".$subSource->getName()."\n";
         }
         break;
@@ -93,9 +93,9 @@ switch ($cmd) {
         }
         $sourceId = $opt["sourceId"];
 
-        $source =& $vds->getSourceById($sourceId);
+        $source = $vds->getSourceById($sourceId);
         $subSources = $source->getSubSources();
-        foreach ($subSources as &$subSource) {
+        foreach ($subSources as $subSource) {
             $subSourceDefs = $subSource->getSubSourceDefs();
             foreach ($subSourceDefs as $subSourceDef) {
                 print "SubSource: {$subSource->getName()} - Id: {$subSourceDef->getId()}, Name: {$subSourceDef->getName()}, URI: {$subSourceDef->getUri()}\n";
@@ -114,8 +114,8 @@ switch ($cmd) {
         $defName = $opt["defName"];
         $defUri = $opt["defUri"];
 
-        $source =& $vds->getSourceById($sourceId);
-        $subSource =& $source->getSubSourceById($subSourceId);
+        $source = $vds->getSourceById($sourceId);
+        $subSource = $source->getSubSourceById($subSourceId);
         
         print "Adding subsource definition for the subsource ".$subSource->getName()."\n";
 
@@ -136,8 +136,8 @@ switch ($cmd) {
         $sourceId = $opt["sourceId"];
         $subSourceId = $opt["subSourceId"];
 
-        $source =& $vds->getSourceById($sourceId);
-        $subSource =& $source->getSubSourceById($subSourceId);
+        $source = $vds->getSourceById($sourceId);
+        $subSource = $source->getSubSourceById($subSourceId);
 
         $subSourceDefId = $opt["subSourceDefId"];
 
@@ -154,7 +154,7 @@ switch ($cmd) {
             die("--sourceId must be specified\n");
         }
         $sourceId = $opt["sourceId"];
-        $source =& $vds->getSourceById($sourceId);
+        $source = $vds->getSourceById($sourceId);
         foreach ($source->getSubSources() as $subSource) {
             $subSource->retrieveDefinitions();
         }
