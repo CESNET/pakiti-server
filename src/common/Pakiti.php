@@ -75,15 +75,12 @@ final class Pakiti
      */
     public function getManager($name)
     {
-        # Get the first charactar and make it lowercase
-        $lcFirstChar = strtolower(substr($name, 0, 1));
-        $propertyName = $lcFirstChar . substr($name, 1);
-        eval("\$manager =& \$this->_$propertyName;");
-        
-        if ($manager == null) {
-            eval("\$manager = new $name(\$this);");
+        $propertyName = "_" . lcfirst($name);
+        if (!isset($this->$propertyName))
+        {
+            $this->$propertyName = new $name($this);
         }
-        return $manager;
+        return $this->$propertyName;
     }
 
     /**
@@ -91,7 +88,7 @@ final class Pakiti
      */
     public function getDao($className)
     {
-        eval("\$dao = new ${className}Dao(\$this->getManager(\"DbManager\"));");
-        return $dao;
+        $className .= "Dao"; 
+        return new $className($this->getManager("DbManager"));
     }
 }
