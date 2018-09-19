@@ -160,6 +160,7 @@ final class Config
     # You might want to call the recalculateOsGroupsMapping.php tool to adapt the DB on changes
     public static $OS_GROUPS_MAPPING = array(
         # Debian
+        "buster" => "Debian.* 10.*",
         "stretch" => "Debian.* 9.*",
         "jessie" => "Debian.* 8.*",
         "wheezy" => "Debian.* 7.*",
@@ -190,6 +191,7 @@ final class Config
         "Ubuntu 12.04 LTS" => "Ubuntu.* 12\.04.*",
         "Ubuntu 14.04 LTS" => "Ubuntu.* 14\.04.*",
         "Ubuntu 16.04 LTS" => "Ubuntu.* 16\.04.*",
+        "Ubuntu 18.04 LTS" => "Ubuntu.* 18\.04.*",
         # CentOS
         "CentOS 5" => "CentOS.* 5.*",
         "CentOS 6" => "CentOS.* 6.*",
