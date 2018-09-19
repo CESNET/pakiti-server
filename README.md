@@ -6,7 +6,7 @@ Pakiti uses the client/server model, with clients running on monitored machines 
 
 Pakiti has a web based GUI which provides a list of registered systems. The collected information help system administrators maintain proper patch management and quickly identify machine vulnerable to particular vulnerabilites. The information processed is also available via programmatic interfaces.
 
-The service is proven in production environements, monitoring thousands of machines of various configurations.
+The service is proven in production environments, monitoring thousands of machines of various configurations.
 
 * [Server installation](docs/installation.md)
 * [Server configuration](docs/configuration.md)
