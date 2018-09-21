@@ -34,7 +34,7 @@ class VdsSourceDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
@@ -42,7 +42,7 @@ class VdsSourceDao
     /**
      * Stores the vdsSource in the DB
      */
-    public function create(VdsSource &$vdsSource)
+    public function create(VdsSource $vdsSource)
     {
         $this->db->query("insert into VdsSource set
             name='".$this->db->escape($vdsSource->getName())."',
@@ -55,7 +55,7 @@ class VdsSourceDao
     /**
      * Get the vdsSource by its ID
      */
-    public function getById($id, Pakiti &$pakiti)
+    public function getById($id, Pakiti $pakiti)
     {
         if (!is_numeric($id)) {
             return null;
@@ -66,7 +66,7 @@ class VdsSourceDao
     /**
      * Get the vdsSource by its name
      */
-    public function getByName($name, Pakiti &$pakiti)
+    public function getByName($name, Pakiti $pakiti)
     {
         return $this->getBy($name, "name", $pakiti);
     }
@@ -99,7 +99,7 @@ class VdsSourceDao
     /**
      * Update the vdsSource in the DB
      */
-    public function update(VdsSource &$vdsSource)
+    public function update(VdsSource $vdsSource)
     {
         $this->db->query("update VdsSource set
             name='".$this->db->escape($vdsSource->getName()).",
@@ -110,7 +110,7 @@ class VdsSourceDao
     /**
      * Delete the vdsSource from the DB
      */
-    public function delete(VdsSource &$vdsSource)
+    public function delete(VdsSource $vdsSource)
     {
         $this->db->query("delete from VdsSource where id=".$this->db->escape($vdsSource->getId()));
     }
@@ -118,7 +118,7 @@ class VdsSourceDao
     /**
      * We can get the data by ID or name
      */
-    protected function getBy($value, $type, Pakiti &$pakiti)
+    protected function getBy($value, $type, Pakiti $pakiti)
     {
         $where = "";
         if ($type == "id") {

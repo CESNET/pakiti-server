@@ -36,7 +36,7 @@ class DomainsManager extends DefaultManager
     * Create if not exist, else set id
     * @return false if already exist
     */
-    public function storeDomain(Domain &$domain)
+    public function storeDomain(Domain $domain)
     {
         Utils::log(LOG_DEBUG, "Storing the domain", __FILE__, __LINE__);
         if ($domain == null) {

@@ -40,9 +40,9 @@ class Acl
         return $this->_pakiti;
     }
 
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
-        $this->_pakiti = &$pakiti;
+        $this->_pakiti = $pakiti;
         if (Config::$AUTHZ_MODE != Constants::$AUTHZ_MODE_NONE) {
 
             # Get data from env variables

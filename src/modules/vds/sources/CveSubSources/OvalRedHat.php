@@ -136,7 +136,7 @@ class OvalRedHat extends SubSource implements ISubSource
     /**
      * Get the operator from the XML element: AND/OR
      */
-    protected function getOperator(&$xElem)
+    protected function getOperator($xElem)
     {
         if ($xElem->item(0)->getAttribute('operator') == "AND") {
             return "and";
@@ -150,7 +150,7 @@ class OvalRedHat extends SubSource implements ISubSource
     /**
      * Extracts the RedHat release version (3, 4, 5, 6, ...)
      */
-    protected function getOsVersion(&$xElem)
+    protected function getOsVersion($xElem)
     {
         $rawOsVersion = $xElem->getAttribute('comment');
         # Parse the OS version from the string 'Red Hat Enterprise Linux 5 is installed'
@@ -165,7 +165,7 @@ class OvalRedHat extends SubSource implements ISubSource
      * Process list of the packages for each OS version.
      * Returns an array [osVersion] -> [pkgName => pkgVersion]*
      */
-    protected function processPkgsForOs(&$xElem)
+    protected function processPkgsForOs($xElem)
     {
         # Get the OS version from the childElement
         $childElement = $this->_xpath->query("./def:criterion", $xElem);
@@ -191,7 +191,7 @@ class OvalRedHat extends SubSource implements ISubSource
     }
 
     # Process each criteria, this function must be duplicated because PHP removed call by reference. processCriteriasWithReference requires os and package to be passed as a reference
-    protected function processCriteriasWithReference(&$xpath, $criteriaElement, &$res, &$os, &$package)
+    protected function processCriteriasWithReference($xpath, $criteriaElement, &$res, &$os, &$package)
     {
         $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 
@@ -260,7 +260,7 @@ class OvalRedHat extends SubSource implements ISubSource
         }
     }
 
-    protected function processCriterias(&$xpath, $criteriaElement, &$res, $os, $package)
+    protected function processCriterias($xpath, $criteriaElement, &$res, $os, $package)
     {
         $operator = $criteriaElement->attributes->getNamedItem('operator')->nodeValue;
 

@@ -78,7 +78,7 @@ class ReportsManager extends DefaultManager
     /*
      * Stores the report in the DB
      */
-    public function createReport(Report &$report, Host &$host)
+    public function createReport(Report $report, Host $host)
     {
         if ($host == null || $host->getId() == -1) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
@@ -116,7 +116,7 @@ class ReportsManager extends DefaultManager
     /**
      * Retrieve both hashes for the report header and list of pkgs
      */
-    public function getLastReportHashes(Host &$host)
+    public function getLastReportHashes(Host $host)
     {
         if ($host == null || $host->getId() == -1) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);

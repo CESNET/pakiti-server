@@ -34,9 +34,9 @@ class DefaultManager
 {
     private $_pakiti;
 
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
-        $this->_pakiti =& $pakiti;
+        $this->_pakiti = $pakiti;
     }
 
     public function getPakiti()

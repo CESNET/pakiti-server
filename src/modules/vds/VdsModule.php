@@ -38,7 +38,7 @@ class VdsModule extends DefaultModule
     private $_sources;
     private $_pakiti;
 
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
         parent::__construct($pakiti);
         $this->_pakiti = $pakiti;
@@ -53,7 +53,7 @@ class VdsModule extends DefaultModule
     public function synchronize()
     {
         Utils::log(LOG_DEBUG, "Synchronizing VDS", __FILE__, __LINE__);
-        foreach ($this->_sources as &$source) {
+        foreach ($this->_sources as $source) {
             $vulnerabilities = $source->retrieveVulnerabilities();
             if ($vulnerabilities) {
                 $this->_pakiti->getManager("VulnerabilitiesManager")->storeVulnerabilities($vulnerabilities);
@@ -77,7 +77,7 @@ class VdsModule extends DefaultModule
     {
         Utils::log(LOG_DEBUG, "Getting VDS source by id [id=$id]", __FILE__, __LINE__);
         # We have to provide also Pakiti object, because constructor of the VDS source requires id
-        foreach ($this->_sources as &$source) {
+        foreach ($this->_sources as $source) {
             if ($source->getId() == $id) {
                 return $source;
             }
@@ -143,7 +143,7 @@ class VdsModule extends DefaultModule
      * Register the VDS source, but firstly check if the source hasn't been already registered. 
      * Enclose the operation with the transaction.
      */
-    protected function registerSource(ISource &$source)
+    protected function registerSource(ISource $source)
     {
         if ($source == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
@@ -164,7 +164,7 @@ class VdsModule extends DefaultModule
     /**
      * Check if the source has been registered.
      */
-    protected function isSourceRegistered(ISource &$source)
+    protected function isSourceRegistered(ISource $source)
     {
         if ($source == null) {
             Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);

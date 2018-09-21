@@ -48,7 +48,7 @@ interface ISubSource
 
     public function getSubSourceDefs();
 
-    public function addSubSourceDef(ISubSourceDef &$subSourceDef);
+    public function addSubSourceDef(ISubSourceDef $subSourceDef);
 
-    public function removeSubSourceDef(ISubSourceDef &$subSourceDef);
+    public function removeSubSourceDef(ISubSourceDef $subSourceDef);
 }

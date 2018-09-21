@@ -35,12 +35,12 @@ class CveDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(Cve &$cve)
+    public function create(Cve $cve)
     {
         $sql = "insert into Cve set
             name='" . $this->db->escape($cve->getName()) . "'";

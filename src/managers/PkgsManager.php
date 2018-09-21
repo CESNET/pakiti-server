@@ -37,7 +37,7 @@ class PkgsManager extends DefaultManager
      * Create if not exist, else set id
      * @return false if already exist
      */
-    public function storePkg(Pkg &$pkg)
+    public function storePkg(Pkg $pkg)
     {
         Utils::log(LOG_DEBUG, "Storing the pkg", __FILE__, __LINE__);
         if ($pkg == null) {

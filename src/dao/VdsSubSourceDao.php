@@ -34,14 +34,14 @@ class VdsSubSourceDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager) {
+    public function __construct(DbManager $dbManager) {
         $this->db = $dbManager;
     }
 
     /**
      * Stores the vdsSubSource in the DB
      */
-    public function create(VdsSubSourceDao &$vdsSubSource) {
+    public function create(VdsSubSourceDao $vdsSubSource) {
         $this->db->query("insert into VdsSubSource set
             name='".$this->db->escape($vdsSubSource->getName())."',
             type='".$this->db->escape($vdsSubSource->getType())."',

@@ -35,12 +35,12 @@ class OsGroupDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(OsGroup &$osGroup)
+    public function create(OsGroup $osGroup)
     {
         $sql = "insert into OsGroup set
             name='" . $this->db->escape($osGroup->getName()) . "'";

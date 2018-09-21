@@ -51,7 +51,7 @@ class FeederModule extends DefaultModule
     private $_report_tag;
     private $_report_pkgs;
 
-    public function __construct(Pakiti &$pakiti)
+    public function __construct(Pakiti $pakiti)
     {
         parent::__construct($pakiti);
 
@@ -633,7 +633,7 @@ class FeederModule extends DefaultModule
         }
 
         $newPkgs = array();
-        foreach ($this->_pkgs as &$pkg) {
+        foreach ($this->_pkgs as $pkg) {
             # Check if pkg is already in installed pkgs
             if (array_key_exists($pkg->getName(), $installedPkgsArray)) {
                 foreach ($installedPkgsArray[$pkg->getName()] as $key => $installedPkg) {
@@ -778,7 +778,7 @@ class FeederModule extends DefaultModule
                 }
 
                 $found = false;
-                foreach (Config::$IGNORE_PACKAGES_PATTERNS as &$pkgNamePattern) {
+                foreach (Config::$IGNORE_PACKAGES_PATTERNS as $pkgNamePattern) {
                     if (preg_match("/$pkgNamePattern/", $pkgName) == 1) {
                         $found = true;
                         break;
@@ -930,7 +930,7 @@ class FeederModule extends DefaultModule
     protected function array_compare_recursive($array1, $array2)
     {
         $diff = array();
-        foreach ($array1 as $key => &$value) {
+        foreach ($array1 as $key => $value) {
             if (!array_key_exists($key, $array2)) {
                 $diff[$key] = $value;
             } elseif (is_array($value)) {

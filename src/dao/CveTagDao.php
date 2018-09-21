@@ -34,12 +34,12 @@ class CveTagDao
 {
     private $db;
 
-    public function __construct(DbManager &$dbManager)
+    public function __construct(DbManager $dbManager)
     {
         $this->db = $dbManager;
     }
 
-    public function create(CveTag &$cveTag)
+    public function create(CveTag $cveTag)
     {
         $sql = "insert into CveTag set
             cveName='" . $this->db->escape($cveTag->getCveName()) . "',
@@ -55,7 +55,7 @@ class CveTagDao
         $cveTag->setId($this->db->getLastInsertedId());
     }
 
-    public function update(CveTag &$cveTag)
+    public function update(CveTag $cveTag)
     {
         $sql = "update CveTag set
             cveName='" . $this->db->escape($cveTag->getCveName()) . "',
