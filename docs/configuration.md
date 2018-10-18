@@ -6,7 +6,7 @@
 Add vds definition is necessary in order to calculating vulnerable pkgs. VDS can be added in VDS page via gui.
 
 * Debian DSA:
-    * svn://anonscm.debian.org/svn/secure-testing/data/DSA/
+    * https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list
 * RedHat OVAL:
     * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2017.xml
     * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2016.xml
@@ -25,9 +25,9 @@ Add vds definition is necessary in order to calculating vulnerable pkgs. VDS can
     * http://ftp.suse.com/pub/projects/security/oval/opensuse.leap.42.3-patch.xml
     * http://ftp.suse.com/pub/projects/security/oval/opensuse.leap.42.2-patch.xml
 * Ubuntu OVAL:
-    * https://people.canonical.com/~ubuntu-security/oval/com.ubuntu.precise.cve.oval.xml
     * https://people.canonical.com/~ubuntu-security/oval/com.ubuntu.trusty.cve.oval.xml
     * https://people.canonical.com/~ubuntu-security/oval/com.ubuntu.xenial.cve.oval.xml
+    * https://people.canonical.com/~ubuntu-security/oval/com.ubuntu.bionic.cve.oval.xml
 
 After adding VDS definition you have to use cli for synchronize and calculate vulnerabilities.
 
