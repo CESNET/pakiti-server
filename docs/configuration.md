@@ -160,12 +160,18 @@ When using cli module, you must set the --config option to the correct Config.ph
 ## Logging
 Pakiti logs under the LOCAL0 facility, which usualy ends up in a single log file. The server produces a large amount of records on data it processes, which may be desirable to log separately. The following snippet can help configure rsyslog to split the logging based on the priorities:
 ```
-# everything goes to pakiti.log
-local0.*                        /var/log/pakiti.log
-# WARN's (and higher) will get logged to system logs, too
-if (prifilt("local0.warn")) then {
-    continue
-} else {
-    stop
+if $syslogfacility-text == 'local0' then {
+
+    if $programname startswith 'Pakiti' then {
+        # every Pakiti log goes to pakiti.log
+        /var/log/pakiti.log
+    
+        # only  WARN's (and above) go to system logs, the rest is discarded
+        if not prifilt("local0.warn") then {
+            stop
+        }
+
+    }
+
 }
 ```
