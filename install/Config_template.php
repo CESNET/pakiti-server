@@ -64,7 +64,6 @@ final class Config
     # Packages names which represents kernels
     public static $KERNEL_PACKAGES_NAMES = array(
         "kernel",
-        "kernel-devel",
         "kernel-smp",
         "kernel-smp-devel",
         "kernel-xenU",
