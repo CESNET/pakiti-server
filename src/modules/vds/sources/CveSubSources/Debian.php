@@ -21,7 +21,7 @@ class Debian extends SubSource implements ISubSource
             $num++;
 
             /* Record header */
-            $ret = preg_match('/^\[.+\] (DSA-\S+) (.*)$/', $line, $matches);
+            $ret = preg_match('/^\[.+\] (D[SL]A-\S+) (.*)$/', $line, $matches);
             if ($ret === 1) {
                 if (!empty($rec)) {
                     if (array_key_exists('cves', $rec)) {
