@@ -3,19 +3,20 @@
 
 require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
-$shortopts = "hu:r";
+$shortopts = "hu:rv";
 
 # N.B. we don't handle the config parameter here but in an included file
 $longopts = array(
     "config:",
     "help",
     "url:",
-    "remove"
+    "remove",
+    "verbose",
 );
 
 function usage()
 {
-    die("Usage: importCvesTags [--config <pakiti config>] (-u <url> | --url=<url>) [-r | --remove]\n");
+    die("Usage: importCvesTags [--config <pakiti config>] (-u <url> | --url=<url>) [-r | --remove] [-v | --verbose]\n");
 }
 
 $opt = getopt($shortopts, $longopts);
@@ -40,17 +41,21 @@ if ($url == null) {
 
     $cveTagsIds = array();
     foreach ($xml->cveTag as $cveTagNode) {
-        if (in_array($cveTagNode->cveName, $cveNames)) {
-            $cveTag = new CveTag();
-            $cveTag->setCveName($cveTagNode->cveName->__toString());
-            $cveTag->setTagName($cveTagNode->tagName->__toString());
-            $cveTag->setReason($cveTagNode->reason->__toString());
-            $cveTag->setInfoUrl($cveTagNode->infoUrl->__toString());
-            $cveTag->setEnabled($cveTagNode->enabled->__toString());
-            $cveTag->setModifier($cveTagNode->modifier->__toString());
-            $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
-            array_push($cveTagsIds, $cveTag->getId());
+        if (! in_array($cveTagNode->cveName, $cveNames)) {
+            if (isset($opt["v"]) || isset($opt["verbose"])) {
+                fwrite(STDERR, "CVE " . $cveTagNode->cveName ." is not defined here\n");
+            }
+            continue;
         }
+        $cveTag = new CveTag();
+        $cveTag->setCveName($cveTagNode->cveName->__toString());
+        $cveTag->setTagName($cveTagNode->tagName->__toString());
+        $cveTag->setReason($cveTagNode->reason->__toString());
+        $cveTag->setInfoUrl($cveTagNode->infoUrl->__toString());
+        $cveTag->setEnabled($cveTagNode->enabled->__toString());
+        $cveTag->setModifier($cveTagNode->modifier->__toString());
+        $pakiti->getManager("CveTagsManager")->storeCveTag($cveTag);
+        array_push($cveTagsIds, $cveTag->getId());
     }
 
     if (isset($opt["r"]) || isset($opt["remove"])) {
