@@ -5,10 +5,12 @@ require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
 $shortopts = "hf:t:";
 
+# N.B. we don't handle the config parameter here but in an included file
 $longopts = array(
     "help",
     "from:",
-    "to:"
+    "to:",
+    "config:",
 );
 
 function usage()
@@ -17,6 +19,7 @@ function usage()
         -h, --help \t Display this help and exit.
         -f, --from \t The start date(Y-m-d) of the statistics (incl.)
         -t, --to \t The last date(Y-m-d) of the statistics (incl.)
+        --config \t Pakiti configuration to use
         \n");
 }
 

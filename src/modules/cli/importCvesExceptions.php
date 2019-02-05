@@ -5,15 +5,17 @@ require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 
 $shortopts = "hu:r";
 
+# N.B. we don't handle the config parameter here but in an included file
 $longopts = array(
     "help",
     "url:",
-    "remove"
+    "remove",
+    "config:",
 );
 
 function usage()
 {
-    die("Usage: importCvesExceptions (-u <url> | --url=<url>) [-r | --remove]\n");
+    die("Usage: importCvesExceptions (-u <url> | --url=<url>) [-r | --remove] [--config <pakiti config>]\n");
 }
 
 $opt = getopt($shortopts, $longopts);
