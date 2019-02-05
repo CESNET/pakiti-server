@@ -8,21 +8,15 @@ require_once(realpath(dirname(__FILE__)) . '/../../lib/SubSource.php');
  */
 class Debian extends SubSource implements ISubSource
 {
-    protected static $NAME = "Debian";
-    protected static $TYPE = "DSA";
+    protected static $NAME = "Debian Advisories";
+    protected static $TYPE = "Debian";
 
-    public function processDSA($dsa)
+    private function processAdvisories($advisories, $subSourceDef_id)
     {
-        $currentSubSourceHash = $this->computeHash($dsa);
         $num = 0;
         $defs = array();
 
-        if (! $this->isSubSourceDefContainsNewData($this->getSubSourceDefs()[0], $currentSubSourceHash)) {
-            $this->updateSubSourceLastChecked($this->getSubSourceDefs()[0]);
-            return $defs;
-        }
-
-        $line = strtok($dsa, "\r\n");
+        $line = strtok($advisories, "\r\n");
         while ($line !== false) {
             $num++;
 
@@ -36,7 +30,7 @@ class Debian extends SubSource implements ISubSource
                 }
 
                 $rec = array();
-                $rec['subSourceDefId'] = $this->getSubSourceDefs()[0]->getId(); // Only one
+                $rec['subSourceDefId'] = $subSourceDef_id;
                 $rec['definition_id'] = $matches[1];
                 $rec['severity'] = "n/a";
                 $rec['title'] = $matches[1] . ": " . $matches[2];
@@ -122,9 +116,6 @@ class Debian extends SubSource implements ISubSource
             }
         }
 
-        $this->updateLastSubSourceDefHash($this->getSubSourceDefs()[0], $currentSubSourceHash);
-        $this->updateSubSourceLastChecked($this->getSubSourceDefs()[0]);
-
         return $defs;
     }
 
@@ -134,13 +125,29 @@ class Debian extends SubSource implements ISubSource
         if (empty($this->getSubSourceDefs()))
             return array();
 
-        $dsa = file_get_contents($this->getSubSourceDefs()[0]->getUri());
-        if ($dsa === False) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("An error occurred while trying to retrieve Debian DSA (" .
-                file_get_contents($this->getSubSourceDefs()[0]->getUri()) . ")");
+        $definitions = array();
+        foreach ($this->getSubSourceDefs() as $subSourceDef) {
+            $advisories = file_get_contents($subSourceDef->getUri());
+            if ($advisories === False) {
+                Utils::log(LOG_ERR, "Error reading definitions for %s", $subSourceDef->getUri());
+                continue;
+            }
+
+            $currentSubSourceHash = $this->computeHash($advisories);
+            if (! $this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
+                $this->updateSubSourceLastChecked($subSourceDef);
+                continue;
+            }
+
+            $defs = $this->processAdvisories($advisories, $subSourceDef->getId());
+            if ($defs) {
+                $definitions = array_merge($definitions, $defs);
+
+                $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
+                $this->updateSubSourceLastChecked($subSourceDef);
+            }
         }
 
-        return ($this->processDSA($dsa));
+        return ($definitions);
     }
 }
