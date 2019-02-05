@@ -98,6 +98,6 @@ class Acl
             return true;
         }
 
-        return in_array($source, ["hosts", "host", "groups"]);
+        return in_array($source, ["hosts", "host", "groups", "cve"]);
     }
 }
