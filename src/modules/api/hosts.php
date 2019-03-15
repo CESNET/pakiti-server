@@ -23,7 +23,7 @@ $hosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, $_cve
 
 $out = fopen('php://output', 'w');
 
-$values = array("hostname", "hostGroup", "os", "kernel", "arch", "cve", "tag");
+$values = array('CVE_Tag', "Country", "ROC", "Site_Name", "Hostname", "Host_Architecture", "Host_OS", "CVE_Name", "CSIRT_Mails");
 fputcsv($out, $values);
 
 foreach ($hosts as $host) {
@@ -40,13 +40,15 @@ foreach ($hosts as $host) {
                     continue;
                 }
                 $values = array();
-                $values[] = $host->getHostName();
-                $values[] = $hostGroup->getName();
-                $values[] = $host->getOsName();
-                $values[] = $host->getKernel();
-                $values[] = $host->getArchName();
-                $values[] = $cveName;
                 $values[] = $cveTag->getTagName();
+                $values[] = "";
+                $values[] = "";
+                $values[] = $hostGroup->getName();
+                $values[] = $host->getHostName();
+                $values[] = $host->getArchName();
+                $values[] = $host->getOsName();
+                $values[] = $cveName;
+                $values[] = "";
                 fputcsv($out, $values);
             }
         }
