@@ -110,4 +110,10 @@ class HostGroupDao
         $sql = "delete from HostHostGroup where hostId = '".$this->db->escape($hostId)."'";
         $this->db->query($sql);
     }
+
+    public function getUsersAssignedToHostGroup($hostGroupId)
+    {
+	$sql = "select userId from UserHostGroup where hostGroupId = '".$this->db->escape($hostGroupId)."'";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
 }

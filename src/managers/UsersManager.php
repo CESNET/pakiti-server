@@ -106,4 +106,11 @@ class UsersManager extends DefaultManager
         $dao = $this->getPakiti()->getDao("User");
         return $dao->unassignHostGroupToUser($userId, $hostGroupId);
     }
+
+    public function getHostGroupsAssignedToUser($userId)
+    {
+	Utils::log(LOG_DEBUG, "Get host groups assigned to user[$userId]", __FILE__, __LINE__);
+	$dao = $this->getPakiti()->getDao("User");
+	return $dao->getHostGroupsAssignedToUser($userId);
+    }
 }
