@@ -21,7 +21,7 @@ $longopts = array(
 
 function usage()
 {
-    die("Usage: vds [-h|--help] [-c listSources|listSubSources|listSubSrouceDefs|addSubSourceDef|removeSubSourceDef|retrieveDefinitions|assignOsToSubSourceDef|synchronize] --sourceId [sourceId] --subSourceId [subSourceId] --subSourceDefId [subSourceDefId] --defName [definition name] --defUri [definition uri] --osId [osId]\n");
+    die("Usage: vds [-h|--help] [-c listSources|listSubSources|listSubSourceDefs|addSubSourceDef|removeSubSourceDef|retrieveDefinitions|assignOsToSubSourceDef|synchronize] --sourceId [sourceId] --subSourceId [subSourceId] --subSourceDefId [subSourceDefId] --defName [definition name] --defUri [definition uri] --osId [osId]\n");
 }
 
 $opt = getopt($shortopts, $longopts);
