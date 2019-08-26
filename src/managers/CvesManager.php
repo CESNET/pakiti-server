@@ -66,4 +66,22 @@ class CvesManager extends DefaultManager
         $dao = $this->getPakiti()->getDao("Cve");
         return $dao->getNames($used);
     }
+
+    public function getCvesNamesForHosts($pageSize = -1, $pageNum = -1, $tag = null, $hostGroupId = -1, $activity = null)
+    {
+        $dao = $this->getPakiti()->getDao("Cve");
+        return $dao->getNamesForHosts($pageSize, $pageNum, $tag, $hostGroupId, $activity);
+    }
+
+    public function getSubSourceDefNames($cveName)
+    {
+        $dao = $this->getPakiti()->getDao("VdsSubSourceDef");
+        return $dao->getNamesByCveName($cveName);
+    }
+
+    public function countCves($vdsSubSourceDef_id)
+    {
+        $dao = $this->getPakiti()->getDao("Cve");
+        return $dao->countCves($vdsSubSourceDef_id);
+    }
 }

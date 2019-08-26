@@ -137,4 +137,91 @@ class CveDao
         $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
         return $this->db->queryToSingleValueMultiRow($sql);
     }
+
+    /* A generalized version of getNamesForHost() and comp.; lists CVEs assigned at least to one host. */
+    /* A lot of cut&paste from getHostsIds() */
+    public function getNamesForHosts($pageSize = -1, $pageNum = -1, $tag = null, $hostGroupId = -1, $activity = null)
+    {
+        $select = "distinct(Cve.name)";
+        $from = "Cve";
+        $join[] = "inner join CveCveDef on Cve.id = CveCveDef.cveId";
+        $join[] = "inner join PkgCveDef on CveCveDef.cveDefId = PkgCveDef.cveDefId";
+        $join[] = "inner join OsOsGroup on PkgCveDef.osGroupId = OsOsGroup.osGroupId";
+        $join[] = "inner join InstalledPkg on PkgCveDef.pkgId = InstalledPkg.pkgId";
+        $join[] = "inner join Host on InstalledPkg.hostId = Host.id";
+        $join[] = "left join CveException on (Cve.name = CveException.cveName and PkgCveDef.pkgId = CveException.pkgId and PkgCveDef.osGroupId = CveException.osGroupId)";
+        $where[] = "CveException.id IS NULL";
+        $where[] = "Host.osId = OsOsGroup.osId";
+        $limit = null;
+        $offset = null;
+        $order = "Cve.name DESC";
+
+        if ($tag != null) {
+            if ($tag === true) {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1')";
+            } else {
+                $join[] = "inner join CveTag on (Cve.name = CveTag.cveName and CveTag.enabled = '1' and CveTag.tagName = '" . $this->db->escape($tag) . "')";
+            }
+        }
+
+        if ($hostGroupId != -1) {
+            $join[] = "inner join HostHostGroup on HostHostGroup.hostId = Host.id";
+            $where[] = "HostHostGroup.hostGroupId = '".$this->db->escape($hostGroupId)."'";
+        }
+
+        if ($activity != null) {
+            $join[] = "left join Report on Host.lastReportId = Report.id";
+            if (preg_match('/^(\+|-|)(\d+)(.|)$/', trim($activity), $matches) === 1) {
+                switch ($matches[1]) {
+                    case "-":
+                        $operator = "<";
+                        break;
+                    default:
+                        $operator = ">";
+                        break;
+                }
+                $number = $matches[2];
+                switch ($matches[3]) {
+                    case "s":
+                        $interval = "second";
+                        break;
+                    case "m":
+                        $interval = "minute";
+                        break;
+                    case "h":
+                        $interval = "hour";
+                        break;
+                    case "w":
+                        $interval = "week";
+                        break;
+                    case "y":
+                        $interval = "year";
+                        break;
+                    default:
+                        $interval = "day";
+                        break;
+                }
+                $where[] = "Report.receivedOn ".$operator." date_sub(now(), interval ".$number." ".$interval.")";
+            }
+        }
+
+        if ($pageSize != -1 && $pageNum != -1) {
+            $limit = $pageSize;
+            $offset = $pageSize * $pageNum;
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
+
+    public function countCves($vdsSubSourceDef_id)
+    {
+        $select = "count(distinct(Cve.id))";
+        $from = "Cve";
+        $join[] = "inner join CveCveDef on Cve.id = CveCveDef.cveId";
+        $join[] = "inner join CveDef on (CveCveDef.cveDefId = CveDef.id and CveDef.vdsSubSourceDefId = " . $this->db->escape($vdsSubSourceDef_id) . ")";
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join);
+        return $this->db->queryToSingleValue($sql);
+    }
 }
