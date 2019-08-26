@@ -75,6 +75,7 @@ $sources = $vds->getSources();
             <th>SubSource</th>
             <th>Name</th>
             <th>URI</th>
+            <th>#CVEs</th>
             <th>Last check</th>
             <th></th>
         </tr>
@@ -88,6 +89,7 @@ $sources = $vds->getSources();
                         <td><?php echo $subSource->getName(); ?></td>
                         <td><?php echo $subSourceDef->getName(); ?></td>
                         <td><?php echo $subSourceDef->getUri(); ?></td>
+                        <td><?php echo $html->getPakiti()->getManager("CvesManager")->countCves($subSourceDef->getId());?></td>
                         <td><?php echo $subSourceDef->getLastChecked(); ?></td>
                         <td>
                             <button type="button" class="btn btn-xs btn-danger"
