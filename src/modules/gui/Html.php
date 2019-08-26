@@ -183,6 +183,9 @@ class HTMLModule extends DefaultModule
         if ($this->permission("hosts")) {
             $menu["hosts.php"] = "Hosts";
         }
+        if ($this->permission("cve")) {
+            $menu["vulnerabilities.php"] = "Vulnerabilities";
+        }
         if ($this->permission("groups")) {
             $menu["groups.php"] = "Host groups";
         }
