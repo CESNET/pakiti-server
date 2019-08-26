@@ -110,13 +110,15 @@ class CveDao
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
-    public function getNames($used = null)
+    public function getNames($used = null, $pageSize = -1, $pageNum = -1)
     {
         $select = "distinct(Cve.name)";
         $from = "Cve";
         $join = null;
         $where = null;
         $order = "Cve.name DESC";
+        $limit = null;
+        $offset = null;
 
         # cveDef
         $join[] = "inner join CveCveDef on Cve.id = CveCveDef.cveId";
@@ -127,7 +129,12 @@ class CveDao
             }
         }
 
-        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order);
+        if ($pageSize != -1 && $pageNum != -1) {
+            $limit = $pageSize;
+            $offset = $pageSize * $pageNum;
+        }
+
+        $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 }
