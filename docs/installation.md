@@ -2,7 +2,7 @@
 
 #### Install dependencies
     apt-get update
-    apt-get install apache2 php php-mysql php-curl
+    apt-get install apache2 php php-mysql php-curl php-dom
     apt-get install mysql-server
     apt-get install curl subversion
 
