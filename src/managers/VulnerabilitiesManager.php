@@ -276,4 +276,26 @@ class VulnerabilitiesManager extends DefaultManager
     {
         return $this->getPakiti()->getDao("Vulnerability")->createMultiple($vulnerabilities);
     }
+
+    public function updateVulnerabilities($vulnerabilities)
+    {
+        $dbManager = $this->getPakiti()->getManager("DbManager");
+
+        $cveDefIds = array();
+        foreach ($vulnerabilities as $vuln) {
+            $cveDefId = $vuln->getCveDefId();
+            if (!in_array($cveDefId, $cveDefIds))
+                array_push($cveDefIds, $cveDefId);
+        }
+
+        $dbManager->begin();
+        try {
+            $this->getPakiti()->getDao("Vulnerability")->delete_with_cveDefId($cveDefIds);
+            $this->getPakiti()->getDao("Vulnerability")->createMultiple($vulnerabilities);
+        } catch (Exception $e) {
+            $dbManager->rollback();
+            throw $e;
+        }
+        $dbManager->commit();
+    }
 }

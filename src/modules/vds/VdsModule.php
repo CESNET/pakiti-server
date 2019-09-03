@@ -29,7 +29,7 @@ class VdsModule extends DefaultModule
         foreach ($this->_sources as $source) {
             $vulnerabilities = $source->retrieveVulnerabilities();
             if ($vulnerabilities) {
-                $this->_pakiti->getManager("VulnerabilitiesManager")->storeVulnerabilities($vulnerabilities);
+                $this->_pakiti->getManager("VulnerabilitiesManager")->updateVulnerabilities($vulnerabilities);
             }
         }
     }
