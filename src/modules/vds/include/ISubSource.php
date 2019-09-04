@@ -6,10 +6,10 @@
 interface ISubSource
 {
     /**
-     * Get the definitions from the subsource.
+     * Get the definitions from the subsource and store them
      * Param: array of objects SubSourceDef
      */
-    public function retrieveDefinitions();
+    public function retrieveVulnerabilities();
 
     public function getName();
 
@@ -24,4 +24,6 @@ interface ISubSource
     public function addSubSourceDef(ISubSourceDef $subSourceDef);
 
     public function removeSubSourceDef(ISubSourceDef $subSourceDef);
+
+    public function processAdvisories($contents, $subSourceDef_id);
 }

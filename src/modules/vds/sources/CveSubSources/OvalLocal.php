@@ -10,79 +10,66 @@ class OvalLocal extends SubSource implements ISubSource
 {
     protected static $NAME = "Local OVAL";
     protected static $TYPE = "Local";
+    private $_xpath;
 
-    public function retrieveDefinitions()
+    public function processAdvisories($contents, $subSourceDef_id)
     {
-        Utils::log(LOG_DEBUG, "Retreiving definitions from the ".OvalLocal::getName()." OVAL", __FILE__, __LINE__);
-
         $defs = array();
-        foreach ($this->getSubSourceDefs() as $subSourceDef) {
+        $oval = new DOMDocument();
 
-            # Loading the defined file
-            $oval = new DOMDocument();
-            libxml_set_streams_context(Utils::getStreamContext());
-            $oval->load($subSourceDef->getUri());
-
-            if ($oval === false) {
-                Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+        $ret = $oval->loadXML($contents, LIBXML_PARSEHUGE);
+        if ($ret === FALSE) {
+                Utils::log(LOG_ERR, "Cannot load OVAL [source URI=".$subSourceDef->getUri()."]", __FILE__, __LINE__);
                 throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
-            }
-
-            $currentSubSourceHash = $this->computeHash($oval->saveXML());
-            if (!$this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
-                #continue;
-            }
-
-            # Get the XPath
-            $this->_xpath = new DOMXPath($oval);
-
-            $this->_xpath->registerNamespace("def", "http://oval.mitre.org/XMLSchema/oval-definitions-5");
-
-            $xDefinitions = $this->_xpath->query("/def:oval_definitions/def:definitions/def:definition");
-
-            # Go through all definitions
-            foreach ($xDefinitions as $xDefinition) {
-                $def = array();
-
-                $def['subSourceDefId'] = $subSourceDef->getId();
-
-                $def['definition_id'] = $xDefinition->attributes->getNamedItem('id')->nodeValue;
-
-                $el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
-                if (!empty($el_severity)) {
-                    $def['severity'] = $el_severity->nodeValue;
-                } else {
-                    $def['severity'] = "n/a";
-                }
-
-                $def['title'] = rtrim($xDefinition->getElementsByTagName('title')->item(0)->nodeValue);
-                $def['ref_url'] = $xDefinition->getElementsByTagName('reference')->item(0)->getAttribute('ref_url');
-
-                # Get associated CVEs
-                $cve_query = 'def:metadata/def:advisory/def:cve';
-                $cves = $this->_xpath->query($cve_query, $xDefinition);
-
-                $def['cves'] = array();
-                $def['os'] = array();
-
-                foreach ($cves as $cve) {
-                    array_push($def['cves'], $cve->nodeValue);
-                }
-
-                # Processing criteria
-                $root_criterias_query = 'def:criteria';
-                $root_criterias = $this->_xpath->query($root_criterias_query, $xDefinition);
-
-                foreach ($root_criterias as $root_criteria) {
-                    $oses = array();
-                    $packages = array();
-                    $this->processCriterias($this->_xpath, $root_criteria, $def, $oses, $packages);
-                }
-                array_push($defs, $def);
-            }
-            $this->updateSubSourceLastChecked($subSourceDef);
-            $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
         }
+
+        $this->_xpath = new DOMXPath($oval);
+
+        $this->_xpath->registerNamespace("def", "http://oval.mitre.org/XMLSchema/oval-definitions-5");
+
+        $xDefinitions = $this->_xpath->query("/def:oval_definitions/def:definitions/def:definition");
+
+        # Go through all definitions
+        foreach ($xDefinitions as $xDefinition) {
+            $def = array();
+
+            $def['subSourceDefId'] = $subSourceDef->getId();
+
+            $def['definition_id'] = $xDefinition->attributes->getNamedItem('id')->nodeValue;
+
+            $el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
+            if (!empty($el_severity)) {
+                $def['severity'] = $el_severity->nodeValue;
+            } else {
+                $def['severity'] = "n/a";
+            }
+
+            $def['title'] = rtrim($xDefinition->getElementsByTagName('title')->item(0)->nodeValue);
+            $def['ref_url'] = $xDefinition->getElementsByTagName('reference')->item(0)->getAttribute('ref_url');
+
+            # Get associated CVEs
+            $cve_query = 'def:metadata/def:advisory/def:cve';
+            $cves = $this->_xpath->query($cve_query, $xDefinition);
+
+            $def['cves'] = array();
+            $def['os'] = array();
+
+            foreach ($cves as $cve) {
+                array_push($def['cves'], $cve->nodeValue);
+            }
+
+            # Processing criteria
+            $root_criterias_query = 'def:criteria';
+            $root_criterias = $this->_xpath->query($root_criterias_query, $xDefinition);
+
+            foreach ($root_criterias as $root_criteria) {
+                $oses = array();
+                $packages = array();
+                $this->processCriterias($this->_xpath, $root_criteria, $def, $oses, $packages);
+            }
+            array_push($defs, $def);
+        }
+
         return $defs;
     }
 

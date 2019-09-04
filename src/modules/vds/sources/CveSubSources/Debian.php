@@ -11,7 +11,7 @@ class Debian extends SubSource implements ISubSource
     protected static $NAME = "Debian Advisories";
     protected static $TYPE = "Debian";
 
-    private function processAdvisories($advisories, $subSourceDef_id)
+    public function processAdvisories($advisories, $subSourceDef_id)
     {
         $num = 0;
         $defs = array();
@@ -117,37 +117,5 @@ class Debian extends SubSource implements ISubSource
         }
 
         return $defs;
-    }
-
-    public function retrieveDefinitions()
-    {
-        Utils::log(LOG_DEBUG, "Retreiving definitions from the " . Debian::getName(), __FILE__, __LINE__);
-        if (empty($this->getSubSourceDefs()))
-            return array();
-
-        $definitions = array();
-        foreach ($this->getSubSourceDefs() as $subSourceDef) {
-            $advisories = file_get_contents($subSourceDef->getUri());
-            if ($advisories === False) {
-                Utils::log(LOG_ERR, "Error reading definitions for %s", $subSourceDef->getUri());
-                continue;
-            }
-
-            $currentSubSourceHash = $this->computeHash($advisories);
-            if (! $this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
-                $this->updateSubSourceLastChecked($subSourceDef);
-                continue;
-            }
-
-            $defs = $this->processAdvisories($advisories, $subSourceDef->getId());
-            if ($defs) {
-                $definitions = array_merge($definitions, $defs);
-
-                $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
-                $this->updateSubSourceLastChecked($subSourceDef);
-            }
-        }
-
-        return ($definitions);
     }
 }

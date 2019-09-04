@@ -28,9 +28,6 @@ class VdsModule extends DefaultModule
         Utils::log(LOG_DEBUG, "Synchronizing VDS", __FILE__, __LINE__);
         foreach ($this->_sources as $source) {
             $vulnerabilities = $source->retrieveVulnerabilities();
-            if ($vulnerabilities) {
-                $this->_pakiti->getManager("VulnerabilitiesManager")->updateVulnerabilities($vulnerabilities);
-            }
         }
     }
 

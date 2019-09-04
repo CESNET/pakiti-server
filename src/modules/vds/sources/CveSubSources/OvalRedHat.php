@@ -12,39 +12,28 @@ class OvalRedHat extends SubSource implements ISubSource
     protected static $TYPE = "RedHat";
     private $_xpath;
 
-    public function retrieveDefinitions()
+    public function processAdvisories($contents, $subSourceDef_id)
     {
-        Utils::log(LOG_DEBUG, "Retreiving definitions from the ".OvalRedHat::getName()." OVAL", __FILE__, __LINE__);
-
         $defs = array();
-        foreach ($this->getSubSourceDefs() as $subSourceDef) {
-            # Loading the defined file
-            $oval = new DOMDocument();
-            libxml_set_streams_context(Utils::getStreamContext());
-            $oval->load($subSourceDef->getUri());
+        $oval = new DOMDocument();
 
-            if ($oval === false) {
-                Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
+        $ret = $oval->loadXML($contents, LIBXML_PARSEHUGE);
+        if ($ret === FALSE) {
+                Utils::log(LOG_ERR, "Cannot load OVAL [source URI=".$subSourceDef->getUri()."]", __FILE__, __LINE__);
                 throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
-            }
+        }
 
-            $currentSubSourceHash = $this->computeHash($oval->saveXML());
-            if (!$this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
-                continue;
-            }
+        $this->_xpath = new DOMXPath($oval);
 
-            # Get the XPath
-            $this->_xpath = new DOMXPath($oval);
+        $this->_xpath->registerNamespace("def", "http://oval.mitre.org/XMLSchema/oval-definitions-5");
 
-            $this->_xpath->registerNamespace("def", "http://oval.mitre.org/XMLSchema/oval-definitions-5");
+        $xDefinitions = $this->_xpath->query("/def:oval_definitions/def:definitions/def:definition");
 
-            $xDefinitions = $this->_xpath->query("/def:oval_definitions/def:definitions/def:definition");
-
-            # Go through all definitions
-            foreach ($xDefinitions as $xDefinition) {
+        # Go through all definitions
+        foreach ($xDefinitions as $xDefinition) {
                 $def = array();
 
-                $def['subSourceDefId'] = $subSourceDef->getId();
+                $def['subSourceDefId'] = $subSourceDef_id;
 
                 $def['definition_id'] = $xDefinition->attributes->getNamedItem('id')->nodeValue;
 
@@ -53,27 +42,27 @@ class OvalRedHat extends SubSource implements ISubSource
                 $platforms = $this->_xpath->query($platform_query, $xDefinition);
                 $supported = false;
                 foreach ($platforms as $platform) {
-                    if (preg_match('/^Red Hat Enterprise Linux [0-9\.]+$/', $platform->nodeValue)) {
-                        $supported = true;
-                        break;
-                    }
+                        if (preg_match('/^Red Hat Enterprise Linux [0-9\.]+$/', $platform->nodeValue)) {
+                                $supported = true;
+                                break;
+                        }
                 }
                 if (!$supported) {
-                    continue;
+                        continue;
                 }
 
                 $el_severity = $xDefinition->getElementsByTagName('severity')->item(0);
                 if (!empty($el_severity)) {
-                    $def['severity'] = $el_severity->nodeValue;
+                        $def['severity'] = $el_severity->nodeValue;
                 } else {
-                    $def['severity'] = "n/a";
+                        $def['severity'] = "n/a";
                 }
 
                 $def['title'] = rtrim($xDefinition->getElementsByTagName('title')->item(0)->nodeValue);
 
                 /* This is a hack to recognize the related architecture, supposing that only ARM should be disregarded */
                 if (strpos($def['title'], 'aarch64') !== false) {
-                    continue;
+                        continue;
                 }
 
                 $def['ref_url'] = $xDefinition->getElementsByTagName('reference')->item(0)->getAttribute('ref_url');
@@ -86,7 +75,7 @@ class OvalRedHat extends SubSource implements ISubSource
                 $def['os'] = array();
 
                 foreach ($cves as $cve) {
-                    array_push($def['cves'], $cve->nodeValue);
+                        array_push($def['cves'], $cve->nodeValue);
                 }
 
                 # Processing criteria
@@ -94,15 +83,13 @@ class OvalRedHat extends SubSource implements ISubSource
                 $root_criterias = $this->_xpath->query($root_criterias_query, $xDefinition);
 
                 foreach ($root_criterias as $root_criteria) {
-                    $os = null;
-                    $package = array();
-                    $this->processCriterias($this->_xpath, $root_criteria, $def, $os, $package);
+                        $os = null;
+                        $package = array();
+                        $this->processCriterias($this->_xpath, $root_criteria, $def, $os, $package);
                 }
                 array_push($defs, $def);
-            }
-            $this->updateSubSourceLastChecked($subSourceDef);
-            $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
         }
+
         return $defs;
     }
 

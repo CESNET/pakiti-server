@@ -202,4 +202,127 @@ class SubSource
         return $this->_db->queryObject("select id as _id, name as _name, uri as _uri, enabled as _enabled, lastChecked as _lastChecked, vdsSubSourceId as _subSourceId from VdsSubSourceDef
             where $where", "SubSourceDef");
     }
+
+    public function retrieveVulnerabilities()
+    {
+        foreach ($this->getSubSourceDefs() as $subSourceDef) {
+            $contents = file_get_contents($subSourceDef->getUri());
+            if ($contents === False) {
+                Utils::log(LOG_ERR, "Error reading definitions for %s", $subSourceDef->getUri());
+                continue;
+            }
+
+            $currentSubSourceHash = $this->computeHash($contents);
+            if (! $this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
+                $this->updateSubSourceLastChecked($subSourceDef);
+                continue;
+            }
+
+            $defs = $this->processAdvisories($contents, $subSourceDef->getId());
+            if (! $defs)
+                continue;
+
+            $vulnerabilities = $this->parse_definitions($defs);
+            if (! $vulnerabilities)
+                continue;
+
+            $this->_pakiti->getManager("VulnerabilitiesManager")->updateVulnerabilities($vulnerabilities);
+            $this->updateLastSubSourceDefHash($subSourceDef, $currentSubSourceHash);
+            $this->updateSubSourceLastChecked($subSourceDef);
+        }
+    }
+
+    private function parse_definitions($defs)
+    {
+	# We have CVE definition in this format:
+	# Array
+	#(
+	#    [subSourceDefId] => 5
+	#    [definition_id] => oval:com.redhat.rhsa:def:20120006
+	#    [severity] => Critical
+	#    [title] => RHSA-2012:0006: java-1.4.2-ibm security update (Critical)
+	#    [ref_url] => https://rhn.redhat.com/errata/RHSA-2012-0006.html
+	#    [cves] => Array
+	#        (
+	#            [0] => CVE-2011-3389
+	#            [1] => CVE-2011-3545
+	#        )
+	#
+	#    [osGroup] => Array
+	#        (
+	#            [Red Hat Enterprise Linux 5] => Array
+	#                (
+	#                    [0] => Array
+	#                        (
+	#                            [name] => java-1.4.2-ibm-plugin
+	#                            [version] => 0:1.4.2.13.11
+	#                            [release] => 1jpp.1.el5
+	#                            [operator] => <
+	#                        )
+	#                    [1] => Array
+	#                        (
+	#                             [name] => java-1.4.2-ibm-src
+	#                             [version] => 0:1.4.2.13.11
+	#                             [release] => 1jpp.1.el5
+	#                             [operator] => <
+	#                         )
+	#
+	#                )
+	#
+	#        )
+	#
+	#)
+
+	$vulnerabilities = array();
+
+	foreach ($defs as $def) {
+	    $cveDef = new CveDef();
+	    $cveDef->setDefinitionId($def['definition_id']);
+	    $cveDef->setTitle($def['title']);
+	    $cveDef->setRefUrl($def['ref_url']);
+	    $cveDef->setVdsSubSourceDefId($def['subSourceDefId']);
+
+	    if ($this->_pakiti->getManager('CveDefsManager')->storeCveDef($cveDef)) {
+		foreach ($def['cves'] as $cveName) {
+		    $cve = new Cve();
+		    $cve->setName($cveName);
+		    $this->_pakiti->getManager('CvesManager')->storeCve($cve);
+		    $this->_pakiti->getManager('CveDefsManager')->assignCveToCveDef($cve->getId(), $cveDef->getId());
+		}
+	    }
+
+	    # if osGroup not set, than it is unfixed in DSA
+	    if (isset($def['osGroup'])) {
+		foreach ($def['osGroup'] as $osGroupName => $defsPkg) {
+		    foreach ($defsPkg as $defPkg) {
+			$vuln = new Vulnerability();
+
+			$vuln->setCveDefId($cveDef->getId());
+
+			# OVAL from RH and DSA doesn't contain arch, so use all
+			$archName = 'all';
+
+			$arch = new Arch();
+			$arch->setName($archName);
+			$this->_pakiti->getManager("ArchsManager")->storeArch($arch);
+
+			$osGroup = new OsGroup();
+			$osGroup->setName($osGroupName);
+			$this->_pakiti->getManager('OsGroupsManager')->storeOsGroup($osGroup);
+
+			$vuln->setName($defPkg['name']);
+			$vuln->setRelease($defPkg['release']);
+			$vuln->setVersion($defPkg['version']);
+			$vuln->setArchId($arch->getId());
+			$vuln->setOsGroupId($osGroup->getId());
+			$vuln->setOperator($defPkg['operator']);
+
+			array_push($vulnerabilities, $vuln);
+		    }
+		}
+	    }
+	}
+
+	return $vulnerabilities;
+    }
 }
