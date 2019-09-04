@@ -282,6 +282,9 @@ class SubSource
 	    $cveDef->setRefUrl($def['ref_url']);
 	    $cveDef->setVdsSubSourceDefId($def['subSourceDefId']);
 
+	    if (empty($def['cves']))
+		    continue;
+
 	    if ($this->_pakiti->getManager('CveDefsManager')->storeCveDef($cveDef)) {
 		foreach ($def['cves'] as $cveName) {
 		    $cve = new Cve();
