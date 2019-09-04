@@ -19,8 +19,8 @@ class OvalRedHat extends SubSource implements ISubSource
 
         $ret = $oval->loadXML($contents, LIBXML_PARSEHUGE);
         if ($ret === FALSE) {
-                Utils::log(LOG_ERR, "Cannot load OVAL [source URI=".$subSourceDef->getUri()."]", __FILE__, __LINE__);
-                throw new Exception("Cannot load OVAL [source URI=".$subSourceDef->getUri()."]");
+                Utils::log(LOG_ERR, "Cannot load OVAL for $subSourceDef_id", __FILE__, __LINE__);
+                throw new Exception("Cannot load OVAL for $subSourceDef_id");
         }
 
         $this->_xpath = new DOMXPath($oval);
