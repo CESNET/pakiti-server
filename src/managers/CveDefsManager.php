@@ -42,4 +42,10 @@ class CveDefsManager extends DefaultManager
         $dao = $this->getPakiti()->getDao("CveDef");
         $dao->assignPkgToCveDef($pkgId, $cveDefId, $osGroupId);
     }
+
+    public function removePkg($pkgId)
+    {
+        $dao = $this->getPakiti()->getDao("CveDef");
+        $dao->removePkg($pkgId);
+    }
 }

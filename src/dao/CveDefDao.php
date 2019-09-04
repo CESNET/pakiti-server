@@ -53,4 +53,11 @@ class CveDefDao
             osGroupId = '".$this->db->escape($osGroupId)."'";
         $this->db->query($sql);
     }
+
+    public function removePkg($pkgId)
+    {
+        $sql = "delete from PkgCveDef where "
+            . "pkgId = '" . $this->db->escape($pkgId) . "'";
+        $this->db->query($sql);
+    }
 }

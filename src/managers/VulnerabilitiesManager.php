@@ -19,6 +19,7 @@ class VulnerabilitiesManager extends DefaultManager
 
         $vulnerabilityDao = $this->getPakiti()->getDao("Vulnerability");
         $cveDefsManager = $this->getPakiti()->getManager("CveDefsManager");
+        $cveDefsManager->removePkg($pkg->getId());
         foreach ($pkgs as $pkg) {
             $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByNameArchId($pkg->getName(), $pkg->getArchId());
             foreach ($potentialVulnerabilities as $vulnerability) {
