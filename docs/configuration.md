@@ -8,11 +8,12 @@ Add vds definition is necessary in order to calculating vulnerable pkgs. VDS can
 * Debian DSA:
     * https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list
 * RedHat OVAL:
-    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2017.xml
-    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2016.xml
-    * ...
-    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2004.xml
-    * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2003.xml
+    * OVAL definitions for releases (recommended)
+        * https://www.redhat.com/security/data/oval/com.redhat.rhsa-RHEL7.xml
+        * https://www.redhat.com/security/data/oval/com.redhat.rhsa-RHEL8.xml, etc.
+    * OVAL definitions per year (might be handy sometimes) 
+        * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2018.xml
+        * https://www.redhat.com/security/data/oval/com.redhat.rhsa-2019.xml, etc.
 * SUSE OVAL:
     * http://ftp.suse.com/pub/projects/security/oval/suse.linux.enterprise.server.12-patch.xml
     * http://ftp.suse.com/pub/projects/security/oval/suse.linux.enterprise.desktop.12-patch.xml
