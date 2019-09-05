@@ -31,7 +31,7 @@ final class Pakiti
         if ($configVersion != Constants::$CONFIG_VERSION) {
             $msg = "Pakiti version doesn't correspond with the Pakiti Config.php version!";
             print $msg;
-            throw new Exception($msq);
+            throw new Exception($msg);
         }
 
         # Check if the Pakiti DB is in correct version
