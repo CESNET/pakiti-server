@@ -138,8 +138,8 @@ class VulnerabilitiesManager extends DefaultManager
             $first_diff = 0;
 
             while (($i < $l && !ctype_digit($a[$i])) || ($j < $k && !ctype_digit($b[$j]))) {
-                $vc = $this->order($a[$i]);
-                $rc = $this->order($b[$j]);
+                $vc = ($i < $l) ? $this->order($a[$i]) : 0;
+                $rc = ($j < $k) ? $this->order($b[$j]) : 0;
                 if ($vc != $rc) {
                     return $vc - $rc;
                 }
@@ -186,9 +186,6 @@ class VulnerabilitiesManager extends DefaultManager
      */
     private function order($val)
     {
-        if ($val == '') {
-            return 0;
-        }
         if ($val == '~') {
             return -1;
         }
