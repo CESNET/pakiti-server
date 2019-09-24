@@ -195,7 +195,7 @@ class FeederModule extends DefaultModule
                 
                 // Throw Exception if input stream are empty
                 if ($data == "") {
-                    throw new Exception("Feeder [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "] doesn't send any data!");
+                    throw new Exception("Feeder [reporterHost=" . $this->_host->getReporterHostname() . ",reporterIp=" . $this->_host->getReporterIp() . "] hasn't sent any data!");
                 }
                 
                 $tmpFileIn = tempnam("/dev/shm/", "pakiti3_IN_");
@@ -517,7 +517,7 @@ class FeederModule extends DefaultModule
                 && (($lastReportHashes[Constants::$REPORT_LAST_HEADER_HASH] == $this->_report->getHeaderHash())
                     && ($lastReportHashes[Constants::$REPORT_LAST_PKGS_HASH] == $this->_report->getPkgsHash()))) {
                 # Data sent by the host are the same as stored one, so we do not need to store anything
-                Utils::log(LOG_INFO, "Feeder [host=" . $this->_host->getHostname() . "] doesn't send any new data, exiting...", __FILE__, __LINE__);
+                Utils::log(LOG_INFO, "Feeder [host=" . $this->_host->getHostname() . "] hasn't sent any new data, exiting...", __FILE__, __LINE__);
                 return false;
             }
         }
