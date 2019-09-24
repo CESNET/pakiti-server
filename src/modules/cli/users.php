@@ -6,6 +6,7 @@ require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
 $shortopts = "c:h";
 
 $longopts = array(
+      "config:",    # Config file - N.B. we don't handle the config parameter here but in an included file
       "uid:",
       "name:",
       "email:",
