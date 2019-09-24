@@ -104,4 +104,10 @@ class UserDao
         $this->db->query($sql);
         return $this->db->getNumberOfAffectedRows();
     }
+
+    public function getHostGroupsAssignedToUser($userId)
+    {
+	$sql = "select hostGroupId from UserHostGroup where userId = '".$this->db->escape($userId)."'";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
 }

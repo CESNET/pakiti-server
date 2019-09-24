@@ -88,6 +88,16 @@ class HostGroupsManager extends DefaultManager
     }
 
     /**
+     * Get Users Assigned to particular HostGroup
+     */
+    public function getUsersAssignedToHostGroup($hostGroupId)
+    {
+	Utils::log(LOG_DEBUG, "Getting all Users assigned to host group[$hostGroupId]", __FILE__, __LINE__);
+	$dao = $this->getPakiti()->getDao("HostGroup");
+	return $dao->getUsersAssignedToHostGroup($hostGroupId);
+    }
+
+    /**
      * Create association between host and hostGroup
      */
     public function assignHostToHostGroup($hostId, $hostGroupId)
