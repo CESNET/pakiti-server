@@ -212,6 +212,19 @@ class SubSource
                 continue;
             }
 
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mimetype = $finfo->buffer($contents);
+            switch ($mimetype) {
+                case "text/xml":
+                    break;
+                case "application/x-bzip2":
+                    $contents = bzdecompress($contents);
+                    break;
+                default:
+                    Utils::log(LOG_ERR, "Unknown mimetype %s when reading definitions for %s", $mimetype, $subSourceDef->getUri());
+                    continue;
+            }
+
             $currentSubSourceHash = $this->computeHash($contents);
             if (! $this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
                 $this->updateSubSourceLastChecked($subSourceDef);
