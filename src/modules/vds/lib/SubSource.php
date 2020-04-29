@@ -215,9 +215,10 @@ class SubSource
             $finfo = new finfo(FILEINFO_MIME_TYPE);
             $mimetype = $finfo->buffer($contents);
             switch ($mimetype) {
-                case "text/xml":
+                case "text/plain": //Debian DSA
+                case "text/xml": // Uncompressed OVAL
                     break;
-                case "application/x-bzip2":
+                case "application/x-bzip2": //Compressed OVAL
                     $contents = bzdecompress($contents);
                     break;
                 default:
