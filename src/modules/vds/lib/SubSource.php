@@ -212,6 +212,24 @@ class SubSource
                 continue;
             }
 
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mimetype = $finfo->buffer($contents);
+            switch ($mimetype) {
+                case "text/plain": //Debian DSA
+                case "text/xml": // Uncompressed OVAL
+                    break;
+                case "application/x-bzip2": //Compressed OVAL
+                    $contents = bzdecompress($contents);
+                    if (is_int($contents)) {
+                        Utils::log(LOG_ERR, "Failed to bzdecompress data (errorno: %s) when reading definitions for %s", $contents, $subSourceDef->getUri());
+                        continue;
+                    }
+                    break;
+                default:
+                    Utils::log(LOG_ERR, "Unknown mimetype %s when reading definitions for %s", $mimetype, $subSourceDef->getUri());
+                    continue;
+            }
+
             $currentSubSourceHash = $this->computeHash($contents);
             if (! $this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
                 $this->updateSubSourceLastChecked($subSourceDef);
