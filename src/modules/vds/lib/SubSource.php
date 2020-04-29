@@ -220,6 +220,10 @@ class SubSource
                     break;
                 case "application/x-bzip2": //Compressed OVAL
                     $contents = bzdecompress($contents);
+                    if (is_int($contents)) {
+                        Utils::log(LOG_ERR, "Failed to bzdecompress data (errorno: %s) when reading definitions for %s", $contents, $subSourceDef->getUri());
+                        continue;
+                    }
                     break;
                 default:
                     Utils::log(LOG_ERR, "Unknown mimetype %s when reading definitions for %s", $mimetype, $subSourceDef->getUri());
