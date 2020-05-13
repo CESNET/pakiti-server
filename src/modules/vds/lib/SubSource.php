@@ -217,6 +217,7 @@ class SubSource
             switch ($mimetype) {
                 case "text/plain": //Debian DSA
                 case "text/xml": // Uncompressed OVAL
+                case "application/xml": // Uncompressed OVAL
                     break;
                 case "application/x-bzip2": //Compressed OVAL
                     $contents = bzdecompress($contents);
@@ -226,7 +227,7 @@ class SubSource
                     }
                     break;
                 default:
-                    Utils::log(LOG_ERR, "Unknown mimetype %s when reading definitions for %s", $mimetype, $subSourceDef->getUri());
+                    Utils::log(LOG_ERR, "Unknown mimetype " . $mimetype . " when reading definitions for" . $subSourceDef->getUri());
                     continue;
             }
 
