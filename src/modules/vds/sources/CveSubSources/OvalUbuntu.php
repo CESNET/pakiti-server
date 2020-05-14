@@ -114,7 +114,7 @@ class OvalUbuntu extends SubSource implements ISubSource
                 $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 //print "Comment: $comment\n";
                 if (strpos($comment, "was vulnerable but has been fixed") !== false) {
-                    if (preg_match("/^The '(.*)' package in (.*) was vulnerable but has been fixed \(note: '([^-]*)-(.*)'\).$/", $comment, $values) === 1) {
+                    if (preg_match("/^(.*) package in (.*) was vulnerable but has been fixed \(note: '([^-]*)-(.*)'\).$/", $comment, $values) === 1) {
                         //array_push($oses, $values[2]);
                         $package = array();
                         $package['name'] = $values[1];
@@ -195,7 +195,7 @@ class OvalUbuntu extends SubSource implements ISubSource
                 $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 //print "Comment: $comment\n";
                 if (strpos($comment, "was vulnerable but has been fixed") !== false) {
-                    if (preg_match("/^The '(.*)' package in (.*) was vulnerable but has been fixed \(note: '([^-]*)-(.*)'\).$/", $comment, $values) === 1) {
+                    if (preg_match("/^(.*) package in (.*) was vulnerable but has been fixed \(note: '([^-]*)-(.*)'\).$/", $comment, $values) === 1) {
                         //array_push($oses, $values[2]);
                         $package = array();
                         $package['name'] = $values[1];
