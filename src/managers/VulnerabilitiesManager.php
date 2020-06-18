@@ -73,7 +73,7 @@ class VulnerabilitiesManager extends DefaultManager
      * Returns 1 if $a is greater than $b
      * Returns -1 if $a is lower than $b
      */
-    private function vercmp($os, $ver_a, $rel_a, $ver_b, $rel_b)
+    public function vercmp($os, $ver_a, $rel_a, $ver_b, $rel_b)
     {
         if (($ver_a === $ver_b) && ($rel_a === $rel_b)) {
             return 0;
