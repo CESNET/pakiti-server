@@ -9,10 +9,10 @@ EXPECT_VERSION("1.3", GREATER, "1.2.2");
 
 ## The following are disabled in the libapt tests:
 ## "disabled as dpkg doesn't like them… (versions have to start with a number)"
-EXPECT_VERSION("-", LESS, ".");
-EXPECT_VERSION("p", LESS, "-");
-EXPECT_VERSION("a", LESS, "-");
-EXPECT_VERSION("z", LESS, "-");
+#EXPECT_VERSION("-", LESS, ".");
+#EXPECT_VERSION("p", LESS, "-");
+#EXPECT_VERSION("a", LESS, "-");
+#EXPECT_VERSION("z", LESS, "-");
 EXPECT_VERSION("a", LESS, ".");
 EXPECT_VERSION("z", LESS, ".");
 EXPECT_VERSION("III-alpha9.8", LESS, "III-alpha9.8-1.5");
