@@ -6,7 +6,7 @@
  */
 class VulnerabilitiesManager extends DefaultManager
 {
-    private const EPSILON = 0; /* end of string or character group (denotes an empty string) */
+    const EPSILON = 0; /* end of string or character group (denotes an empty string) */
 
     /**
      * Find vulnerabilities for pkgs
@@ -197,7 +197,7 @@ class VulnerabilitiesManager extends DefaultManager
     private function order($val)
     {
         if ($val == '~') {
-            return PHP_INT_MIN;
+            return ~PHP_INT_MAX;
         }
         if (ctype_digit($val)) {
             return self::EPSILON;
