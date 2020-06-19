@@ -56,7 +56,7 @@ Defined by:
         <?php foreach ($vulnerabilities as $vulnerability) { ?>
             <tr>
                 <td><?php echo $vulnerability->getName(); ?></td>
-                <td><?php echo $vulnerability->getOperator() . " " .$vulnerability->getVersion() . "-" . $vulnerability->getRelease(); ?></td>
+                <td><?php echo $vulnerability->getOperator() . " " . $vulnerability->getVersionRelease(); ?></td>
                 <td><?php echo $vulnerability->getArchName(); ?></td>
                 <td><?php echo $vulnerability->getOsGroupName(); ?></td>
             </tr>
