@@ -26,7 +26,7 @@ class DebianVersionProvider implements Iterator
 			case "EQUAL":
 				return 0;
 			case "GREATER":
-				return -1;
+				return 1;
 			default:
 				throw new Exception(sprintf("Invalid operator at line %d", $this->line_no));
 		}
