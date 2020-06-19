@@ -6,6 +6,8 @@
  */
 class VulnerabilitiesManager extends DefaultManager
 {
+    private const EPSILON = 0; /* end of string or character group (denotes an empty string) */
+
     /**
      * Find vulnerabilities for pkgs
      * Save vulnerable pkgId and corresponding cveDefId and osGroupId to PkgCveDef table
@@ -126,74 +128,79 @@ class VulnerabilitiesManager extends DefaultManager
         return $arr;
     }
 
-    # Used by dpkgvercmp
+    # Used by dpkgvercmp, implements the algorithm described by deb-version(5)
     private function dpkgvercmp_in($a, $b)
     {
         $i = 0;
         $j = 0;
-        $l = strlen($a);
-        $k = strlen($b);
 
-        while ($i < $l && $j < $k) {
-            $first_diff = 0;
+        $length_a = strlen($a);
+        $length_b = strlen($b);
 
-            while (($i < $l && !ctype_digit($a[$i])) || ($j < $k && !ctype_digit($b[$j]))) {
-                $vc = ($i < $l) ? $this->order($a[$i]) : 0;
-                $rc = ($j < $k) ? $this->order($b[$j]) : 0;
-                if ($vc != $rc) {
-                    return $vc - $rc;
-                }
+        while (True) {
+
+            /* first compare the non-digit part */
+            while (True) {
+                $value_a = ($i < $length_a) ? $this->order($a[$i]) : self::EPSILON;
+                $value_b = ($j < $length_b) ? $this->order($b[$j]) : self::EPSILON;
+                if ($value_a > $value_b)
+                    return 1;
+                if ($value_a < $value_b)
+                    return -1;
+                /* both a and b are of equal values now */
+
+                if ($value_a == self::EPSILON)
+                    break;
+
                 $i++;
                 $j++;
             }
 
-            # Cumulate digits into umber
+            /* now compare the numeric part */
+            /* note that every part either starts with a digit or is eos now. */
+
+            /* N.B. when compared against a number an empty string counts as zero */
             $a_num = 0;
-            $a_has_num = 0;
-            while ($i < $l && ctype_digit($a[$i])) {
-                $a_num = $a_num * 10 + $a[$i];
-                $a_has_num = 1;
+            while ($i < $length_a && ctype_digit($a[$i])) {
+                $a_num = $a_num * 10 + intval($a[$i]);
                 $i++;
             }
             $b_num = 0;
-            $b_has_num = 0;
-            while ($j < $k && ctype_digit($b[$j])) {
-                $b_num = $b_num * 10 + $b[$j];
-                $b_has_num = 1;
+            while ($j < $length_b && ctype_digit($b[$j])) {
+                $b_num = $b_num * 10 + intval($b[$j]);
                 $j++;
             }
 
-            if (($a_has_num && $b_has_num) && $a_num != $b_num) {
-                return $a_num == $b_num ? 0 : ($a_num > $b_num ? 1 : -1);
+            if ($a_num != $b_num)
+                return ($a_num > $b_num) ? 1 : -1;
+
+            if ($i == $length_a) {
+                if ($j == $length_b)
+                    return 0;
+                else
+                    return ($b[$j] == "~") ? 1 : -1;
             }
-            if ($a_has_num && !$b_has_num) {
-                return 1;
-            }
-            if (!$a_has_num && $b_has_num) {
-                return -1;
-            }
-            if ($a_has_num == $b_has_num && ($i == $l || $j == $k)) {
-                return $l == $k ? 0 : ($l > $k ? 1 : -1);
+            if ($j == $length_b) {
+                if ($i == $length_a)
+                    return 0;
+                else
+                    return ($a[$i] == "~") ? -1 : 1;
             }
         }
-
-        return $l == $k ? 0 : ($l > $k ? 1 : -1);
     }
 
 
     /**
-     * Used by dpkgvercmp
+     * Used by dpkgvercmp,
+     * ~ < EPSILON < alpha < +,.-
      */
     private function order($val)
     {
         if ($val == '~') {
-            return -1;
+            return PHP_INT_MIN;
         }
         if (ctype_digit($val)) {
-            return 0;
-        }
-        if (!ord($val)) {
-            return 0;
+            return self::EPSILON;
         }
         if (ctype_alpha($val)) {
             return ord($val);
