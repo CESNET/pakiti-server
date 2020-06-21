@@ -139,6 +139,39 @@ final class Utils
         return $content;
     }
 
+    /* XXX sounds like a duplication of getContent() above */
+	public static function downloadContents(string $url): string
+    {
+        $contents = file_get_contents($url);
+        if ($contents === False) {
+            $error = error_get_last();
+            throw new Exception(sprintf("Error while getting contents (%s)", $error['message']));
+        }
+
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimetype = $finfo->buffer($contents);
+        switch ($mimetype) {
+            case "text/plain":      // Debian DSA
+            case "text/xml":        // Uncompressed OVAL
+            case "application/xml": // Uncompressed OVAL
+                break;
+            case "application/x-gzip" :
+                $contents = gzdecode($contents);
+                if ($contents === False)
+                    throw new Exception("Failed to decompress gzip data");
+                break;
+            case "application/x-bzip2": //Compressed OVAL
+                $contents = bzdecompress($contents);
+                if (is_int($contents))
+                    throw new Exception(snprintf("Failed to decompress bzip2 data (error: %s)", $contents, $url));
+                break;
+            default:
+                throw new Exception(sprintf("Unknown mimetype %s", $mimetype));
+        }
+
+        return $contents;
+    }
+
     public static function isConnectionSecure()
     {
         return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off');

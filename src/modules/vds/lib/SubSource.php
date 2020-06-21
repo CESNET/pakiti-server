@@ -206,29 +206,11 @@ class SubSource
     public function retrieveVulnerabilities()
     {
         foreach ($this->getSubSourceDefs() as $subSourceDef) {
-            $contents = file_get_contents($subSourceDef->getUri());
-            if ($contents === False) {
-                Utils::log(LOG_ERR, "Error reading definitions for %s", $subSourceDef->getUri());
+            try {
+                $contents = Utils::downloadContents($subSourceDef->getUri());
+            } catch (Exception $e) {
+                Utils::log(LOG_ERR, "Error reading definitions for %s: %s", $subSourceDef->getUri(), $e->getMessage());
                 continue;
-            }
-
-            $finfo = new finfo(FILEINFO_MIME_TYPE);
-            $mimetype = $finfo->buffer($contents);
-            switch ($mimetype) {
-                case "text/plain": //Debian DSA
-                case "text/xml": // Uncompressed OVAL
-                case "application/xml": // Uncompressed OVAL
-                    break;
-                case "application/x-bzip2": //Compressed OVAL
-                    $contents = bzdecompress($contents);
-                    if (is_int($contents)) {
-                        Utils::log(LOG_ERR, "Failed to bzdecompress data (errorno: %s) when reading definitions for %s", $contents, $subSourceDef->getUri());
-                        continue;
-                    }
-                    break;
-                default:
-                    Utils::log(LOG_ERR, "Unknown mimetype " . $mimetype . " when reading definitions for" . $subSourceDef->getUri());
-                    continue;
             }
 
             $currentSubSourceHash = $this->computeHash($contents);
