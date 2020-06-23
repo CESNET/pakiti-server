@@ -140,7 +140,7 @@ final class Utils
     }
 
     /* XXX sounds like a duplication of getContent() above */
-	public static function downloadContents(string $url): string
+    public static function downloadContents($url)
     {
         $contents = file_get_contents($url);
         if ($contents === False) {
