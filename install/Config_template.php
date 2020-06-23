@@ -128,6 +128,13 @@ final class Config
     # Import users default admin value (if admin variable not defined in import)
     public static $USERS_ADMIN_DEFAULT_VALUE = true;
 
+    # Debian publishes vulnerabilities at a single URL, referring to all distributions. Setting this
+    # directive makes the processing a bit more efficient and helps avoid error when indices for the
+    # older distributions are not available.
+    public static $DEBIAN_IGNORED_VERSIONS = [ "wheezy", "squeeze", "lenny", "etch", "sarge", "woody" ];
+    # Endpoint to get the Debian Source indices
+    public static $DEBIAN_REPOSITORY = "http://ftp.debian.org/debian";
+
     # Mapping OS groups to OSes by regular expression
     # You might want to call the recalculateOsGroupsMapping.php tool to adapt the DB on changes
     public static $OS_GROUPS_MAPPING = array(

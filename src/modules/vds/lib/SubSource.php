@@ -213,6 +213,7 @@ class SubSource
                 continue;
             }
 
+            /* N.B. if Debian changes binary packaging (listed in Sources index) we'll not find out till a new advisory */
             $currentSubSourceHash = $this->computeHash($contents);
             if (! $this->isSubSourceDefContainsNewData($subSourceDef, $currentSubSourceHash)) {
                 $this->updateSubSourceLastChecked($subSourceDef);
