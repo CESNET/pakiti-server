@@ -142,7 +142,7 @@ final class Utils
     /* XXX sounds like a duplication of getContent() above */
     public static function downloadContents($url)
     {
-        $contents = file_get_contents($url);
+        $contents = file_get_contents($url, NULL, stream_context_create(["http"=>["timeout"=>60*5]]));
         if ($contents === False) {
             $error = error_get_last();
             throw new Exception(sprintf("Error while getting contents (%s)", $error['message']));
