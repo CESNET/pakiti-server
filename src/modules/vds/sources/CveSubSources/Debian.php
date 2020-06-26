@@ -32,7 +32,7 @@ class Debian extends SubSource implements ISubSource
         $list = array_unique(array_merge($list, $new));
     }
 
-    /* The function(s) below gather mapping between the name of a source packages and resulting
+    /* The function(s) below gather mapping between the name of a source package and the resulting
        binary packages, which is used later to resolve names in the DSA descriptions (which refer
        to source package names). The mapping is retrieved from the Source indicies, following the
        description of formats at https://www.debian.org/doc/debian-policy/ (5.4) and
@@ -44,7 +44,6 @@ class Debian extends SubSource implements ISubSource
         $num = 0;
         $source = "";
         $binaries = array();
-        $in_paragraph = True;
         $in_Binary = False;
 
         /* can't use strtok here (would conflict with the outer loop) */
@@ -55,32 +54,31 @@ class Debian extends SubSource implements ISubSource
             $num++;
 
             /* continuation line */
-            if ($line[0] == ' ' || $line[0] == '\t') {
+            if ($line[0] == " " || $line[0] == "\t") {
                 if (! $in_Binary)
-                    goto loop_end;
-
+                    continue;
                 self::update_list($line, $binaries);
-                goto loop_end;
+                continue;
             }
             $in_Binary = False;
-            if ($source != "" && ! empty($binaries)) {
-                if (!array_key_exists($source, $sources))
-                    $sources[$source] = array();
-                $sources[$source] = array_unique(array_merge($sources[$source] + $binaries));
-                $source = "";
-                $binaries = array();
-            }
 
             $line = trim($line);
+            /* an empty line denotes the end of current paragraph */
             if ($line == "") {
+                if ($source != "" && ! empty($binaries)) {
+                    if (!array_key_exists($source, $sources))
+                        $sources[$source] = array();
+                    $sources[$source] = array_unique(array_merge($sources[$source] + $binaries));
+                    $source = "";
+                    $binaries = array();
+                    continue;
+                }
                 if ($source != "" || ! empty($binaries)) {
                     fclose($fp);
-                    throw new Exception(sprintf("Missing field %s before line $d", ($source) ? "Package" : "Binary", $num));
+                    throw new Exception(sprintf("Missing field %s before line %d", ($source) ? "Binary" : "Package", $num));
                 }
-                $in_paragraph = False;
-                goto loop_end;
+                continue;
             }
-            $in_paragraph = True;
 
             $parsed = explode(":", $line, 2);
             $name = $parsed[0];
@@ -88,29 +86,25 @@ class Debian extends SubSource implements ISubSource
             $name = trim($name);
             if (strcasecmp($name, "Package") == 0) {
                 $source = trim($value);
-                goto loop_end;
+                continue;
             }
             if (strcasecmp($name, "Binary") == 0) {
                 self::update_list($value, $binaries);
-
                 $in_Binary = True;
-                goto loop_end;
-            }
-
-loop_end:
-            if (!$in_Binary && $source != "" && ! empty($binaries)) {
-                if (!array_key_exists($source, $sources))
-                    $sources[$source] = array();
-                $sources[$source] = array_unique(array_merge($sources[$source] + $binaries));
-
-                $source = "";
-                $binaries = array();
+                continue;
             }
         }
         fclose($fp);
 
-        if ($source != "" || ! empty($binaries))
-            throw new Exception(sprintf("Missing field %s before line %d", ($source) ? "Package" : "Binary", $num));
+        if ($source != "" && ! empty($binaries)) {
+            if (!array_key_exists($source, $sources))
+                $sources[$source] = array();
+            $sources[$source] = array_unique(array_merge($sources[$source] + $binaries));
+            $source = "";
+            $binaries = array();
+        } elseif ($source != "" || ! empty($binaries)) {
+            throw new Exception(sprintf("Missing field %s before line %d", ($source) ? "Binary" : "Package", $num));
+        }
     }
 
     private function update_package_mapping($deb_release)
