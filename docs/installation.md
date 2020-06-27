@@ -26,7 +26,7 @@ Override any default settings, as stated in pakiti-server/src/common/DefaultConf
         ...
     }
 
-See [Configuration](configurion.md) for more information on server configuration.
+See [Configuration](configuration.md) for more information on server configuration.
 
 #### Run php initDB.php for initalize database and create user which is defined in Config.php
 ###### use root password (option -h for help)
