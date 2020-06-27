@@ -1,16 +1,16 @@
 ## Server installation for Debian-based Linux (tested on Debian 9)
 
-#### Install dependencies
+### Install dependencies
     apt-get update
     apt-get install apache2 php php-mysql php-curl php-dom
     apt-get install mysql-server
-    apt-get install curl subversion
+    apt-get install curl
 
-#### Download repository from github and place it to /var/www
+### Download repository from github and place it to /var/www
     cd /var/www
     git clone https://github.com/CESNET/pakiti-server
 
-#### Provide configuration settings
+### Provide configuration settings
     edit /etc/pakiti/Config.php
 
 Override any default settings, as stated in pakiti-server/src/common/DefaultConfig.php. The file has the following structure:
@@ -28,11 +28,11 @@ Override any default settings, as stated in pakiti-server/src/common/DefaultConf
 
 See [Configuration](configuration.md) for more information on server configuration.
 
-#### Run php initDB.php for initalize database and create user which is defined in Config.php
+### Run php initDB.php for initalize database and create user which is defined in Config.php
 ###### use root password (option -h for help)
     php pakiti-server/install/initDB.php -p
 
-#### Extend the web server configuration to enable Pakiti
+### Extend the web server configuration to enable Pakiti
 Pakiti is available via several entry points:
 - Public entry page (src/modules/gui/www/public/) with no client authentication, meant as the entry point for users
 - Pakiti GUI (/var/www/pakiti-server/src/modules/gui/www/) with controlled access
