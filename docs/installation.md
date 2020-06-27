@@ -10,10 +10,23 @@
     cd /var/www
     git clone https://github.com/CESNET/pakiti-server
 
-#### Copy file Config.php to /etc/pakiti
-###### you can change the default username and password for the Pakiti database user in Config.php
-    mkdir /etc/pakiti
-    cp pakiti-server/install/Config_template.php /etc/pakiti/Config.php
+#### Provide configuration settings
+    edit /etc/pakiti/Config.php
+
+Override any default settings, as stated in pakiti-server/src/common/DefaultConfig.php. The file has the following structure:
+
+    <?php
+     
+    final class Config extends DefaultConfig
+    {
+        public static $DB_HOST = "localhost";
+        public static $DB_NAME = "pakiti";
+        public static $DB_USER = "pakiti";
+        public static $DB_PASSWORD = "password";
+        ...
+    }
+
+See [Configuration](configurion.md) for more information on server configuration.
 
 #### Run php initDB.php for initalize database and create user which is defined in Config.php
 ###### use root password (option -h for help)

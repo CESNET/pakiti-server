@@ -30,8 +30,12 @@ if (php_sapi_name() == "cli") {
     $config_file = $_SERVER[Constants::$PAKITI_CONFIG_ENV];
 }
 
+require_once(realpath(dirname(__FILE__)) . '/DefaultConfig.php');
 # Load the configuration file
-require_once($config_file);
+if (file_exists($config_file))
+    require_once($config_file);
+else
+    require_once(realpath(dirname(__FILE__)) . '/Config.php');
 
 # Load Pakiti, Constants and Utils class
 require_once(realpath(dirname(__FILE__)) . '/Pakiti.php');

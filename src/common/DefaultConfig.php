@@ -1,14 +1,7 @@
 <?php
 
-# Global configuration file
-
-/**
- * @author Michal Prochazka
- * @author Jakub Mlcak
- */
-final class Config
+class DefaultConfig
 {
-    # CONFIG_VERSION
     public static $CONFIG_VERSION = "20171019";
 
     # Name of this Pakiti instance
@@ -22,8 +15,8 @@ final class Config
     # MySQL database configuration
     public static $DB_HOST = "localhost";
     public static $DB_USER = "pakiti";
-    public static $DB_PASSWORD = "pakiti_password";
-    public static $DB_NAME = "pakiti3";
+    public static $DB_PASSWORD = "";
+    public static $DB_NAME = "pakiti";
 
     # Authorization mode (none || auto-create || import || manual)
     public static $AUTHZ_MODE = "none";
@@ -33,37 +26,35 @@ final class Config
     public static $AUTHZ_NAME = "cn";
     public static $AUTHZ_EMAIL = "mail";
 
-    # Debug
     public static $DEBUG = false;
 
     # Directory, where to put the reports (only applied for asynchronous mode)
-    public static $REPORTS_DIR = "/var/tmp/pakiti-reports/";
-    # Should be report compressed?
+    public static $REPORTS_DIR = "/var/spool/pakiti/reports";
     public static $COMPRESS_REPORTS = 1;
 
-    # If pakiti-client v3 are used, path to the private key must be defined, in order to decrypt incomming report
-    public static $REPORT_DECRYPTION_KEY = "/etc/ssl/localcerts/pakiti3.key";
+    # Private key to use when the client sends encrypted reports
+    public static $REPORT_DECRYPTION_KEY = "/etc/pakiti/pakiti-key.pem";
 
-    # Do we want backup the reports
+    # Do we want backup the reports?
     public static $BACKUP = false;
-    public static $BACKUP_DIR = "/var/log/pakitiv3-reports/";
+    public static $BACKUP_DIR = "/var/lib/pakiti";
 
     # Proxy authentication mode (hostname | ip | x509)
     public static $PROXY_AUTHENTICATION_MODE = "hostname";
 
     # Allowed proxies. Depends on the authentication mode, it should be list of hostnames|ips|X509 Subjects
     public static $PROXY_ALLOWED_PROXIES = array(
-        "yourserver.yourdomain.com",
+        "monitoring.server",
     );
 
     # Enable - 1/Disable - 0 outgoing proxy for accessing remote repositories and OVAL definitions
     public static $ENABLE_OUTGOING_PROXY = 0;
     public static $OUTGOING_PROXY = "tcp://proxy.example.com:3128";
 
-
-    # Packages names which represents kernels
+    # Package names that represent the linux kernel
     public static $KERNEL_PACKAGES_NAMES = array(
         "kernel",
+#        "kernel-devel",
         "kernel-smp",
         "kernel-smp-devel",
         "kernel-xenU",
@@ -93,6 +84,7 @@ final class Config
         "kernel-syms",
         "kernel-macros",
     );
+
     # Also the ignore list, but using REGEXP, note that kernel-related packages
     # (recognized by $KERNEL_PACKAGES_NAMES) are never ignored
     public static $IGNORE_PACKAGES_PATTERNS = array(
@@ -106,17 +98,17 @@ final class Config
         "High",
     );
 
-    # Hosts gui Your favorite settings
+    # Favorite shortcuts to be made available in the GUI
     public static $GUI_HOSTS_FAVORITE_FILTERS = array(
         "With tagged CVEs in the last 24 hours" => "tag=true&listTaggedCves=true&activity=24h",
         "Inactive longer than 7 days" => "activity=-7d",
         "Report in the last 48 hours sorted by hostname" => "listTaggedCves=true&activity=48h&sortBy=hostname",
     );
 
-    # Configurable footer
+    # A footer for the GUI pages
     public static $GUI_FOOTER = "";
 
-    # Names of json variables for import users
+    # Names of json variables to import users
     public static $USERS_UID = "login";
     public static $USERS_NAME = "displayName";
     public static $USERS_EMAIL = "mail";
@@ -125,18 +117,18 @@ final class Config
     public static $USERS_HOSTGROUPS_IDS = "hostGroupsIds";
     public static $USERS_HOSTGROUPS_NAMES = "hostGroupsNames";
 
-    # Import users default admin value (if admin variable not defined in import)
+    # Import users default admin value (if the admin variable isn't defined in import)
     public static $USERS_ADMIN_DEFAULT_VALUE = true;
 
     # Debian publishes vulnerabilities at a single URL, referring to all distributions. Setting this
-    # directive makes the processing a bit more efficient and helps avoid error when indices for the
+    # directive makes the processing a bit more efficient and helps avoid errors when indices for the
     # older distributions are not available.
     public static $DEBIAN_IGNORED_VERSIONS = [ "wheezy", "squeeze", "lenny", "etch", "sarge", "woody" ];
     # Endpoint to get the Debian Source indices
     public static $DEBIAN_REPOSITORY = "http://ftp.debian.org/debian";
 
     # Mapping OS groups to OSes by regular expression
-    # You might want to call the recalculateOsGroupsMapping.php tool to adapt the DB on changes
+    # Don't forget to re-process existing records in the DB on any change, e.g. using recalculateOsGroupsMapping.php
     public static $OS_GROUPS_MAPPING = array(
         # Debian
         "buster" => "Debian.* 10.*",
