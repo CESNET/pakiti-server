@@ -166,7 +166,7 @@ create table `VdsSubSourceDef` (
 	`name` varchar(63) not null,
 	`uri` varchar(255) not null,
 	`enabled` integer(1) not null,
-	`lastChecked` datetime not null,
+	`lastChecked` datetime,
 	`lastSubSourceDefHash` char(32),
 	`vdsSubSourceId` integer(10) not null,
 	primary key (`id`),
