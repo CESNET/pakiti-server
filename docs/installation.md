@@ -13,13 +13,17 @@ configuration, which has to already be installed. Likewise, the machine is expec
 database installed and active. The Ansible installation was tested with Debian 9,10 and CentOS 8.
 
 In order to install Pakiti using the provided role, the following steps can be performed:
-- Install Ansible to the machine that will initiate the deployment
-- Get the Ansible recipe, e.g. using
+
+###### Install Ansible to the machine that will initiate the deployment
+###### Get the Ansible recipe, e.g. using:
+
     wget https://github.com/CESNET/pakiti-server/archive/master.zip
     unzip master.zip
     cd pakiti-server/install/ansible
-- Edit ansible-conf.yml to add database credentials etc.
-- Initite the deployment
+
+###### Edit ansible-conf.yml to add database credentials etc.
+###### Initite the deployment
+    
     ansible-playbook playbook.yml
     
 After the configuration has finished you are advised to adapt it to your needs and probably limit the access to the protected part.
@@ -74,11 +78,13 @@ Please note that the template contains a very basic configuration, you need to a
 ### Regular update of information on vulnerabilities
 You need to configure a cron job to update Pakiti with information about new vulnerabilities as published by vendors
 Linux distibutions.
+    
     30 4 * * * root php /var/www/pakiti-server/src/modules/cli/vds.php -c synchronize && php /var/www/pakiti-server/src/modules/cli/calculateVulnerabilities.php
 
 ## Getting started with Pakiti
 
 In order to ease initial configuration of the Pakiti server, you can use the provided script:
+    
     cd pakiti-server/src/modules/cli
     ./server-boostrap.php
 The script populates vulnerability information from main Linux distributions to get you started with the service. More details on
