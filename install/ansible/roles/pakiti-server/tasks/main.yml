@@ -1,6 +1,6 @@
 - name: Make sure PHP is available
   package:
-    name: [ 'php', 'php-cli', 'php-mysql', 'php-curl', 'php-dom' ]
+    name: [ 'php', 'php-cli', 'php-mysql', 'php-curl', 'php-dom', 'git' ]
     state: present
 
 - name: Download repository from github and place it to /var/www
