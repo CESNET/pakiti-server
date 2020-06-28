@@ -1,9 +1,19 @@
-# Server configuration
+# Server configuration of Pakiti
 
-* [Installation](installation.md)
+Please check the [installation guide](installation.md) to see how to deploy Pakiti server. This
+part describes some of configuration parameters in more details.
 
 ## Vulnerability definition system
-Add vds definition is necessary in order to calculating vulnerable pkgs. VDS can be added in VDS page via gui.
+Pakiti collects information on installed Linux packages from individual machines and correlates
+this information with lists of known vulnerabilities that are published by various vendors of
+Linux distributions. The server configuration must always reflect the distributions used in
+the constituency. Proper definition of the vulnerability sources is a crucial part of the
+configuration.
+
+Pakiti uses the notion of a Vulnerability definition system to refer to various formats and
+publishing endpoints that are different among Linux distributions. The VDS records are maintained
+using the Pakiti GUI. The list below can server as a basis to locate the vulnerability sources
+for particular distributions.
 
 * Debian DSA:
     * https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list
