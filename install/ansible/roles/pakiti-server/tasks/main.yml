@@ -3,7 +3,7 @@
     name: [ 'php', 'php-cli', 'php-curl', 'php-dom', 'git' ]
 
 # there must be a better way to support different distros ...
- name: Install MySQL support for PHP at CentOS
+- name: Install MySQL support for PHP at CentOS
   package:
     name: [ 'php-mysqli' ]
     state: present
@@ -45,5 +45,3 @@
 - name: Enable Pakiti in Apache
   include_tasks: rh-apache-conf.yaml
   when: ansible_facts['distribution'] == 'CentOS'
-
-
