@@ -94,8 +94,8 @@ print "OK\n";
 if ($reInitialize) {
     print "Droping the database '".Config::$DB_NAME."' ... ";
     if (!$link->query("drop database ".Config::$DB_NAME."")) {
-        print "ERROR: cannot drop the database '".Config::$DB_NAME."': " . $link->error . "\n";
-        exit(1);
+        print "Cannot drop the database '".Config::$DB_NAME."': " . $link->error . "\n";
+        print "Suppose the databases didn't exist, continue\n");
     }
     print "OK\n";
 }
