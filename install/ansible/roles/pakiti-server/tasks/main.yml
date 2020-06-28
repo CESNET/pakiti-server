@@ -45,3 +45,10 @@
 - name: Enable Pakiti in Apache
   include_tasks: rh-apache-conf.yaml
   when: ansible_facts['distribution'] == 'CentOS'
+
+- name: Make sure to update regularly information on new vulnerabilities
+  cron:
+    name: "pakiti"
+    minute: "15"
+    hour: "2"
+    job: "php /var/www/pakiti-server/src/modules/cli/vds.php -c synchronize && php /var/www/pakiti-server/src/modules/cli/calculateVulnerabilities.php"
