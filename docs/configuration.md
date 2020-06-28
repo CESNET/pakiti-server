@@ -13,7 +13,7 @@ configuration.
 Pakiti uses the notion of a Vulnerability definition system to refer to various formats and
 publishing endpoints that are different among Linux distributions. The VDS records are maintained
 using the Pakiti GUI. The list below can server as a basis to locate the vulnerability sources
-for particular distributions.
+for particular distributions. The information is regularly updated usin a cron job (see the Installation guide)
 
 * Debian DSA:
     * https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list
@@ -44,10 +44,6 @@ After adding VDS definition you have to use cli for synchronize and calculate vu
 
     php /var/www/pakiti3/src/modules/cli/vds.php -c synchronize
     php /var/www/pakiti3/src/modules/cli/calculateVulnerabilities.php
-
-It's recommended to synchronize and calculate new vulnerabilities every day by cron.
-
-    30 4 * * * root php /var/www/pakiti3/src/modules/cli/vds.php -c synchronize && php /var/www/pakiti3/src/modules/cli/calculateVulnerabilities.php
 
 ##### Local OVAL format
 ```xml
