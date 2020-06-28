@@ -29,6 +29,8 @@ In order to install Pakiti using the provided role, the following steps can be p
 After the configuration has finished you are advised to adapt it to your needs and probably limit the access to the protected part.
 
 ## Manual installation
+You can follow the steps from the Ansible recipe (pakiti-server/install/ansible/roles/pakiti-server/tasks/main.yml), they're
+self-explaining. More detailed description is below (based on Debian).
 
 ### Install dependencies
 Pakiti requires PHP at least v.5.5
