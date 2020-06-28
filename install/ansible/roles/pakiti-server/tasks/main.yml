@@ -1,62 +1,32 @@
 - name: Download repository from github and place it to /var/www
-  shell: git clone https://github.com/CESNET/pakiti3 /var/www/pakiti3
+  shell: git clone https://github.com/CESNET/pakiti-server /var/www/pakiti-server
   args:
     executable: /bin/bash
-  become: true
 
-- name: Create /etc/pakiti folder
-  shell: mkdir -p /etc/pakiti
-  args:
-    executable: /bin/bash
-  become: true
+- name: Create /etc/pakiti directory
+  file:
+    dest: /etc/pakiti
+    state: directory
+    owner: root
+    mode: 0644
 
-- name: chown the newly created pakiti folder
-  shell: "chown -R {{ ansible_user_id }} /etc/pakiti && chown -R {{ ansible_user_id }} /var/www/pakiti3"
-  become: true
-
-- name: Copy file Config.php to /etc/pakiti
+- name: Populate Pakiti configuration
   template:
-    src: etc/pakiti/{{ item }}.j2
-    dest: /etc/pakiti/{{ item }}
-  with_items:
-    - Config.php
+    src: etc/pakiti/Config.php.j2
+    dest: /etc/pakiti/Config.php
+    owner: root
+    mode: 0644
 
-- name: Ensure pakiti user is present.
-  mysql_user:
-    name: "{{ pakiti_mysql_user }}"
-    host: 'localhost'
-    password: "{{ pakiti_mysql_pass }}"
-    state: present
-    login_user: "{{ mysql_root_name }}"
-    login_password: "{{ mysql_root_password }}"
-  become: true
-
-- name: Run php initDB.php for initalize database and create user which is defined in Config.php 
-  shell: "php /var/www/pakiti3/install/initDB.php --user-name={{ mysql_root_name }} --password={{ mysql_root_password }}"
+- name: Initalize Pakiti database and create the application user
+  shell: "php /var/www/pakiti-server/install/initDB.php --reInitialize --user-name={{ mysql_root_name }} --password={{ mysql_root_password }}"
   args:
-    chdir: '/var/www/pakiti3/install'
+    chdir: '/var/www/pakiti-server/install'
 
-- name: Copy file pakiti3.apache2.conf to apache2/sites-available
-  template:
-    src: etc/apache2/sites-available/{{ item }}.j2
-    dest: /etc/apache2/sites-available/{{ item }}
-  with_items:
-    - pakiti3.apache2.conf
-  become: true
+- name: Enable Pakiti in Apache
+  include_tasks: debian-apache-conf.yaml
+  when: ansible_facts['distribution'] == 'Debian'
 
-- name: enable apache modules
-  command: a2enmod {{ item }}
-  with_items:
-    - rewrite
-    - ssl
-  become: true
-
-- name: enable apache sites
-  command: "a2ensite {{ item }}"
-  with_items:
-    - pakiti3.apache2.conf
-  become: true
-
-- name: restart apache to load new configuration
-  command: service apache2 restart
-  become: true
+- name: Restart Apache to load new configuration
+  service:
+    name: apache2
+    state: reloaded
