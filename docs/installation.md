@@ -1,9 +1,31 @@
-## Server installation for Debian-based Linux (tested on Debian 9)
+# Server installation of Pakiti
+Pakiti server runs as a standard PHP application in a web server (like Apache) and uses the MySQL/Maria
+database engine to store data. Before proceeding with the installation, you need to deploy these services
+and configure them properly.
+
+For automated deployment you can use the Ansible role that is shipped with the server.
+
+## Ansible-based deployment
+N.B. the provided Ansible recipe only addresses the deployment of a Pakiti server and enables it in Apache
+configuration, which has to already be installed. Likewise, the machine is expected to have a MySQL/Maria
+database installed and active. The Ansible installation was tested with Debian 9,10 and CentOS 8.
+
+In order to install Pakiti using the provided role, the following steps can be performed:
+- Install Ansible to the machine that will initiate the deployment
+- Get the Ansible recipe, e.g. using
+    wget https://github.com/CESNET/pakiti-server/archive/master.zip
+    unzip master.zip
+    cd pakiti-server/install/ansible
+- Edit ansible-conf.yml to add database credentials etc.
+- Initite the deployment
+    ansible-playbook playbook.yml
+
+## Manual installation
 
 ### Install dependencies
-    apt-get update
-    apt-get install apache2 php php-mysql php-curl php-dom
-    apt-get install mysql-server
+Pakiti requires PHP at least v.5.5
+
+    apt-get install php php-mysql php-curl php-dom
     apt-get install curl
 
 ### Download repository from github and place it to /var/www
@@ -41,14 +63,10 @@ Pakiti is available via several entry points:
 
 The provided template and following steps can be used for Apache web servers:
 
-    cp pakiti-server/install/pakiti3.apache2_template.conf /etc/apache2/sites-available/pakiti.conf
+    cp (&edit) pakiti-server/install/ansible/roles/pakiti-server/templates/etc/apache2/pakiti.conf.j2 /etc/apache2/conf-available/pakiti.conf 
+    a2enconf pakiti
+    service apache2 reload
 
-##### Enable sites in pakiti3.apache2.conf
-    a2ensite pakiti.conf
+Please note that the template contains a very basic configuration, you need to adapt it to your needs and probably limit the access to the protected part.
 
-##### Enable apache2 modules
-    a2enmod ssl
-    a2enmod rewrite
-
-##### Reload apache2
-    service apache2 restart
+### Cron
