@@ -32,7 +32,7 @@
     src: etc/pakiti/Config.php.j2
     dest: /etc/pakiti/Config.php
     owner: root
-    mode: 0644
+    mode: 0600
 
 - name: Initalize Pakiti database and create the application user
   shell: "php /var/www/pakiti-server/install/initDB.php --reInitialize --user-name={{ mysql_root_name }} --password={{ mysql_root_password }}"
