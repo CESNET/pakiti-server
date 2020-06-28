@@ -1,0 +1,12 @@
+---
+  
+- name: Make Pakiti configuration available in Apache
+  template:
+    src: etc/apache2/pakiti.conf.j2
+    dest: /etc/apache2/conf-available/pakiti.conf
+    owner: root
+    mode: 0644
+
+- name: Activate Pakiti in Apache
+  command: "a2enconf pakiti"
+

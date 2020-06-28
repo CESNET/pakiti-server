@@ -1,0 +1,23 @@
+Alias /pakiti/feed/ /var/www/pakiti-server/src/modules/feeder/www/
+<Location /pakiti/feed>
+        DirectoryIndex index.php
+        Require all granted
+</Location>
+
+Alias /pakiti/protected/ /var/www/pakiti-server/src/modules/gui/www/
+<Location /protected>
+        # TODO add authentication here !
+        DirectoryIndex hosts.php
+        Require all granted
+</Location>
+
+Alias /pakiti/ /var/www/pakiti-server/src/modules/gui/www/public/
+<Location /pakiti/feed>
+        DirectoryIndex index.php
+        Require all granted
+</Location>
+
+Alias /pakiti/api/ /var/www/pakiti3/src/modules/api/
+<Location /api>
+        Require ip 127.0.0.1
+</Location>

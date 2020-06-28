@@ -1,0 +1,11 @@
+---
+
+- name: Enable Pakiti in Apache
+  template:
+    src: etc/apache2/pakiti.conf.j2
+    dest: /etc/httpd/conf.d/pakiti.conf
+
+- name: Restart Apache to load new configuration
+  service:
+    name: httpd
+    state: reload
