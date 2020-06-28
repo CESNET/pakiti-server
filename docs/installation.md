@@ -3,7 +3,9 @@ Pakiti server runs as a standard PHP application in a web server (like Apache) a
 database engine to store data. Before proceeding with the installation, you need to deploy these services
 and configure them properly.
 
-For automated deployment you can use the Ansible role that is shipped with the server.
+For automated deployment you can use the Ansible role that is shipped with the server. After the server is deployed,
+you need to provide initial configuration of the vulnerability sources and test its functions. See the bottom for
+more detials.
 
 ## Ansible-based deployment
 N.B. the provided Ansible recipe only addresses the deployment of a Pakiti server and enables it in Apache
@@ -11,16 +13,25 @@ configuration, which has to already be installed. Likewise, the machine is expec
 database installed and active. The Ansible installation was tested with Debian 9,10 and CentOS 8.
 
 In order to install Pakiti using the provided role, the following steps can be performed:
-- Install Ansible to the machine that will initiate the deployment
-- Get the Ansible recipe, e.g. using
+
+###### Install Ansible to the machine that will initiate the deployment
+###### Get the Ansible recipe, e.g. using:
+
     wget https://github.com/CESNET/pakiti-server/archive/master.zip
     unzip master.zip
     cd pakiti-server/install/ansible
-- Edit ansible-conf.yml to add database credentials etc.
-- Initite the deployment
+
+###### Edit ansible-conf.yml to add database credentials etc.
+###### Initite the deployment
+    
     ansible-playbook playbook.yml
+    
+After the configuration has finished you are advised to adapt it to your needs and probably limit the access to the protected part.
+See the bottom for more information on how to use the service.
 
 ## Manual installation
+You can follow the steps from the Ansible recipe (pakiti-server/install/ansible/roles/pakiti-server/tasks/main.yml), they're
+self-explaining. A more detailed description is below (based on Debian).
 
 ### Install dependencies
 Pakiti requires PHP at least v.5.5
@@ -48,8 +59,6 @@ Override any default settings, as stated in pakiti-server/src/common/DefaultConf
         ...
     }
 
-See [Configuration](configuration.md) for more information on server configuration.
-
 ### Run php initDB.php for initalize database and create user which is defined in Config.php
 ###### use root password (option -h for help)
     php pakiti-server/install/initDB.php -p
@@ -69,4 +78,25 @@ The provided template and following steps can be used for Apache web servers:
 
 Please note that the template contains a very basic configuration, you need to adapt it to your needs and probably limit the access to the protected part.
 
-### Cron
+### Regular update of information on vulnerabilities
+You need to configure a cron job to update Pakiti with information about new vulnerabilities as published by vendors
+Linux distibutions.
+    
+    30 4 * * * root php /var/www/pakiti-server/src/modules/cli/vds.php -c synchronize && php /var/www/pakiti-server/src/modules/cli/calculateVulnerabilities.php
+
+## Getting started with Pakiti
+
+In order to ease initial configuration of the Pakiti server, you can use the provided script:
+    
+    cd pakiti-server/src/modules/cli
+    php server-boostrap.php
+The script populates vulnerability information from main Linux distributions to get you started with the service. More details on
+the configuration can be found in [Configuration](configuration.md).
+
+In order to test the server you can use the pakiti client (https://github.com/CESNET/pakiti-client)
+    
+    pakiti-client --url https://example.org/pakiti/feed/
+
+The reports sent by the client should be immediately visible in the Pakiti GUI at https://example.org/pakiti/protected/
+
+
