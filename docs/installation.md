@@ -89,7 +89,7 @@ Linux distibutions.
 In order to ease initial configuration of the Pakiti server, you can use the provided script:
     
     cd pakiti-server/src/modules/cli
-    ./server-boostrap.php
+    php server-boostrap.php
 The script populates vulnerability information from main Linux distributions to get you started with the service. More details on
 the configuration can be found in [Configuration](configuration.md).
 
