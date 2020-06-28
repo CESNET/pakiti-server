@@ -8,4 +8,4 @@
 - name: Restart Apache to load new configuration
   service:
     name: httpd
-    state: reload
+    state: reloaded
