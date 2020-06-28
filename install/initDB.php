@@ -32,6 +32,7 @@ if (isset($opt["h"]) || isset($opt["help"])) {
     usage();
 }
 
+require_once(realpath(dirname(__FILE__)) . '/../src/common/DefaultConfig.php');
 # Load the configuration file
 $config_file = Constants::$PAKITI_CONFIG_FILE;
 if (isset($opt["c"])) {
