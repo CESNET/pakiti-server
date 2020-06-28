@@ -71,7 +71,10 @@ The provided template and following steps can be used for Apache web servers:
 
 Please note that the template contains a very basic configuration, you need to adapt it to your needs and probably limit the access to the protected part.
 
-### Cron
+### Regular update of information on vulnerabilities
+You need to configure a cron job to update Pakiti with information about new vulnerabilities as published by vendors
+Linux distibutions.
+    30 4 * * * root php /var/www/pakiti-server/src/modules/cli/vds.php -c synchronize && php /var/www/pakiti-server/src/modules/cli/calculateVulnerabilities.php
 
 ## Getting started with Pakiti
 
