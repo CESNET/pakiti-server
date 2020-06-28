@@ -1,3 +1,8 @@
+- name: Make sure PHP is available
+  package:
+    name: [ 'php', 'php-cli', 'php-mysql', 'php-curl', 'php-dom' ]
+    state: present
+
 - name: Download repository from github and place it to /var/www
   shell: git clone https://github.com/CESNET/pakiti-server /var/www/pakiti-server
   args:
