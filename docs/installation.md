@@ -94,8 +94,9 @@ The script populates vulnerability information from main Linux distributions to 
 the configuration can be found in [Configuration](configuration.md).
 
 In order to test the server you can use the pakiti client (https://github.com/CESNET/pakiti-client)
+    
     pakiti-client --url https://example.org/pakiti/feed/
 
-The reports sent by the client should be immediately visible in the Pakiti GUI at https://github.com/CESNET/pakiti-client/protected/
+The reports sent by the client should be immediately visible in the Pakiti GUI at https://example.org/pakiti/protected/
 
 
