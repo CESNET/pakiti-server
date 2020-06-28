@@ -13,7 +13,7 @@
     dest: /etc/pakiti
     state: directory
     owner: root
-    mode: 0644
+    mode: 0755
 
 - name: Populate Pakiti configuration
   template:
