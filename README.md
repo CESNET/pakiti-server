@@ -11,3 +11,5 @@ The service is proven in production environments, monitoring thousands of machin
 * [Server installation](docs/installation.md)
 * [Server configuration](docs/configuration.md)
 * [Client usage](docs/client.md)
+
+The development work is co-funded by the EOSC-hub project (Horizon 2020) under Grant number 777536.
