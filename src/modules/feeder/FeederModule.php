@@ -284,7 +284,10 @@ class FeederModule extends DefaultModule
      */
     public function processReport()
     {
-        if ($this->_reportProcessMode != Constants::$REPORT_ONLY) {
+        if ($this->_reportProcessMode == Constants::$REPORT_ONLY) {
+            # If the client wants to only check vulnerabilities, process one by one (because of storing pkgs)
+            $this->processReportWithoutSavingToDtb();
+        } else {
             # If host want save report to database
             if (!$this->isHostSentNewData()) {
                 # If host doesn't sent new data
@@ -293,9 +296,6 @@ class FeederModule extends DefaultModule
                 # If host sent new data, process report one by one
                 $this->processReportWithNewData();
             }
-        } else {
-            # If host want only check for vulnerabilities, process one by one (because of storing pkgs)
-            $this->processReportWithoutSavingToDtb();
         }
     }
 
