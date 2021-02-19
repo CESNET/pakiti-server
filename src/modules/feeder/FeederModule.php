@@ -288,12 +288,9 @@ class FeederModule extends DefaultModule
             # If the client wants to only check vulnerabilities, process one by one (because of storing pkgs)
             $this->processReportWithoutSavingToDtb();
         } else {
-            # If host want save report to database
             if (!$this->isHostSentNewData()) {
-                # If host doesn't sent new data
                 $this->processReportWithSameData();
             } else {
-                # If host sent new data, process report one by one
                 $this->processReportWithNewData();
             }
         }
