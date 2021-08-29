@@ -101,7 +101,7 @@ class PkgDao
     public function getIdByNameVersionReleaseArchIdTypeId($name, $version, $release, $archId, $pkgTypeId)
     {
         $sql = "select id from Pkg
-            where binary name='" . $this->db->escape($name) . "'
+            where name='" . $this->db->escape($name) . "'
             and version='" . $this->db->escape($version) . "'
             and `release`='" . $this->db->escape($release) . "'
             and archId='" . $this->db->escape($archId) . "'
