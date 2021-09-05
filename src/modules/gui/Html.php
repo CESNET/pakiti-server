@@ -66,11 +66,16 @@ class HTMLModule extends DefaultModule
 
     public function getHttpPostVar($varName, $defaultValue = null)
     {
-         $varValue = Utils::getHttpPostVar($varName);
-         if ($varValue == null)
-             return($defaultValue);
-
-         return(htmlspecialchars($varValue, ENT_QUOTES, 'UTF-8'));
+        $varValue = Utils::getHttpPostVar($varName);
+        if ($varValue == null)
+            return($defaultValue);
+        if (is_array($varValue)) {
+            function filter(&$varValue) {
+                $varValue = htmlspecialchars($varValue, ENT_QUOTES, 'UTF-8');
+            }
+            return($varValue);
+        }
+        return(htmlspecialchars($varValue, ENT_QUOTES, 'UTF-8'));
     }
 
     /**
