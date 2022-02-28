@@ -34,9 +34,13 @@ foreach ($hosts as $host) {
             if ($_cveName != null && $_cveName != $cveName) {
                 continue;
             }
-            $cveTags = $pakiti->getManager("CveTagsManager")->getCveTagsByCveName($cveName);
+	    $cveTags = $pakiti->getManager("CveTagsManager")->getCveTagsByCveName($cveName);
+
+	    $lastReportId = $host->getLastReportId();
+            $lastReport = $pakiti->getManager("ReportsManager")->getReportById($lastReportId);
+
             foreach ($cveTags as $cveTag) {
-                if ($_tag != null && $_tag !== true && $_tag != $cveTag->getName()) {
+                if ($_tag != null && $_tag !== true && $_tag != $cveTag->getTagName()) {
                     continue;
                 }
 		$values = array();
