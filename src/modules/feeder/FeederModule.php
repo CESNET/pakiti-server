@@ -206,7 +206,7 @@ class FeederModule extends DefaultModule
                 # If mime type is application/octet-stream try to decrypt data, else use data without decryption
                 if (mime_content_type($tmpFileIn) == Constants::$MIME_TYPE_ENCRYPTED_REPORT) {
                     $tmpFileOut = tempnam("/dev/shm/", "pakiti3_OUT_");
-                    if (system("openssl smime -decrypt -binary -inform DER -inkey " . Config::$REPORT_DECRYPTION_KEY . " -in $tmpFileIn -out $tmpFileOut") === false) {
+                    if (system("openssl smime -decrypt -binary -inform DER -inkey " . Config::$REPORT_DECRYPTION_KEY . " -in $tmpFileIn -out $tmpFileOut") == false) {
                         throw new Exception("Cannot run openssl smime on the file '$tmpFileIn'");
                     }
                     # Clean up
