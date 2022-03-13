@@ -23,7 +23,7 @@ $hosts = $pakiti->getManager("HostsManager")->getHosts(null, -1, -1, null, $_cve
 
 $out = fopen('php://output', 'w');
 
-$values = array('CVE_Tag', "Country", "ROC", "Site_Name", "Hostname", "Host_Architecture", "Host_OS", "CVE_Name", "CSIRT_Mails");
+$values = array('tag', "cve", "site", "host", "os", "arch", "last_report");
 fputcsv($out, $values);
 
 foreach ($hosts as $host) {
@@ -34,21 +34,23 @@ foreach ($hosts as $host) {
             if ($_cveName != null && $_cveName != $cveName) {
                 continue;
             }
-            $cveTags = $pakiti->getManager("CveTagsManager")->getCveTagsByCveName($cveName);
+	    $cveTags = $pakiti->getManager("CveTagsManager")->getCveTagsByCveName($cveName);
+
+	    $lastReportId = $host->getLastReportId();
+            $lastReport = $pakiti->getManager("ReportsManager")->getReportById($lastReportId);
+
             foreach ($cveTags as $cveTag) {
-                if ($_tag != null && $_tag !== true && $_tag != $cveTag->getName()) {
+                if ($_tag != null && $_tag !== true && $_tag != $cveTag->getTagName()) {
                     continue;
                 }
-                $values = array();
-                $values[] = $cveTag->getTagName();
-                $values[] = "";
-                $values[] = "";
+		$values = array();
+		$values[] = $cveTag->getTagName();
+                $values[] = $cveName;
                 $values[] = $hostGroup->getName();
                 $values[] = $host->getHostName();
-                $values[] = $host->getArchName();
                 $values[] = $host->getOsName();
-                $values[] = $cveName;
-                $values[] = "";
+                $values[] = $host->getArchName();
+                $values[] = $lastReport->getProcessedOn();
                 fputcsv($out, $values);
             }
         }
