@@ -12,4 +12,4 @@ The service is proven in production environments, monitoring thousands of machin
 * [Server configuration](docs/configuration.md)
 * [Client usage](docs/client.md)
 
-The development work is co-funded by the EOSC-hub project (Horizon 2020) under Grant number 777536.
+The development work has been co-funded by European Union's Horizon 2020 programme, namely EOSC-hub (grant number 777536) and EGI-ACE (grant number 101017567) projects.
