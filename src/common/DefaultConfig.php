@@ -66,6 +66,7 @@ class DefaultConfig
         "kernel-hugemem",
         # Debian
         "linux-image",
+        "linux-image-amd64",
         "linux-image-generic",
         # SUSE
         "kernel-default",
