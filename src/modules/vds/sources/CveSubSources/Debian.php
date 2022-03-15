@@ -144,6 +144,19 @@ class Debian extends SubSource implements ISubSource
             $package_template['name'] = $bin_name;
             array_push($list, $package_template);
         }
+
+# When refering to kernel vulnerabilities, Debian's DSA's seem to only list source package 'linux'. Some binaries
+# however (esp. linux-image-amd64) are built from source 'linux-signed-amd64' (or similar), which originates from the
+# same git etc. but this link can't be establihed automatically. Therefore we need this hack to make sure the 'linux'
+# source resolves to relevant binary packages.
+		if ($source_name == "linux") {
+			if (array_key_exists("linux-signed-amd64", $mappings)) {
+				foreach($mappings["linux-signed-amd64"] as $bin_name) {
+					$package_template['name'] = $bin_name;
+					array_push($list, $package_template);
+				}
+			}
+		}
     }
 
     public function processAdvisories($advisories, $subSourceDef_id)
