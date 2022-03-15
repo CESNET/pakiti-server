@@ -123,7 +123,7 @@ class Debian extends SubSource implements ISubSource
         $this->binary_packages[$deb_release] = $mappings;
     }
 
-    private function add_packages($package_template, $deb_release, $source_name, &$list)
+    private function add_resolved_packages($package_template, $deb_release, $source_name, &$list)
     {
         if (!array_key_exists($deb_release, $this->binary_packages))
             $this->update_package_mapping($deb_release);
@@ -248,7 +248,7 @@ class Debian extends SubSource implements ISubSource
                     $rec['osGroup'][$deb_release] = array();
                 }
 
-                $this->add_packages($package_template, $deb_release, $source_name, $rec['osGroup'][$deb_release]);
+                $this->add_resolved_packages($package_template, $deb_release, $source_name, $rec['osGroup'][$deb_release]);
 
                 $line = strtok("\r\n");
                 continue;
