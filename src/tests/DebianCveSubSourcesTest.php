@@ -4,16 +4,37 @@ use PHPUnit\Framework\TestCase;
 
 /* XXX this should be autoload'ed */
 require __DIR__ . "/../modules/vds/sources/CveSubSources/Debian.php";
+require __DIR__ . "/../common/PakitiFactory.php";
+require __DIR__ . "/../managers/DbManager.php";
 
 final class DebianCveSubSourcesTest extends TestCase
 {
+	private $pakiti;
+	private $dbMock;
+
+	protected function setUp()
+	{
+		$this->dbMock = $this->createMock(DbManager::class);
+
+		$container = new PakitiFactory($this->dbMock);
+		$this->pakiti = $container->create();
+
+		parent::setUp();
+	}
+
+	private function getDebian()
+	{
+		return new Debian($this->pakiti);
+	}
+
 	/**
 	  * @dataProvider provideIndices
 	  */
 	public function testIndexParsing(string $input, array $expected): void
 	{
 		$packages = array();
-		Debian::update_packages($input, $packages);
+		$debian = $this->getDebian();
+		$debian->update_packages($input, $packages);
 		$this->assertEquals($packages, $expected);
 	}
 
@@ -22,13 +43,15 @@ final class DebianCveSubSourcesTest extends TestCase
 		$this->expectExceptionMessage("Missing field Binary");
 		$packages = array();
 
+		$debian = $this->getDebian();
+
 		$input = 
 "Package: source_name
 Version: 1.0";
-		Debian::update_packages($input, $packages);
+		$debian->update_packages($input, $packages);
 
 		$input = "Version: 1.0";
-		Debian::update_packages($input, $packages);
+		$debian->update_packages($input, $packages);
 	}
 
 	public function provideIndices()
