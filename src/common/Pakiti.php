@@ -56,6 +56,15 @@ final class Pakiti
         return $this->$propertyName;
     }
 
+	public function setManager($name, $manager)
+	{
+		$propertyName = "_" . lcfirst($name);
+		if (isset($this->$propertyName)) {
+			unset($this->$propertyName);
+		}
+		$this->$propertyName = $manager;
+	}
+
     /**
      * Get the DAO of the requested className
      */
