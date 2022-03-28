@@ -12,7 +12,7 @@ final class DebianCveSubSourcesTest extends TestCase
 	private $pakiti;
 	private $dbMock;
 
-	protected function setUp()
+	protected function setUp(): void
 	{
 		$this->dbMock = $this->createMock(DbManager::class);
 
