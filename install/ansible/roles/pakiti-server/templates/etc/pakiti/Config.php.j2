@@ -6,4 +6,10 @@ final class Config extends DefaultConfig
     public static $DB_USER = "{{ pakiti_mysql_user }}";
     public static $DB_PASSWORD = "{{ pakiti_mysql_pass }}";
     public static $DB_NAME = "{{ pakiti_mysql_db }}";
+
+    # Don't forget to re-process existing records in the DB on any change, e.g. using recalculateOsGroupsMapping.php
+    public static $OS_GROUPS_MAPPING = array(
+        "bullseye" => "Debian.* 11.*",
+        "Red Hat Enterprise Linux 8" => "(Red\s*Hat.* 8.*)|(CentOS.* 8.*)|(Scientific.* 8.*)",
+    );
 }
