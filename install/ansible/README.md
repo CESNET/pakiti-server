@@ -4,14 +4,14 @@
 
 This is [Ansible](https://www.ansible.com/) script for automatic deployment of Pakiti server.
 
-## Prerequisities
+## Prerequisites
 
-This script does not install Pakiti prerequisities, therefore you need to install following prerequisities manually:
+This script does not install Pakiti prerequisites, therefore you need to install following prerequisities manually:
 
 * MySQL Database Server
 * Apache2 Web Server
-* PHP5 + PHP5 MySQL module
-* curl + PHP5 curl module
+* PHP (at least 5) + PHP MySQL module
+* curl + PHP curl module
 * Subversion
 
 Furthermore you need to have Ansible installed. It is recommended to have latest Ansible version installed which may not be available from your distro's repositories. To find out how to install latest Ansible version on your system please review [official documentation page](https://docs.ansible.com/ansible/latest/intro_installation.html).
@@ -23,7 +23,7 @@ Also for Ansible installation you need to have following extra packages present 
 
 ## Installation using Ansible
 
-This ansible playbook is written so that it is expected you will launch the installation directly from the server where you want to install Pakiti. Therefore you have to first move this folder on the host where you want to install pakiti server.
+You first need to create an ansible inventory file, like `inventory.cfg`,
 
 Next you have to change the configuration of the installation. To do this, please modify values in `ansible-conf.yml` file present in this folder. The variables you will want to change and their meaning is following:
 
@@ -37,8 +37,8 @@ Next you have to change the configuration of the installation. To do this, pleas
 
 Finally when you have changed the defaults in config file, you may launch the installation by executing command
 
-```
-ansible-playbook playbook.yml
+```shell
+ansible-playbook -i inventory.cfg playbook.yml
 ```
 
 ## Post installation steps
