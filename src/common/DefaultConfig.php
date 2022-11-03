@@ -132,6 +132,7 @@ class DefaultConfig
     # Don't forget to re-process existing records in the DB on any change, e.g. using recalculateOsGroupsMapping.php
     public static $OS_GROUPS_MAPPING = array(
         # Debian
+        "bullseye" => "Debian.* 11.*",
         "buster" => "Debian.* 10.*",
         "stretch" => "Debian.* 9.*",
         "jessie" => "Debian.* 8.*",
