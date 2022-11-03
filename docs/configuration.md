@@ -5,7 +5,7 @@ part describes some of configuration parameters in more details.
 
 ## Vulnerability definition system
 Pakiti collects information on installed Linux packages from individual machines and correlates
-this information with lists of known vulnerabilities that are published by various vendors of
+this information with the lists of known vulnerabilities that are published by various vendors of
 Linux distributions. The server configuration must always reflect the distributions used in
 the constituency. Proper definition of the vulnerability sources is a crucial part of the
 configuration.
@@ -81,8 +81,10 @@ After adding VDS definition you have to use cli for synchronize and calculate vu
 </oval_definitions>
 ```
 
-## Oses
-Os is assigned to OS Group by regex which is set in Config.php. Correct assign OS to OS Group is necessary for getting vulnerable packages. After changing regex you have to recalculate OSgroup mapping.
+## Operating system grouping
+Linux distributions often use naming schemas that make the names quite fragmented. The OS names either contain minor versions that don't have direct effect on the vulnerability sources, or even denote to different OS tree (e.g. RedHat vs. CentOS). In order to use the information on vulnerabilities properly, additional mapping mechanism is necessary, which maps the OS names and the information published by the OS distribution.
+
+The mapping is specified by the OS_GROUPS_MAPPING configuration option and has to be specified for all the operating systems that the Pakiti instance handles. Whenever the option is updated, it is necessary to update the database using
 
     php /var/www/pakiti3/src/modules/cli/recalculateOsGroupsMapping.php
 
