@@ -19,7 +19,7 @@
   ansible.builtin.git:
     repo: "https://github.com/CESNET/pakiti-server"
     dest: /var/www/pakiti-server
-    version: master
+    version: "{{ pakiti_git_version }}"
 
 - name: Create /etc/pakiti directory
   file:
