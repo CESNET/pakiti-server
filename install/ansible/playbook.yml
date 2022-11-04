@@ -1,4 +1,6 @@
-- hosts: localhost
+---
+- name: Install Pakiti, dropping existing database content
+  hosts: all
   vars_files:
     - ansible-conf.yml
   roles:

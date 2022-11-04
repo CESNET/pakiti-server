@@ -1,8 +1,8 @@
 #!/usr/bin/php
 <?php
 
-require(realpath(dirname(__FILE__)) . '/../../common/Loader.php');
-require(realpath(dirname(__FILE__)) . '/../vds/VdsModule.php');
+require(realpath(dirname(__FILE__)) . '/../src/common/Loader.php');
+require(realpath(dirname(__FILE__)) . '/../src/modules/vds/VdsModule.php');
 
 $vds_defs = [
 /* "defName" => [ "subSource", "defURI" ] */
