@@ -13,7 +13,7 @@ $vds_defs = [
 	"Debian LTS Security" => [ "Debian Advisories", "https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DLA/list" ],
 ];
 
-$shortopts = "h";
+$shortopts = "h"; 
 
 $longopts = array(
     "config:",          # Config file - N.B. we don't handle the config parameter here but in an included file
