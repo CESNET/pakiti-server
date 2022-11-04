@@ -23,7 +23,7 @@ Also for Ansible installation you need to have following extra packages present 
 
 ## Installation using Ansible
 
-You first need to create an ansible inventory file, like `inventory.cfg`,
+You first need to create an [ansible inventory](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) file, like `inventory.cfg`.
 
 Next you have to change the configuration of the installation. To do this, please modify values in `ansible-conf.yml` file present in this folder. The variables you will want to change and their meaning is following:
 
