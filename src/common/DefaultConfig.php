@@ -124,7 +124,7 @@ class DefaultConfig
     # Debian publishes vulnerabilities at a single URL, referring to all distributions. Setting this
     # directive makes the processing a bit more efficient and helps avoid errors when indices for the
     # older distributions are not available.
-    public static $DEBIAN_IGNORED_VERSIONS = [ "wheezy", "squeeze", "lenny", "etch", "sarge", "woody" ];
+    public static $DEBIAN_IGNORED_VERSIONS = [ "stretch", "jessie", "wheezy", "squeeze", "lenny", "etch", "sarge", "woody" ];
     # Endpoint to get the Debian Source indices
     public static $DEBIAN_REPOSITORY = "http://ftp.debian.org/debian";
 
