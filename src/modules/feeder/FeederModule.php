@@ -236,6 +236,9 @@ class FeederModule extends DefaultModule
                             case "arch":
                                 $this->_report_arch = trim($fields[1]);
                                 break;
+                            case "cpu":
+                                $this->_report_arch = $this->_report_arch . " " . trim($fields[1]);
+                                break;
                             # Get only the first hostname in the list, CERN sends all possible hostnames of the host
                             case "host":
                                 $this->_report_hostname = trim($fields[1]);
