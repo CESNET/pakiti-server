@@ -18,6 +18,7 @@ class FeederModule extends DefaultModule
     private $_report_proxy;
     private $_report_os;
     private $_report_arch;
+    private $_report_cpu;
     private $_report_kernel;
     private $_report_type;
     private $_report_site;
@@ -237,7 +238,7 @@ class FeederModule extends DefaultModule
                                 $this->_report_arch = trim($fields[1]);
                                 break;
                             case "cpu":
-                                $this->_report_arch = $this->_report_arch . " " . trim($fields[1]);
+                                $this->_report_cpu = trim($fields[1]);
                                 break;
                             # Get only the first hostname in the list, CERN sends all possible hostnames of the host
                             case "host":
@@ -260,6 +261,8 @@ class FeederModule extends DefaultModule
                                 break;
                         }
                     }
+
+                    $this->_report_arch = implode(", ", array_filter([$this->_report_arch,$this->_report_cpu]));
 
                     while (($line = fgets($handle)) !== false) {
                         if (trim($line) == "#" || empty($line)) {
