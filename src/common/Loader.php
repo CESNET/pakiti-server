@@ -49,7 +49,7 @@ require_once(realpath(dirname(__FILE__)) . '/AttributesNames.php');
 require_once(realpath(dirname(__FILE__)) . '/DefaultModule.php');
 
 # Enable autoload for the dao, model and manager classes
-function __autoload($className)
+spl_autoload_register(function ($className)
 {
     if (preg_match('/.*Dao$/', $className) > 0) {
         # Dao class
@@ -74,7 +74,7 @@ function __autoload($className)
         }
     }
     Utils::log(LOG_DEBUG, "Class $className loaded", __FILE__, __LINE__);
-}
+});
 
 # Create the Pakiti object
 try {
