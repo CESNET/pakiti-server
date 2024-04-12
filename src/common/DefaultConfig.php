@@ -8,7 +8,7 @@ class DefaultConfig
     public static $PAKITI_NAME = "";
 
     # Pakiti operational mode
-    #   1 - Synchronous mode - process clients reports immediatelly, useful for small deployments with < 1000 hosts
+    #   1 - Synchronous mode - process clients reports immediately, useful for small deployments with < 1000 hosts
     #   2 - Asynchronous mode - process clients reports from the queue, needed in the deployments with > 1000 hosts
     public static $FEEDER_MODE = 1;
 
