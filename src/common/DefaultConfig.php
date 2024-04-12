@@ -8,7 +8,7 @@ class DefaultConfig
     public static $PAKITI_NAME = "";
 
     # Pakiti operational mode
-    #   1 - Synchronous mode - process clients reports immediatelly, useful for small deployments with < 1000 hosts
+    #   1 - Synchronous mode - process clients reports immediately, useful for small deployments with < 1000 hosts
     #   2 - Asynchronous mode - process clients reports from the queue, needed in the deployments with > 1000 hosts
     public static $FEEDER_MODE = 1;
 
@@ -132,6 +132,7 @@ class DefaultConfig
     # Don't forget to re-process existing records in the DB on any change, e.g. using recalculateOsGroupsMapping.php
     public static $OS_GROUPS_MAPPING = array(
         # Debian
+        "bookworm" => "Debian.* 12.*",
         "bullseye" => "Debian.* 11.*",
         "buster" => "Debian.* 10.*",
         "stretch" => "Debian.* 9.*",
@@ -143,7 +144,8 @@ class DefaultConfig
         "sarge" => "Debian.* 3\.1.*",
         "woody" => "Debian.* 3\.0.*",
         # Red Hat
-        "Red Hat Enterprise Linux 8" => "(Red\s*Hat.* 8.*)|(CentOS.* 8.*)|(Scientific.* 8.*)",
+        "Red Hat Enterprise Linux 9" => "(Red\s*Hat.* 9.*)|(CentOS.* 9.*)|(Scientific.* 9.*)|(Rocky.* 9.*)",
+        "Red Hat Enterprise Linux 8" => "(Red\s*Hat.* 8.*)|(CentOS.* 8.*)|(Scientific.* 8.*)|(Rocky.* 8.*)",
         "Red Hat Enterprise Linux 7" => "(Red\s*Hat.* 7.*)|(CentOS.* 7.*)|(Scientific.* 7.*)",
         "Red Hat Enterprise Linux 6" => "(Red\s*Hat.* 6.*)|(CentOS.* 6.*)|(Scientific.* 6.*)",
         "Red Hat Enterprise Linux 5" => "(Red\s*Hat.* 5.*)|(CentOS.* 5.*)|(Scientific.* 5.*)",
@@ -166,9 +168,14 @@ class DefaultConfig
         "Ubuntu 14.04 LTS" => "Ubuntu.* 14\.04.*",
         "Ubuntu 16.04 LTS" => "Ubuntu.* 16\.04.*",
         "Ubuntu 18.04 LTS" => "Ubuntu.* 18\.04.*",
+        "Ubuntu 20.04 LTS" => "Ubuntu.* 20\.04.*",
+        "Ubuntu 22.04 LTS" => "Ubuntu.* 22\.04.*",
+        "Ubuntu 24.04 LTS" => "Ubuntu.* 24\.04.*",
         # CentOS
         "CentOS 5" => "CentOS.* 5.*",
         "CentOS 6" => "CentOS.* 6.*",
         "CentOS 7" => "CentOS.* 7.*",
+        "CentOS 8" => "CentOS.* 8.*",
+        "CentOS 9" => "CentOS.* 9.*",
     );
 }
