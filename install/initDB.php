@@ -60,10 +60,10 @@ if (isset($opt["p"]) && $opt["p"]) {
 } elseif (isset($opt["password"]) && $opt["password"]) {
     $dbPassword = $opt["password"];
 } elseif (isset($opt["password"]) || isset($opt["p"])) {
-    $fh = fopen('php://stdin', 'r')  or die($php_errormsg);
+    $fh = fopen('php://stdin', 'r')  or die(error_get_last());
     print "Enter password:";
     `/bin/stty -echo`;
-    $dbPassword = trim(fgets($fh, 64)) or die($php_errormsg);
+    $dbPassword = trim(fgets($fh, 64)) or die(error_get_last());
     `/bin/stty echo`;
     print "\n";
     fclose($fh);
@@ -92,7 +92,7 @@ print "OK\n";
 
 # If reInitialize was enabled, drop the database
 if ($reInitialize) {
-    print "Droping the database '".Config::$DB_NAME."' ... ";
+    print "Dropping the database '".Config::$DB_NAME."' ... ";
     if (!$link->query("drop database ".Config::$DB_NAME."")) {
         print "Cannot drop the database '".Config::$DB_NAME."': " . $link->error . "\n";
         print "Suppose the databases didn't exist, continue\n";
