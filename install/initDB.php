@@ -60,10 +60,10 @@ if (isset($opt["p"]) && $opt["p"]) {
 } elseif (isset($opt["password"]) && $opt["password"]) {
     $dbPassword = $opt["password"];
 } elseif (isset($opt["password"]) || isset($opt["p"])) {
-    $fh = fopen('php://stdin', 'r')  or die($php_errormsg);
+    $fh = fopen('php://stdin', 'r')  or die(error_get_last());
     print "Enter password:";
     `/bin/stty -echo`;
-    $dbPassword = trim(fgets($fh, 64)) or die($php_errormsg);
+    $dbPassword = trim(fgets($fh, 64)) or die(error_get_last());
     `/bin/stty echo`;
     print "\n";
     fclose($fh);
