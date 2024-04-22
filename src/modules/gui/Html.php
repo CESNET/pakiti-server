@@ -121,8 +121,8 @@ class HTMLModule extends DefaultModule
     public function checkPermission($source)
     {
         if (!$this->_acl->permission($source)) {
-            print($this->error403);
             header('HTTP/1.0 403 Forbidden');
+            print($this->error403);
             exit;
         }
     }
