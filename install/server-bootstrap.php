@@ -6,9 +6,11 @@ require(realpath(dirname(__FILE__)) . '/../src/modules/vds/VdsModule.php');
 
 $vds_defs = [
 /* "defName" => [ "subSource", "defURI" ] */
-	"RHEL 6" => [ "RedHat OVAL", "https://www.redhat.com/security/data/oval/com.redhat.rhsa-RHEL6.xml" ],
-	"RHEL 7" => [ "RedHat OVAL", "https://www.redhat.com/security/data/oval/com.redhat.rhsa-RHEL7.xml" ],
-	"RHEL 8" => [ "RedHat OVAL", "https://www.redhat.com/security/data/oval/com.redhat.rhsa-RHEL8.xml" ],
+	"RHEL 7" => [ "RedHat OVAL", "https://www.redhat.com/security/data/oval/v2/RHEL7/rhel-7.oval.xml.bz2" ],
+	"RHEL 8" => [ "RedHat OVAL", "https://www.redhat.com/security/data/oval/v2/RHEL8/rhel-8.oval.xml.bz2" ],
+	"RHEL 9" => [ "RedHat OVAL", "https://www.redhat.com/security/data/oval/v2/RHEL9/rhel-9.oval.xml.bz2" ],
+	"AlmaLinux 8" => [ "Local OVAL", "https://repo.almalinux.org/security/oval/org.almalinux.alsa-8.xml" ],
+	"AlmaLinux 9" => [ "Local OVAL", "https://repo.almalinux.org/security/oval/org.almalinux.alsa-9.xml" ],
 	"Debian Security" => [ "Debian Advisories", "https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list" ],
 	"Debian LTS Security" => [ "Debian Advisories", "https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DLA/list" ],
 ];
