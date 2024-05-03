@@ -51,7 +51,7 @@ create table `OsOsGroup` (
 
 create table `Arch` (
 	`id` integer(10) not null auto_increment,
-	`name` varchar(10) not null,
+	`name` varchar(100) not null,
 	primary key (`id`),
 	unique key (`name`)
 )ENGINE=INNODB;
