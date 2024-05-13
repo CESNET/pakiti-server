@@ -83,12 +83,12 @@ $activity = array("Last 24 hours" => "24h", "Last 2 days" => "2d", "Last week" =
                 <div class="col-sm-3">
                     <div class="form-group">
                         <label for="cveName">CVE</label>
-                        <select class="form-control" name="cveName" id="cveName" onchange="submit();">
-                            <option value="">All</option>
+                        <input class="form-control" list="cves" name="cveName" id="cveName" value="<?php if ($_cveName != null) echo $_cveName; ?>" onchange="submit();"/>
+                        <datalist id="cves">
                             <?php foreach ($cveNames as $cveName) { ?>
                                 <option value="<?php echo $cveName; ?>"<?php if ($_cveName === $cveName) echo ' selected'; ?>><?php echo $cveName; ?></option>
                             <?php } ?>
-                        </select>
+                        </datalist>
                     </div>
                 </div>
                 <div class="col-sm-3">
