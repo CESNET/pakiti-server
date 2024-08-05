@@ -209,7 +209,7 @@ class SubSource
             try {
                 $contents = Utils::downloadContents($subSourceDef->getUri());
             } catch (Exception $e) {
-                Utils::log(LOG_ERR, "Error reading definitions for %s: %s", $subSourceDef->getUri(), $e->getMessage());
+                Utils::log(LOG_ERR, "Error reading definitions for ".$subSourceDef->getUri().": ".$e->getMessage(), __FILE__, __LINE__);
                 continue;
             }
 
