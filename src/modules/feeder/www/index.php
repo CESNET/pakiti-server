@@ -12,7 +12,7 @@ try {
     #----------------------------------------------------
     if (Config::$FEEDER_MODE == Constants::$FEEDER_ASYNCHRONOUS_MODE) {
         if ($report == Constants::$STORE_ONLY || $report == null) {
-            # Store incomming report
+            # Store incoming report
             $feeder->storeReportToFile();
         } else {
             # Pakiti-server in asynchronous mode can't send result back
@@ -21,14 +21,14 @@ try {
             return(0);
         }
     }
-    # Synchronous mode - process data immediatelly
+    # Synchronous mode - process data immediately
     #---------------------------------------------
     elseif (Config::$FEEDER_MODE == Constants::$FEEDER_SYNCHRONOUS_MODE) {
         if (Config::$BACKUP === true) {
-            # Store incomming report
+            # Store incoming report
             $feeder->storeReportToFile();
         }
-        # Process incomming data
+        # Process incoming data
         $feeder->processReport();
 
         $result = $feeder->getResult();
@@ -38,7 +38,7 @@ try {
     #------------------------
     else {
         /* modes are checked in the Pakiti constructor, we should never get here */
-        Utils::log(LOG_ERR, "Something knows more modes than I do, shuting down");
+        Utils::log(LOG_ERR, "Something knows more modes than I do, shutting down");
         print Constants::$RETURN_ERROR;
         http_response_code(500);
         return(0);
