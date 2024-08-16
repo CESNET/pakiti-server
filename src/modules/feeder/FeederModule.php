@@ -856,7 +856,7 @@ class FeederModule extends DefaultModule
         }
 
         # Separate hostname from domain name
-        $domain = preg_replace('/^[\w-_]+\.(.*)$/', '\1', $hostname);
+        $domain = preg_replace('/^[\w\-]+\.(.*)$/', '\1', $hostname);
         
         # Check if domain ends with .local or .localdomain, these are not valid domains
         if (preg_match('/\.(local|localdomain)$/', $hostname) > 0) {
