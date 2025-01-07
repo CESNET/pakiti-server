@@ -8,4 +8,4 @@ pakiti_admin_mail: admin@pakiti.com
 pakiti_git_version: master
 pakiti_webserver_user: root
 pakiti_webserver_conf_template: "etc/apache2/pakiti.conf.j2"
-pakiti_config_template = "etc/pakiti/Config.php.j2"
+pakiti_config_template: "etc/pakiti/Config.php.j2"
