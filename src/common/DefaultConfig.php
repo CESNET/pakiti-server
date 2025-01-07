@@ -226,5 +226,8 @@ class DefaultConfig
         "CentOS 7" => "CentOS.* 7.*",
         "CentOS 8" => "CentOS.* 8.*",
         "CentOS 9" => "CentOS.* 9.*",
+        # AlmaLinux
+        "AlmaLinux 8" => "AlmaLinux.* 8.*",
+        "AlmaLinux 9" => "AlmaLinux.* 9.*",
     );
 }
