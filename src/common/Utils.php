@@ -155,7 +155,8 @@ final class Utils
             case "text/xml":        // Uncompressed OVAL
             case "application/xml": // Uncompressed OVAL
                 break;
-            case "application/x-gzip" :
+            case "application/x-gzip":
+            case "application/gzip":   
                 $contents = gzdecode($contents);
                 if ($contents === False)
                     throw new Exception("Failed to decompress gzip data");
