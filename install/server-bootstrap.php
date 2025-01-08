@@ -13,6 +13,9 @@ $vds_defs = [
 	"AlmaLinux 9" => [ "Local OVAL", "https://repo.almalinux.org/security/oval/org.almalinux.alsa-9.xml" ],
 	"Debian Security" => [ "Debian Advisories", "https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list" ],
 	"Debian LTS Security" => [ "Debian Advisories", "https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DLA/list" ],
+    "Ubuntu 20.04" => ["Ubuntu OVAL", "https://security-metadata.canonical.com/oval/com.ubuntu.focal.cve.oval.xml.bz2"],
+    "Ubuntu 22.04" => ["Ubuntu OVAL", "https://security-metadata.canonical.com/oval/com.ubuntu.jammy.cve.oval.xml.bz2"],
+    "Ubuntu 24.04" => ["Ubuntu OVAL", "https://security-metadata.canonical.com/oval/com.ubuntu.noble.cve.oval.xml.bz2"],
 ];
 
 $shortopts = "h"; 
