@@ -6,7 +6,15 @@ require(realpath(dirname(__FILE__)) . '/../FeederModule.php');
 
 try {
     # Initialize
-    $feeder = new FeederModule($pakiti);
+    if (str_contains(apache_request_headers()["User-Agent"],"GLPI")) {
+        $feeder = new FeederModule($pakiti, "GLPI");
+        $feeder->processReport();
+        print_r("{\"status\": \"ok\"}");
+        Utils::log(LOG_INFO, "Report done for [host=".$feeder->getReportHost()."] in ".Utils::getTimer($time)."s\n");
+        exit;
+    } else {
+        $feeder = new FeederModule($pakiti, "");
+    }
 
     # Asynchronous mode - only store the results and exit
     #----------------------------------------------------

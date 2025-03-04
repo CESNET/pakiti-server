@@ -74,7 +74,11 @@ class FeederModule extends DefaultModule
         $this->_host->setReporterHostname(gethostbyaddr($this->_host->getReporterIp()));
 
         # Map variables in the report to the internal variables
-        $this->doReportMapping($this->_protocolVersion);
+        if (str_contains(apache_request_headers()["User-Agent"],"GLPI")) {
+            $this->doReportMappingGLPI();
+        } else {
+            $this->doReportMapping($this->_protocolVersion);
+        }
 
         # Set Received time
         $this->_report->setReceivedOn(time());
@@ -283,6 +287,26 @@ class FeederModule extends DefaultModule
                 throw new Exception("Unsupported protocol version sent by the client ($protocol_version)");
                 break;
         }
+    }
+
+    private function doReportMappingGLPI()
+    {
+        $contents = file_get_contents("php://input");
+        if (apache_request_headers()['Content-Type'] === "Application/x-compress-zlib") {
+            $contents = zlib_decode($contents);
+        }
+        $data = json_decode($contents, true);
+        $this->_report_ip = "";
+        $this->_report_arch = $data['content']['operatingsystem']['arch'];
+        $this->_report_cpu = $data['content']['cpus']['0']['name'];
+        $this->_report_hostname = $data['content']['operatingsystem']['fqdn'];
+        $this->_report_kernel = $data['content']['operatingsystem']['kernel_version'];
+        $this->_report_type = "";
+        $this->_report_site = $data['tag'];
+        $this->_report_tag = "";
+        $this->_report_os = $data['content']['operatingsystem']['full_name'];
+        $this->_report_arch = implode(", ", array_filter([$this->_report_arch,$this->_report_cpu]));
+        foreach ($data['content']['softwares'] as $s) { $this->_report_pkgs .= $s['name']." ".$s['version']." ".$s['arch']."\n"; }
     }
 
     /**
