@@ -652,7 +652,7 @@ class FeederModule extends DefaultModule
             $installedPkgsIds = array_map(function ($pkg) {
                 return $pkg->getId();
             }, $installedPkgs);
-            $this->getPakiti()->getManager("PkgsManager")->assignPkgsWithHost($pkgsIds, $this->_host->getId(), $installedPkgsIds);
+            $this->getPakiti()->getManager("PkgsManager")->assignPkgsWithHost(array_unique($pkgsIds), $this->_host->getId(), $installedPkgsIds);
         }
     }
 
