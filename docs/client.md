@@ -1,5 +1,10 @@
 # Client usage
 
+There are several ways how to send information from the monitored machine to the Pakiti server. The Pakiti suite
+contains a [client](https://github.com/CESNET/pakiti-client/) that can be deployed on the infrastructure. Environments
+utilizing the [GLPI toolset](https://glpi-project.org/) can use the glpi tools to send reports to Pakiti too. Details
+on the usage are below.
+
 ## Pakiti client
 Run pakiti-client -h for help
 

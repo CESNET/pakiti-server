@@ -3,6 +3,9 @@ Pakiti server runs as a standard PHP application in a web server (like Apache) a
 database engine to store data. Before proceeding with the installation, you need to deploy these services
 and configure them properly.
 
+The `master` branch of the [pakiti-server repository](https://github.com/CESNET/pakiti-server.git) is kept
+stable and the code available there is supposed to be safely deployed.
+
 For automated deployment you can use the Ansible role that is shipped with the server. After the server is deployed,
 you need to provide initial configuration of the vulnerability sources and test its functions. See the bottom for
 more detials.
