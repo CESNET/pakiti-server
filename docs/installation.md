@@ -4,7 +4,7 @@ database engine to store data. Before proceeding with the installation, you need
 and configure them properly.
 
 The `master` branch of the [pakiti-server repository](https://github.com/CESNET/pakiti-server.git) is kept
-stable and the code available there is supposed to be safely deployed.
+stable and the code available there is supposed to be safe for deployment.
 
 For automated deployment you can use the Ansible role that is shipped with the server. After the server is deployed,
 you need to provide initial configuration of the vulnerability sources and test its functions. See the bottom for
