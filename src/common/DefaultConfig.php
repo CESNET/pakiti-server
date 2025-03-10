@@ -229,5 +229,8 @@ class DefaultConfig
         # AlmaLinux
         "AlmaLinux 8" => "AlmaLinux.* 8.*",
         "AlmaLinux 9" => "AlmaLinux.* 9.*",
+        # Rocky Linux
+        "Rocky Linux 8" => "Rocky Linux.* 8.*",
+        "Rocky Linux 9" => "Rocky Linux.* 9.*",
     );
 }
