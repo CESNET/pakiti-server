@@ -108,7 +108,7 @@ class OvalSUSE extends SubSource implements ISubSource
             foreach ($criterions as $criterion) {
                 $comment = $criterion->attributes->getNamedItem('comment')->nodeValue;
                 //print "Comment: $comment\n";
-                if (strpos($comment, "SUSE") === 0 || strpos($comment, "openSUSE") === 0) {
+                if (strpos($comment, "SUSE") === 0 || strpos($comment, "openSUSE") === 0 || strpos($comment, "Open Enterprise") === 0) {
                     preg_match("/^(.*) is installed$/", $comment, $suse_release);
                     $os = $suse_release[1];
                     //print "Got OS: $os\n";
