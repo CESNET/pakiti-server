@@ -44,7 +44,7 @@ class OsesManager extends DefaultManager
             if (!empty(Config::$OS_GROUPS_MAPPING[$osGroupName]) && preg_match("/" . htmlspecialchars_decode(Config::$OS_GROUPS_MAPPING[$osGroupName]). "/", $os->getName()) == 1) {
                 $og = $osGroupsManager->getOsGroupByName($osGroupName);
                 if ($og == null) {
-                    /* group assignment is re-calculted on its adding */
+                    /* group assignment is re-calculated on its adding */
                     $new = new OsGroup();
                     $new->setName($osGroupName);
                     $osGroupsManager->storeOsGroup($new);
