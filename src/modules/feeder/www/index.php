@@ -58,7 +58,7 @@ try {
     print $result;
     return(0);
 } catch (Exception $e) {
-    Utils::log(LOG_ERR, $e->getMessage());
+    Utils::log(LOG_ERR, "Exception: " . get_class($e) . ": " . $e->getMessage() . "  Trace: " . $e->getTraceAsString());
     print Constants::$RETURN_ERROR;
     http_response_code(500);
     return(0);
