@@ -24,9 +24,7 @@ class StatsManager extends DefaultManager
             $stat->setValue($number);
             $stat = $this->getPakiti()->getDao("Stat")->create($stat);
         } else {
-            $value = $stat->getValue();
-            $stat->setValue($value + $number);
-            $stat = $this->getPakiti()->getDao("Stat")->update($stat);
+            $stat = $this->getPakiti()->getDao("Stat")->increment($stat, $number);
         }
     }
 
