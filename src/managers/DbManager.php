@@ -142,6 +142,10 @@ class DbManager
             throw new Exception("Cannot select database [database=" . Config::$DB_NAME . "], probably database hasn't been initialized yet, run bin/initDB.php, error: " . $this->_dbLink->error);
         }
         Utils::log(LOG_DEBUG, "Successfully conected to the database [dbName=" . Config::$DB_NAME . ",dbHost=" . Config::$DB_HOST . ",dbUser=" . Config::$DB_USER . "]", __FILE__, __LINE__);
+
+        # Fall back to read committed transaction isolation
+        # to sidestep snapshot isolation complications.
+        $this->rawQuery("set session transaction isolation level read committed");
     }
 
     /**

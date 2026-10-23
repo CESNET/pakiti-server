@@ -49,6 +49,15 @@ class StatDao
     }
 
     /**
+     * Attempt to atomically increment the stat in the DB
+     */
+    public function increment(Stat $stat, $amount)
+    {
+        $this->db->query("update Stat set value=value+".$this->db->escape($amount)."
+            where name='".$this->db->escape($stat->getName())."'");
+    }
+
+    /**
      * Delete the stat from the DB
      */
     public function delete($name)
