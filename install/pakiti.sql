@@ -86,7 +86,7 @@ create table `Host` (
 	`ip` varchar(40),
 	`reporterHostname` varchar(63) not null,
 	`reporterIp` varchar(40) not null,
-	`kernel` varchar(32) not null,
+	`kernel` varchar(64) not null,
 	`osId` integer(10) not null,
 	`archId` integer(10) not null,
 	`domainId` integer(10) not null,

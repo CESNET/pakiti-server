@@ -1,3 +1,13 @@
+## 20261022
+```sql
+alter table `Host` modify column `kernel` varchar(64) not null;
+```
+
+## 20240503
+```sql
+alter table `Arch` modify column `name` varchar(100) not null;
+```
+
 ## 20171025 -> 20171026
 ```sql
 rename table `Cve` to `CveCveDef`;
