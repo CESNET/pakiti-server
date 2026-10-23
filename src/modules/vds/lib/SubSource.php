@@ -76,7 +76,10 @@ class SubSource
      */
     protected function computeHash($string)
     {
-        return md5($this->getName() . $string);
+        $context = hash_init('md5');
+        hash_update($context, $this->getName());
+        hash_update($context, $string);
+        return hash_final($context);
     }
 
     public function removeSubSourceDef(ISubSourceDef $subSourceDef)
