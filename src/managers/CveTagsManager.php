@@ -97,4 +97,11 @@ class CveTagsManager extends DefaultManager
         $dao = $this->getPakiti()->getDao("CveTag");
         return $dao->getTagNames();
     }
+
+    public function getCveNames()
+    {
+        Utils::log(LOG_DEBUG, "Getting cve names", __FILE__, __LINE__);
+        $dao = $this->getPakiti()->getDao("CveTag");
+        return $dao->getCveNames();
+    }
 }

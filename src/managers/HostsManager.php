@@ -53,12 +53,12 @@ class HostsManager extends DefaultManager
     /**
      * Get hosts
      */
-    public function getHosts($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
+    public function getHosts($orderBy = null, $orderByDirection = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         Utils::log(LOG_DEBUG, "Getting hosts", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("Host");
-        $hostsIds = $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId, $directlyAssignedToUser);
-
+        $hostsIds = $dao->getHostsIds($orderBy, $orderByDirection, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId, $directlyAssignedToUser);
+        
         $hosts = array();
         foreach ($hostsIds as $hostId) {
             array_push($hosts, $this->getHostById($hostId));
@@ -73,7 +73,7 @@ class HostsManager extends DefaultManager
     {
         Utils::log(LOG_DEBUG, "Getting hosts IDs", __FILE__, __LINE__);
         $dao = $this->getPakiti()->getDao("Host");
-        return $dao->getHostsIds($orderBy, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId, $directlyAssignedToUser);
+        return $dao->getHostsIds($orderBy, null, $pageSize, $pageNum, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId, $directlyAssignedToUser);
     }
 
     /**
@@ -82,7 +82,7 @@ class HostsManager extends DefaultManager
     public function getHostsCount($search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1)
     {
         Utils::log(LOG_DEBUG, "Getting hosts count", __FILE__, __LINE__);
-        return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, -1, -1, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId));
+        return sizeof($this->getPakiti()->getDao("Host")->getHostsIds(null, null, -1, -1, $search, $cveName, $tag, $hostGroupId, $activity, $pkgId, $userId));
     }
 
     /**
@@ -104,8 +104,9 @@ class HostsManager extends DefaultManager
         $dao = $this->getPakiti()->getDao("Host");
         $host = $this->getHostById($hostId);
         if ($host == null) {
-            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
-            throw new Exception("Host[".$hostId."] doesn't exist");
+            # Host might have been deleted, skip silently
+            Utils::log(LOG_WARNING, "Host[".$hostId."] doesn't exist, skipping", __FILE__, __LINE__);
+            return;
         }
         # Get number of CVEs
         $cvesManager = $this->getPakiti()->getManager("CvesManager");

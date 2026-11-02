@@ -13,6 +13,76 @@ class HostDao
         $this->db = $dbManager;
     }
 
+    /**
+     * Parse search string into inclusion and exclusion terms
+     * Supports syntax: !term or "not term" for exclusions
+     *
+     * @param string $search The search string
+     * @return array Array with 'include' and 'exclude' keys containing arrays of terms
+     */
+    private function parseSearchTerms($search)
+    {
+        $includeTerms = [];
+        $excludeTerms = [];
+
+        if ($search == null || trim($search) == '') {
+            return ['include' => $includeTerms, 'exclude' => $excludeTerms];
+        }
+
+        // Tokenize the search string while preserving quoted phrases
+        $tokens = [];
+        $currentToken = '';
+        $inQuotes = false;
+        $search = trim($search);
+
+        for ($i = 0; $i < strlen($search); $i++) {
+            $char = $search[$i];
+
+            if ($char === '"' && ($i == 0 || $search[$i-1] !== '\\')) {
+                $inQuotes = !$inQuotes;
+                $currentToken .= $char;
+            } elseif ($char === ' ' && !$inQuotes) {
+                if ($currentToken !== '') {
+                    $tokens[] = $currentToken;
+                    $currentToken = '';
+                }
+            } else {
+                $currentToken .= $char;
+            }
+        }
+        if ($currentToken !== '') {
+            $tokens[] = $currentToken;
+        }
+
+        // Process tokens to identify inclusion/exclusion
+        $i = 0;
+        while ($i < count($tokens)) {
+            $token = $tokens[$i];
+
+            // Check for "not" keyword followed by a term or phrase
+            if (strtolower($token) === 'not' && isset($tokens[$i + 1])) {
+                $excludeTerms[] = $tokens[$i + 1];
+                $i += 2;
+                continue;
+            }
+
+            // Check for ! prefix
+            if (strpos($token, '!') === 0 && strlen($token) > 1) {
+                $excludeTerms[] = substr($token, 1);
+                $i++;
+                continue;
+            }
+
+            // Regular inclusion term
+            if ($token !== '') {
+                $includeTerms[] = $token;
+            }
+            $i++;
+        }
+
+        return ['include' => $includeTerms, 'exclude' => $excludeTerms];
+    }
+
     public function create(Host $host)
     {
         if ($host == null) {
@@ -59,9 +129,9 @@ class HostDao
         }
 
         $select = "distinct
-            Host.id as _id, 
+            Host.id as _id,
             Host.hostname as _hostname,
-            Host.ip as _ip, 
+            Host.ip as _ip,
             Host.reporterIp as _reporterIp,
             Host.reporterHostname as _reporterHostname,
             Host.kernel as _kernel,
@@ -97,7 +167,7 @@ class HostDao
         return $this->db->queryObject($sql, "Host");
     }
 
-    public function getHostsIds($orderBy = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
+    public function getHostsIds($orderBy = null, $orderByDirection = null, $pageSize = -1, $pageNum = -1, $search = null, $cveName = null, $tag = null, $hostGroupId = -1, $activity = null, $pkgId = -1, $userId = -1, $directlyAssignedToUser = false)
     {
         $select = "distinct Host.id";
         $from = "Host";
@@ -113,45 +183,93 @@ class HostDao
         $tmpJoinOs = false;
 
         # Because os and arch are ids to other tables, we have to do different sorting
+        # Default sort direction is ASC if not specified
+        if ($orderByDirection == null || strtoupper($orderByDirection) == "ASC") {
+            $sortDir = "ASC";
+        } else {
+            $sortDir = "DESC";
+        }
+
         switch ($orderBy) {
             case "os":
                 $join[] = "inner join Os on Host.osId = Os.id";
                 $tmpJoinOs = true;
-                $order[] = "Os.name";
+                $order[] = "Os.name ".$sortDir." ";
                 break;
             case "arch":
                 $join[] = "inner join Arch on Host.archId = Arch.id";
-                $order[] = "Arch.name";
+                $order[] = "Arch.name ".$sortDir." ";
                 break;
             case "kernel":
-                $order[] = "Host.kernel";
+                $order[] = "Host.kernel ".$sortDir." ";
                 break;
             case "cves":
-                $order[] = "Host.numOfCves DESC";
+                $order[] = "Host.numOfCves ".$sortDir." ";
                 break;
             case "taggedCves":
-                $order[] = "Host.numOfCvesWithTag DESC";
+                $order[] = "Host.numOfCvesWithTag ".$sortDir." ";
                 break;
             case "lastReport":
                 $join[] = "left join Report on Host.lastReportId = Report.id";
                 $tmpJoinReport = true;
-                $order[] = "Report.receivedOn DESC";
+                $order[] = "Report.receivedOn ".$sortDir." ";
                 break;
             default:
                 break;
         }
-        $order[] = "Host.hostname";
+        $order[] = "Host.hostname ".$sortDir." ";
 
         if ($search != null) {
             $search = trim($search);
-            if (!$tmpJoinOs) {
-                $join[] = "inner join Os on Host.osId = Os.id";
-                $tmpJoinOs = true;
+            if ($search !== '') {
+                // Parse search terms into inclusions and exclusions
+                $terms = $this->parseSearchTerms($search);
+                $includeTerms = $terms['include'];
+                $excludeTerms = $terms['exclude'];
+
+                if (!empty($includeTerms) || !empty($excludeTerms)) {
+                    if (!$tmpJoinOs) {
+                        $join[] = "inner join Os on Host.osId = Os.id";
+                        $tmpJoinOs = true;
+                    }
+
+                    $conditions = [];
+
+                    // Build inclusion conditions (OR within each field)
+                    if (!empty($includeTerms)) {
+                        $includeConditions = [];
+                        foreach ($includeTerms as $term) {
+                            $escapedTerm = $this->db->escape(strtolower(trim($term)), true);
+                            $includeConditions[] = "(lower(Host.hostname) like '%{$escapedTerm}%'
+                                or lower(Os.name) like '%{$escapedTerm}%'
+                                or lower(Host.kernel) like '%{$escapedTerm}%')";
+                        }
+                        // Multiple include terms are combined with AND
+                        $conditions[] = '(' . implode(' and ', $includeConditions) . ')';
+                    }
+
+                    // Build exclusion conditions (NOT LIKE)
+                    if (!empty($excludeTerms)) {
+                        foreach ($excludeTerms as $term) {
+                            $escapedTerm = $this->db->escape(strtolower(trim($term)), true);
+                            $conditions[] = "(lower(Host.hostname) not like '%{$escapedTerm}%'
+                                and lower(Os.name) not like '%{$escapedTerm}%'
+                                and lower(Host.kernel) not like '%{$escapedTerm}%')";
+                        }
+                    }
+
+                    // Combine all conditions with AND
+                    if (!empty($conditions)) {
+                        $where[] = implode(' and ', $conditions);
+                    }
+                } else {
+                    // Fallback for edge cases - treat as single include term
+                    $escapedSearch = $this->db->escape(strtolower($search), true);
+                    $where[] = "lower(Host.hostname) like '%{$escapedSearch}%'
+                        or lower(Os.name) like '%{$escapedSearch}%'
+                        or lower(Host.kernel) like '%{$escapedSearch}%'";
+                }
             }
-            $where[] = "(lower(Host.hostname) like '%".$this->db->escape(strtolower($search), true)."%'
-                or lower(Os.name) like '%".$this->db->escape(strtolower($search), true)."%'
-                or lower(Host.kernel) like '%".$this->db->escape(strtolower($search), true)."%'
-                )";
         }
 
         if ($cveName != null || $tag != null) {
@@ -247,9 +365,7 @@ class HostDao
             $limit = $pageSize;
             $offset = $pageSize * $pageNum;
         }
-
         $sql = Utils::sqlSelectStatement($select, $from, $join, $where, $order, $limit, $offset);
-
         return $this->db->queryToSingleValueMultiRow($sql);
     }
 
@@ -263,7 +379,7 @@ class HostDao
         if ($dbHost == null) {
             throw new Exception("Host cannot be retreived from the DB");
         }
-    
+
         $entries = array();
         if ($host->getHostname() != $dbHost->getHostname()) {
             $entries['hostname'] = "'".$this->db->escape($host->getHostname())."'";

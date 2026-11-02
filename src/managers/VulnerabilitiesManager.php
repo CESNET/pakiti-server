@@ -24,6 +24,12 @@ class VulnerabilitiesManager extends DefaultManager
         foreach ($pkgs as $pkg) {
             $cveDefsManager->removePkg($pkg->getId());
             $potentialVulnerabilities = $vulnerabilityDao->getVulnerabilitiesByNameArchId($pkg->getName(), $pkg->getArchId());
+
+            # Keep only vulnerability rows that belong to the host's own minor
+            # stream (e.g. el9_7 rows for a 9.7-stream kernel), so a CVE fixed in
+            # both el9_7 and el9_8 does not flag a patched 9.7 host just because
+            # its NVR is below the 9.8 fix's NVR.
+            $potentialVulnerabilities = $this->filterByMinorStream($pkg, $potentialVulnerabilities);
             foreach ($potentialVulnerabilities as $vulnerability) {
                 $confirmed = false;
                 switch ($vulnerability->getOperator()) {
@@ -40,6 +46,82 @@ class VulnerabilitiesManager extends DefaultManager
                 }
             }
         }
+    }
+
+
+    /**
+     * Keep only the Vulnerability rows that belong to the installed package's own
+     * minor stream, for rpm-family packages.
+     *
+     * RHEL clones encode the minor release in the rpm release string: '.el9_7'
+     * pins a row to the 9.7 stream, and even without the tag the leading release
+     * number identifies the build line (611.x = 9.7, 687.x = 9.8, ...), because
+     * RHEL assigns each minor its own base release number. Comparing a 9.7 host
+     * against the 9.8 fix NVR is meaningless - the two streams' numbers are not
+     * comparable - and produces false positives for patched hosts.
+     *
+     * Two tiers:
+     *   1. Host release carries an explicit '.elX_Y' tag (e.g. 611.55.1.el9_7):
+     *      drop rows pinned to a different '.elX_Y' tag.
+     *   2. No tag on host (custom builds like 611.55.1.stef.el9): drop rows
+     *      explicitly pinned to a minor stream whose leading release number
+     *      differs from the host's. Assumes RHEL-family numbering, where
+     *      '.elX_Y' tags always come with per-stream base release numbers
+     *      (... 570.x = 9.6, 611.x = 9.7, 687.x = 9.8) - which holds for all
+     *      real OVAL feeds of that family.
+     *
+     * Rows without a minor tag are stream-agnostic and always kept. If filtering
+     * would drop everything (unknown/unmatched build line), fall back to the
+     * original list, so the filter can only remove comparisons it can positively
+     * identify as belonging to another stream - never silently reduce coverage.
+     *
+     * @param Pkg $pkg
+     * @param array $vulnerabilities
+     * @return array
+     */
+    private function filterByMinorStream($pkg, $vulnerabilities)
+    {
+        if ($pkg->getPkgTypeName() !== 'rpm') {
+            return $vulnerabilities;
+        }
+
+        $hostRelease = $pkg->getRelease();
+
+        # Tier 1 - explicit minor-stream tag on the host, e.g. .el9_7
+        if (preg_match('/\.el(\d+)_(\d+)/', $hostRelease, $hostM)) {
+            $hostTag = '.el' . $hostM[1] . '_' . $hostM[2];
+            $matching = array();
+            foreach ($vulnerabilities as $v) {
+                if (preg_match('/\.el(\d+)_(\d+)/', $v->getRelease())) {
+                    if (strpos($v->getRelease(), $hostTag) !== false) {
+                        $matching[] = $v;        # same stream
+                    }                            # else pinned to another minor: skip
+                } else {
+                    $matching[] = $v;            # stream-agnostic row: keep
+                }
+            }
+            return empty($matching) ? $vulnerabilities : $matching;
+        }
+
+        # Tier 2 - no tag on host: leading release number is the stream discriminator
+        if (preg_match('/^(\d+)/', $hostRelease, $hostN)) {
+            $hostBase = intval($hostN[1]);
+            $matching = array();
+            foreach ($vulnerabilities as $v) {
+                $vRel = $v->getRelease();
+                # Only rows explicitly pinned to a minor stream can be dropped.
+                if (preg_match('/\.el(\d+)_(\d+)/', $vRel) && preg_match('/^(\d+)/', $vRel, $vN)) {
+                    if (intval($vN[1]) === $hostBase) {
+                        $matching[] = $v;        # same build line (e.g. 611.x)
+                    }                            # else different stream numbering: skip
+                } else {
+                    $matching[] = $v;
+                }
+            }
+            return empty($matching) ? $vulnerabilities : $matching;
+        }
+
+        return $vulnerabilities;
     }
 
 

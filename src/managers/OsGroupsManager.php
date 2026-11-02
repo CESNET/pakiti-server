@@ -14,12 +14,11 @@ class OsGroupsManager extends DefaultManager
     {
         Utils::log(LOG_DEBUG, "Storing the osGroup", __FILE__, __LINE__);
         if ($osGroup == null) {
-            Utils::log(LOG_ERR, "Invalid OS Group", __FILE__, __LINE__);
+            Utils::log(LOG_ERR, "Exception", __FILE__, __LINE__);
             throw new Exception("OsGroup object is not valid");
         }
 
         $name = $osGroup->getName();
-
         $new = false;
         $dao = $this->getPakiti()->getDao("OsGroup");
         $osGroup->setId($dao->getIdByName($name));

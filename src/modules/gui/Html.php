@@ -121,8 +121,8 @@ class HTMLModule extends DefaultModule
     public function checkPermission($source)
     {
         if (!$this->_acl->permission($source)) {
-            header('HTTP/1.0 403 Forbidden');
             print($this->error403);
+            header('HTTP/1.0 403 Forbidden');
             exit;
         }
     }
@@ -145,6 +145,19 @@ class HTMLModule extends DefaultModule
         return null;
     }
 
+    public function getUser()
+    {
+        return $this->_acl->getUser();
+    }
+
+    public function isAdmin()
+    {
+        if ($this->_acl->getUser() != null) {
+            return $this->_acl->getUser()->isAdmin();
+        }
+        return false;
+    }
+
     # Pagination
     public function setDefaultSorting($sortBy)
     {
@@ -154,6 +167,11 @@ class HTMLModule extends DefaultModule
     public function getSortBy()
     {
         return $this->getHttpGetVar("sortBy", $this->_defaultSorting);
+    }
+
+    public function getSortByDirection()
+    {
+        return $this->getHttpGetVar("sortByDirection", null);
     }
 
     public function getPageSize()
