@@ -101,4 +101,10 @@ class CveTagDao
         $sql = "select distinct(CveTag.tagName) from CveTag";
         return $this->db->queryToSingleValueMultiRow($sql);
     }
+
+    public function getCveNames()
+    {
+        $sql = "select distinct(CveTag.cveName) from CveTag";
+        return $this->db->queryToSingleValueMultiRow($sql);
+    }
 }

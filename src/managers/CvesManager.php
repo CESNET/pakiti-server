@@ -84,4 +84,15 @@ class CvesManager extends DefaultManager
         $dao = $this->getPakiti()->getDao("Cve");
         return $dao->countCves($vdsSubSourceDef_id);
     }
+
+    /**
+     * Check if CVE exists in database
+     * @param $cveName CVE name to check
+     * @return bool true if CVE exists, false otherwise
+     */
+    public function cveExists($cveName)
+    {
+        $dao = $this->getPakiti()->getDao("Cve");
+        return $dao->getIdByName($cveName) != -1;
+    }
 }

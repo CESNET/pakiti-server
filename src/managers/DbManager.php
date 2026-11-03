@@ -4,7 +4,7 @@
  * @author Michal Prochazka
  * @author Jakub Mlcak
  */
-class DbManager
+final class DbManager
 {
     private $_dbLink;
 
